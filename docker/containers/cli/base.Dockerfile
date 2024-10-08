@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1
 
+FROM builder
 FROM php-cli-upstream AS cli-base
 
 ARG app_env=prod
@@ -27,7 +28,7 @@ RUN set -eux; \
 	procps; \
 	rm -rf /var/lib/apt/lists/*; \
 	# PHP extensions
-	if [ ${with_xdebug} == true ]; then \
+	if [ ${with_xdebug} = true ]; then \
 		pecl install xdebug-${xdebug_version}; \
 		docker-php-ext-enable xdebug; \
 		docker-php-source delete; \
