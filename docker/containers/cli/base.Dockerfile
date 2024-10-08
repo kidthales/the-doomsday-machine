@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1
 
-FROM builder
+FROM builder AS builder
 FROM php-cli-upstream AS cli-base
 
 ARG app_env=prod
