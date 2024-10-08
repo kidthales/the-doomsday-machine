@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1
 
-FROM builder
+FROM builder AS builder
 FROM frankenphp-upstream AS web
 
 ARG app_env=prod
