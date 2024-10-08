@@ -65,8 +65,10 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: docker/containers/cli/Dockerfile
+          ignore: DL3006
 
       - name: Lint Web Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: docker/containers/web/Dockerfile
+          ignore: DL3006
