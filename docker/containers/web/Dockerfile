@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1
 
+FROM builder
 FROM frankenphp-upstream AS web
 
 ARG app_env=prod
@@ -32,7 +33,7 @@ RUN set -eux; \
 	gettext; \
 	rm -rf /var/lib/apt/lists/*; \
 	# PHP extensions
-	if [ ${with_xdebug} == true ]; then \
+	if [ ${with_xdebug} = true ]; then \
 		pecl install xdebug-${xdebug_version}; \
 		docker-php-ext-enable xdebug; \
 		docker-php-source delete; \
@@ -47,7 +48,7 @@ RUN set -eux; \
 
 WORKDIR $PHP_INI_DIR
 RUN set -eux; \
-	if [ ${php_ini_env} == development ]; then \
+	if [ ${php_ini_env} = development ]; then \
 		ln -s php.ini-development php.ini; \
 		rm app.conf.d/20-app.prod.ini; \
 	else \
