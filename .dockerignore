@@ -1,0 +1,10 @@
+*
+!/bin
+!/config
+!/docker/containers/*/rootfs
+!/public
+!/src
+!.env
+!composer.json
+!composer.lock
+!symfony.lock

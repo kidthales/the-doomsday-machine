@@ -1,0 +1,5 @@
+APP_ENV="dev"
+COMPOSER_INSTALL_MODE="dev"
+FRANKENPHP_CONFIG=""
+PHP_INI_ENV="development"
+WITH_XDEBUG="true"
