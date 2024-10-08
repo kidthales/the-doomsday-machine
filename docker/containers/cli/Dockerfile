@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1
 
+FROM builder
 FROM cli-base AS cli
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
