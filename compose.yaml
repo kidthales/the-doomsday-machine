@@ -1,0 +1,94 @@
+services:
+  web:
+    restart: unless-stopped
+
+    environment:
+      PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-migrator}
+      POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-migrator}
+      POSTGRES_READER_USER: ${POSTGRES_READER_USER:-reader}
+      POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-reader}
+      POSTGRES_WRITER_USER: ${POSTGRES_WRITER_USER:-writer}
+      POSTGRES_WRITER_PASSWORD: ${POSTGRES_WRITER_PASSWORD:-writer}
+      SERVER_NAME: ${SERVER_NAME:-localhost}, web:80
+      TZ: ${APP_TIMEZONE:-UTC}
+
+    volumes:
+      - web_caddy_data:/data
+      - web_caddy_config:/config
+
+    ports:
+      # HTTP
+      - '80:80/tcp'
+      # HTTPS
+      - '443:443/tcp'
+      # HTTP/3
+      - '443:443/udp'
+
+    networks:
+      - web_layer
+      - data_layer
+
+  cli:
+    restart: unless-stopped
+
+    environment:
+      PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-migrator}
+      POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-migrator}
+      POSTGRES_READER_USER: ${POSTGRES_READER_USER:-reader}
+      POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-reader}
+      POSTGRES_WRITER_USER: ${POSTGRES_WRITER_USER:-writer}
+      POSTGRES_WRITER_PASSWORD: ${POSTGRES_WRITER_PASSWORD:-writer}
+      TZ: ${APP_TIMEZONE:-UTC}
+
+    #healthcheck:
+    #  test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', '"SELECT 1"' ]
+    #  timeout: 5s
+    #  retries: 5
+    #  start_period: 90s
+
+    networks:
+      - data_layer
+
+    tty: true
+
+  db:
+    image: postgres:${POSTGRES_VERSION:-17.0}-alpine${ALPINE_VERSION:-3.20}
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-migrator}
+      POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-migrator}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_READER_USER: ${POSTGRES_READER_USER:-reader}
+      POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-reader}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_WRITER_USER: ${POSTGRES_WRITER_USER:-writer}
+      POSTGRES_WRITER_PASSWORD: ${POSTGRES_WRITER_PASSWORD:-writer}
+      TZ: ${APP_TIMEZONE:-UTC}
+
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-d', '${POSTGRES_DB:-app}', '-U', '${POSTGRES_READER_USER:-reader}' ]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    volumes:
+      # Init
+      - ./docker/containers/db/rootfs/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+      # Data
+      - ./docker/volumes/db/data:/var/lib/postgresql/data:rw
+
+    networks:
+      - data_layer
+
+volumes:
+  web_caddy_data:
+  web_caddy_config:
+
+networks:
+  web_layer:
+  data_layer:
