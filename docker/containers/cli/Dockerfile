@@ -7,6 +7,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /
 
+# hadolint ignore=DL3008
 RUN set -eux; \
 	apt-get update && apt-get install -y --no-install-recommends \
 	bash \

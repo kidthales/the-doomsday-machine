@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1
 
+FROM composer-upstream AS composer
 FROM php-cli-upstream AS builder
 
 ARG app_env=prod
@@ -14,6 +15,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /
 
+# hadolint ignore=DL3008,SC2086
 RUN set -eux; \
 	# Timezone
 	ln -snf /usr/share/zoneinfo/${timezone} /etc/localtime && echo ${timezone} > /etc/timezone; \
@@ -34,7 +36,7 @@ RUN set -eux; \
 	docker-php-source delete;
 
 WORKDIR /usr/local/bin
-COPY --from=composer-upstream --chmod=555 /usr/bin/composer .
+COPY --from=composer --chmod=555 /usr/bin/composer .
 
 WORKDIR /app
 COPY --link --chmod=444 . ./

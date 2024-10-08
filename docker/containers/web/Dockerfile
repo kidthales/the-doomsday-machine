@@ -20,6 +20,7 @@ ENV FRANKENPHP_CONFIG='${frankenphp_config}'
 
 WORKDIR /
 
+# hadolint ignore=DL3008
 RUN set -eux; \
 	# Timezone
 	ln -snf /usr/share/zoneinfo/${timezone} /etc/localtime && echo ${timezone} > /etc/timezone; \
@@ -31,7 +32,7 @@ RUN set -eux; \
 	gettext; \
 	rm -rf /var/lib/apt/lists/*; \
 	# PHP extensions
-	if [ '${with_xdebug}' == true ]; then \
+	if [ ${with_xdebug} == true ]; then \
 		pecl install xdebug-${xdebug_version}; \
 		docker-php-ext-enable xdebug; \
 		docker-php-source delete; \
