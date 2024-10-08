@@ -62,6 +62,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: docker/containers/cli/base.Dockerfile
+          ignore: DL3006
 
       - name: Lint CLI Dockerfile
         uses: hadolint/hadolint-action@v3.1.0

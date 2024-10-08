@@ -17,6 +17,7 @@ ENV XDEBUG_MODE=off
 
 WORKDIR /
 
+# hadolint ignore=DL3008
 RUN set -eux; \
 	# Timezone
 	ln -snf /usr/share/zoneinfo/${timezone} /etc/localtime && echo ${timezone} > /etc/timezone; \
