@@ -53,7 +53,7 @@ services:
       TZ: ${APP_TIMEZONE:-UTC}
 
     healthcheck:
-      test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', '"SELECT 1"' ]
+      test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', 'SELECT 1' ]
       timeout: 5s
       retries: 5
       start_period: 90s

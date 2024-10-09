@@ -20,4 +20,4 @@ case "$PSQL_DOOM_USER" in
 		;;
 esac
 
-psql "postgresql://$PSQL_DOOM_USER:$PSQL_DOOM_PASS@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-17}&charset=${POSTGRES_CHARSET:-utf8}"
+psql "postgresql://$PSQL_DOOM_USER:$PSQL_DOOM_PASS@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-app}"
