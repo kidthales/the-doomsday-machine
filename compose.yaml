@@ -52,11 +52,11 @@ services:
       POSTGRES_VERSION: ${POSTGRES_VERSION:-17}
       TZ: ${APP_TIMEZONE:-UTC}
 
-    #healthcheck:
-    #  test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', 'SELECT 1' ]
-    #  timeout: 5s
-    #  retries: 5
-    #  start_period: 90s
+    healthcheck:
+      test: [ 'CMD', 'ls', '/' ]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
     networks:
       - data_layer
