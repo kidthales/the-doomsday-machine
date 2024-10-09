@@ -39,9 +39,10 @@ WORKDIR /usr/local/bin
 COPY --from=composer --chmod=555 /usr/bin/composer .
 
 WORKDIR /app
-COPY --link --chmod=444 . ./
+COPY --link . ./
 
 RUN set -eux; \
+	rm -rf docker; \
 	mkdir -p var/cache var/log; \
 	case ${composer_install_mode} in \
 		skip) \

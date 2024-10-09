@@ -16,7 +16,7 @@ SYMFONY  = $(PHP) bin/console
 
 # Misc
 .DEFAULT_GOAL = help
-.PHONY        : help build up down config logs cli composer vendor sf cc
+.PHONY        : help build up down config logs bash psql composer vendor sf cc
 
 ## —— 💣 ☢️ The Doomsday Machine Makefile ☢️ 💣 ————————————————————————————————
 help: ## Outputs this help screen
@@ -29,20 +29,24 @@ build: ## Builds the Docker images for local development. Pass the parameter "c=
 
 up: ## Start the docker compose stack. Pass the parameter "c=" to add options to docker compose up; example: make up c="--detach"
 	@$(eval c ?=)
-	@$(DOCKER_COMP) --env-file .env.local up $(c)
+	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local up $(c)
 
 down: ## Stop the docker compose stack. Pass the parameter "c=" to add options to docker compose down; example: make up c="--remove-orphans"
 	@$(eval c ?=)
-	@$(DOCKER_COMP) --env-file .env.local down $(c)
+	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local down $(c)
 
 config: ## Show the docker compose configuration
-	@$(DOCKER_COMP) --env-file .env.local config
+	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local config
 
 logs: ## Show live logs
 	@$(DOCKER_COMP) logs --tail=0 --follow
 
-cli: ## Execute an interactive bash shell on the cli container
+bash: ## Execute an interactive bash shell on the cli container
 	@$(CLI_CONT) bash
+
+psql: ## Execute an interactive psql client on the cli container. Pass the parameter "c=" to specify the user; example: make psql c="writer"
+	@$(eval c ?=)
+	@$(CLI_CONT) psql-doom $(c)
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
 composer: ## Run composer. Pass the parameter "c=" to run a given command; example: make composer c='req symfony/orm-pack'

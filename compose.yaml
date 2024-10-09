@@ -4,12 +4,17 @@ services:
 
     environment:
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      POSTGRES_CHARSET: ${POSTGRES_CHARSET:-utf8}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-migrator}
       POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-migrator}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       POSTGRES_READER_USER: ${POSTGRES_READER_USER:-reader}
       POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-reader}
       POSTGRES_WRITER_USER: ${POSTGRES_WRITER_USER:-writer}
       POSTGRES_WRITER_PASSWORD: ${POSTGRES_WRITER_PASSWORD:-writer}
+      POSTGRES_VERSION: ${POSTGRES_VERSION:-17}
       SERVER_NAME: ${SERVER_NAME:-localhost}, web:80
       TZ: ${APP_TIMEZONE:-UTC}
 
@@ -34,19 +39,24 @@ services:
 
     environment:
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      POSTGRES_CHARSET: ${POSTGRES_CHARSET:-utf8}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_MIGRATOR_USER: ${POSTGRES_MIGRATOR_USER:-migrator}
       POSTGRES_MIGRATOR_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD:-migrator}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       POSTGRES_READER_USER: ${POSTGRES_READER_USER:-reader}
       POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-reader}
       POSTGRES_WRITER_USER: ${POSTGRES_WRITER_USER:-writer}
       POSTGRES_WRITER_PASSWORD: ${POSTGRES_WRITER_PASSWORD:-writer}
+      POSTGRES_VERSION: ${POSTGRES_VERSION:-17}
       TZ: ${APP_TIMEZONE:-UTC}
 
-    #healthcheck:
-    #  test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', '"SELECT 1"' ]
-    #  timeout: 5s
-    #  retries: 5
-    #  start_period: 90s
+    healthcheck:
+      test: [ 'CMD', 'php', 'bin/console', 'dbal:run-sql', '-q', 'SELECT 1' ]
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
     networks:
       - data_layer

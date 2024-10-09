@@ -1,0 +1,124 @@
+doctrine:
+    dbal:
+        default_connection: writer
+
+        connections:
+            reader:
+                user: '%env(resolve:POSTGRES_READER_USER)%'
+                password: '%env(resolve:POSTGRES_READER_PASSWORD)%'
+                host: '%env(resolve:POSTGRES_HOST)%'
+                port: '%env(resolve:POSTGRES_PORT)%'
+                dbname: '%env(resolve:POSTGRES_DB)%'
+                driver: pdo_pgsql
+                server_version: '%env(resolve:POSTGRES_VERSION)%'
+                charset: '%env(resolve:POSTGRES_CHARSET)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
+
+            writer:
+                user: '%env(resolve:POSTGRES_WRITER_USER)%'
+                password: '%env(resolve:POSTGRES_WRITER_PASSWORD)%'
+                host: '%env(resolve:POSTGRES_HOST)%'
+                port: '%env(resolve:POSTGRES_PORT)%'
+                dbname: '%env(resolve:POSTGRES_DB)%'
+                driver: pdo_pgsql
+                server_version: '%env(resolve:POSTGRES_VERSION)%'
+                charset: '%env(resolve:POSTGRES_CHARSET)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
+
+            migrator:
+                user: '%env(resolve:POSTGRES_MIGRATOR_USER)%'
+                password: '%env(resolve:POSTGRES_MIGRATOR_PASSWORD)%'
+                host: '%env(resolve:POSTGRES_HOST)%'
+                port: '%env(resolve:POSTGRES_PORT)%'
+                dbname: '%env(resolve:POSTGRES_DB)%'
+                driver: pdo_pgsql
+                server_version: '%env(resolve:POSTGRES_VERSION)%'
+                charset: '%env(resolve:POSTGRES_CHARSET)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
+
+    orm:
+        auto_generate_proxy_classes: true
+
+        enable_lazy_ghost_objects: true
+
+        controller_resolver:
+            # true is deprecated
+            auto_mapping: false
+
+        default_entity_manager: writer
+
+        entity_managers:
+            # Note: \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository seems to use the first manager in
+            # this list that matches the mapping dir/prefix? Anyway, we put our default_entity_manager first.
+            writer:
+                connection: writer
+                report_fields_where_declared: true
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                auto_mapping: true
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity/Orm'
+                        prefix: 'App\Entity\Orm'
+                        alias: App
+
+            reader:
+                connection: reader
+                report_fields_where_declared: true
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity/Orm'
+                        prefix: 'App\Entity\Orm'
+                        alias: App
+
+            migrator:
+                connection: migrator
+                report_fields_where_declared: true
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity/Orm'
+                        prefix: 'App\Entity\Orm'
+                        alias: App
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+
+                doctrine.system_cache_pool:
+                    adapter: cache.system

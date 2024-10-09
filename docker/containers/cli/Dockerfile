@@ -15,6 +15,14 @@ RUN set -eux; \
 	postgresql-client-15; \
 	rm -rf /var/lib/apt/lists/*;
 
+COPY --link --chmod=444 docker/containers/cli/rootfs ./
+
+WORKDIR /usr/local/bin
+RUN set -eux; \
+	chmod 555 init-doom.sh psql-doom.sh; \
+	ln -s init-doom.sh init-doom; \
+	ln -s psql-doom.sh psql-doom;
+
 WORKDIR /usr/local/bin
 COPY --from=builder --chmod=555 /usr/local/bin/composer .
 
