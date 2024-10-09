@@ -27,4 +27,4 @@ WORKDIR /usr/local/bin
 COPY --from=builder --chmod=555 /usr/local/bin/composer .
 
 WORKDIR /app
-COPY --from=builder --chmod=444 /app ./
+COPY --from=builder /app ./

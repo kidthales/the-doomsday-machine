@@ -63,7 +63,7 @@ WORKDIR /usr/local/lib/php/extensions/no-debug-zts-${php_extensions_timestamp}
 COPY --from=builder --chmod=444 /usr/local/lib/php/extensions/no-debug-zts-${php_extensions_timestamp}/*.so .
 
 WORKDIR /app
-COPY --from=builder --chmod=444 /app ./
+COPY --from=builder /app ./
 
 ENTRYPOINT ["docker-entrypoint"]
 
