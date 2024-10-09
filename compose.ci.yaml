@@ -1,0 +1,22 @@
+services:
+  web:
+    image: ${IMAGES_PREFIX:-the-doomsday-machine:}web-dev-latest
+
+    environment:
+      # See https://xdebug.org/docs/all_settings#mode
+      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+
+  cli:
+    image: ${IMAGES_PREFIX:-the-doomsday-machine:}cli-dev-latest
+
+    environment:
+      # See https://xdebug.org/docs/all_settings#mode
+      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+
+    command: ['init-doom']

@@ -1,0 +1,6 @@
+APP_ENV="dev"
+COMPOSER_INSTALL_MODE="skip"
+FRANKENPHP_CONFIG=""
+IMAGES_TAG="local"
+PHP_INI_ENV="development"
+WITH_XDEBUG="true"

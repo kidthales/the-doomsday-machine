@@ -25,18 +25,18 @@ help: ## Outputs this help screen
 ## —— Docker 🐳 ————————————————————————————————————————————————————————————————
 build: ## Builds the Docker images for local development. Pass the parameter "c=" to add options to docker buildx bake; example: make build c="--no-cache --pull"
 	@$(eval c ?=)
-	@$(DOCKER_X) bake -f docker/bake.hcl -f docker/env.local.hcl $(c)
+	@$(DOCKER_X) bake -f docker/bake.hcl -f docker/env.override.hcl $(c)
 
 up: ## Start the docker compose stack. Pass the parameter "c=" to add options to docker compose up; example: make up c="--detach"
 	@$(eval c ?=)
-	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local up $(c)
+	@$(DOCKER_COMP) --env-file .env.local up $(c)
 
 down: ## Stop the docker compose stack. Pass the parameter "c=" to add options to docker compose down; example: make up c="--remove-orphans"
 	@$(eval c ?=)
-	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local down $(c)
+	@$(DOCKER_COMP) --env-file .env.local down $(c)
 
 config: ## Show the docker compose configuration
-	@$(DOCKER_COMP) -f compose.yaml -f compose.override.yaml -f compose.local.yaml --env-file .env.local config
+	@$(DOCKER_COMP) --env-file .env.local config
 
 logs: ## Show live logs
 	@$(DOCKER_COMP) logs --tail=0 --follow
