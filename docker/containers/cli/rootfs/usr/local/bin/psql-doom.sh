@@ -15,6 +15,7 @@ case "$PSQL_DOOM_USER" in
 		PSQL_DOOM_PASS="${POSTGRES_MIGRATOR_PASSWORD:-migrator}"
 		;;
 	*)
+		printf 'Invalid user: %s\n' "$PSQL_DOOM_USER" >&2
 		exit 1
 		;;
 esac
