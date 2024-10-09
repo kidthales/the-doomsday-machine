@@ -42,6 +42,7 @@ WORKDIR /app
 COPY --link . ./
 
 RUN set -eux; \
+	rm -rf docker; \
 	mkdir -p var/cache var/log; \
 	case ${composer_install_mode} in \
 		skip) \

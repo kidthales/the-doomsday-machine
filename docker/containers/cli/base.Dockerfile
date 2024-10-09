@@ -47,7 +47,4 @@ COPY --from=builder --chmod=444 /usr/local/lib/php/extensions/no-debug-zts-${php
 WORKDIR /app
 COPY --from=builder /app ./
 
-#RUN set -eux; \
-#	chmod +x bin/console;
-
 VOLUME /app/var

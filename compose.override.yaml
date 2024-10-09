@@ -6,12 +6,7 @@ services:
       # See https://xdebug.org/docs/all_settings#mode
       XDEBUG_MODE: "${XDEBUG_MODE:-off}"
 
-    volumes:
-      - ./:/app
-      - ./docker/containers/web/rootfs/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./docker/containers/web/rootfs/usr/local/etc/php/app.conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
-
-    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch"]
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 
     extra_hosts:
       # Ensure that host.docker.internal is correctly defined on Linux
@@ -23,8 +18,5 @@ services:
     environment:
       # See https://xdebug.org/docs/all_settings#mode
       XDEBUG_MODE: "${XDEBUG_MODE:-off}"
-
-    volumes:
-      - ./:/app
 
     command: ['init-doom', 'migrate']
