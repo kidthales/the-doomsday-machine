@@ -16,7 +16,7 @@ SYMFONY  = $(PHP) bin/console
 
 # Misc
 .DEFAULT_GOAL = help
-.PHONY        : help build up down config logs cli composer vendor sf cc
+.PHONY        : help build up down config logs bash psql composer vendor sf cc
 
 ## —— 💣 ☢️ The Doomsday Machine Makefile ☢️ 💣 ————————————————————————————————
 help: ## Outputs this help screen
@@ -41,8 +41,12 @@ config: ## Show the docker compose configuration
 logs: ## Show live logs
 	@$(DOCKER_COMP) logs --tail=0 --follow
 
-cli: ## Execute an interactive bash shell on the cli container
+bash: ## Execute an interactive bash shell on the cli container
 	@$(CLI_CONT) bash
+
+psql: ## Execute an interactive psql client on the cli container. Pass the parameter "c=" to specify the user; example: make psql c="writer"
+	@$(eval c ?=)
+	@$(CLI_CONT) psql-doom $(c)
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
 composer: ## Run composer. Pass the parameter "c=" to run a given command; example: make composer c='req symfony/orm-pack'
