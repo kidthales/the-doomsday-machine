@@ -27,4 +27,4 @@ services:
     volumes:
       - ./:/app
 
-    command: ['sleep', 'infinity'] # TODO: wait for db...
+    command: ['init-doom', 'migrate']

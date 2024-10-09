@@ -19,7 +19,8 @@ COPY --link --chmod=444 docker/containers/cli/rootfs ./
 
 WORKDIR /usr/local/bin
 RUN set -eux; \
-	chmod 555 psql-doom.sh; \
+	chmod 555 init-doom.sh psql-doom.sh; \
+	ln -s init-doom.sh init-doom; \
 	ln -s psql-doom.sh psql-doom;
 
 WORKDIR /usr/local/bin
