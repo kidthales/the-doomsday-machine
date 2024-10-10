@@ -51,7 +51,10 @@ jobs:
 
       - name: Run PHPUnit
         run: docker compose exec -T -e APP_ENV=test -e XDEBUG_MODE=coverage cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
-        
+
+      - name: Copy Coverage To Host
+        run: docker cp the-doomsday-machine-cli-1:/app/coverage/ ./coverage && docker cp the-doomsday-machine-cli-1:/app/clover.xml .
+
       - name: Make Coverage Badge
         uses: timkrase/phpunit-coverage-badge@v1.2.1
         if: github.ref == 'refs/heads/main'
@@ -59,7 +62,7 @@ jobs:
           coverage_badge_path: coverage/coverage.svg
           push_badge: false
 
-      - name: Persist Coverage Badge
+      - name: Persist Coverage
         uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main'
         with:
