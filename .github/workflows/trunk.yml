@@ -19,7 +19,7 @@ jobs:
     name: CI
 
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,6 +53,7 @@ jobs:
         run: docker compose exec -T -e APP_ENV=test -e XDEBUG_MODE=coverage cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
 
       - name: Copy Coverage To Host
+        if: github.ref == 'refs/heads/main'
         run: docker cp the-doomsday-machine-cli-1:/app/coverage/ ./coverage && docker cp the-doomsday-machine-cli-1:/app/clover.xml .
 
       - name: Make Coverage Badge
