@@ -63,8 +63,8 @@ doctrine:
                     App:
                         type: attribute
                         is_bundle: false
-                        dir: '%kernel.project_dir%/src/Entity/Orm'
-                        prefix: 'App\Entity\Orm'
+                        dir: '%kernel.project_dir%/src/Entity/ORM'
+                        prefix: 'App\Entity\ORM'
                         alias: App
 
             reader:
@@ -76,8 +76,8 @@ doctrine:
                     App:
                         type: attribute
                         is_bundle: false
-                        dir: '%kernel.project_dir%/src/Entity/Orm'
-                        prefix: 'App\Entity\Orm'
+                        dir: '%kernel.project_dir%/src/Entity/ORM'
+                        prefix: 'App\Entity\ORM'
                         alias: App
 
             migrator:
@@ -89,8 +89,8 @@ doctrine:
                     App:
                         type: attribute
                         is_bundle: false
-                        dir: '%kernel.project_dir%/src/Entity/Orm'
-                        prefix: 'App\Entity\Orm'
+                        dir: '%kernel.project_dir%/src/Entity/ORM'
+                        prefix: 'App\Entity\ORM'
                         alias: App
 
 when@test:

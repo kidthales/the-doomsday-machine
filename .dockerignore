@@ -5,7 +5,10 @@
 !/migrations
 !/public
 !/src
+!/tests
 !.env
+!.env.test
 !composer.json
 !composer.lock
+!phpunit.xml.dist
 !symfony.lock

@@ -24,6 +24,9 @@ fi
 
 if [ "${1:-''}" = migrate ] && [ "$( find ./migrations -iname '*.php' -print -quit )" ]; then
 	php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+
+	php bin/console -e test doctrine:database:create --connection migrator --if-not-exists
+	php bin/console -e test doctrine:migrations:migrate --no-interaction --all-or-nothing
 fi
 
 sleep infinity
