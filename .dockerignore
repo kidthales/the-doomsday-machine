@@ -2,6 +2,7 @@
 !/bin
 !/config
 !/docker/containers/*/rootfs
+!/migrations
 !/public
 !/src
 !.env
