@@ -96,8 +96,15 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            connections:
+                reader:
+                    dbname: '%env(resolve:POSTGRES_DB)%_test'
+
+                writer:
+                    dbname: '%env(resolve:POSTGRES_DB)%_test'
+
+                migrator:
+                    dbname: '%env(resolve:POSTGRES_DB)%_test'
 
 when@prod:
     doctrine:
