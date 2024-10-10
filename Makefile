@@ -16,7 +16,7 @@ SYMFONY  = $(PHP) bin/console
 
 # Misc
 .DEFAULT_GOAL = help
-.PHONY        : help build up down config logs bash psql composer vendor sf cc
+.PHONY        : help build up down config logs bash psql test cov composer vendor sf cc
 
 ## —— 💣 ☢️ The Doomsday Machine Makefile ☢️ 💣 ————————————————————————————————
 help: ## Outputs this help screen
@@ -47,6 +47,13 @@ bash: ## Execute an interactive bash shell on the cli container
 psql: ## Execute an interactive psql client on the cli container. Pass the parameter "c=" to specify the user; example: make psql c="writer"
 	@$(eval c ?=)
 	@$(CLI_CONT) psql-doom $(c)
+
+test: ## Start tests with phpunit, pass the parameter "c=" to add options to phpunit, example: make test c="--group e2e --stop-on-failure"
+	@$(eval c ?=)
+	@$(DOCKER_COMP) exec -e APP_ENV=test -e XDEBUG_MODE=coverage cli bin/phpunit $(c)
+
+cov: ## Start tests with phpunit, and generates a coverage report for the entire project
+	@$(MAKE) test c='--coverage-text --coverage-html coverage'
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
 composer: ## Run composer. Pass the parameter "c=" to run a given command; example: make composer c='req symfony/orm-pack'

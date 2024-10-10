@@ -49,6 +49,9 @@ jobs:
       - name: Run migrations
         run: docker compose exec -T cli bin/console -e test doctrine:migrations:migrate --no-interaction
 
+      - name: Run PHPUnit
+        run: docker compose exec -T cli bin/phpunit
+
   lint:
     name: Lint
 

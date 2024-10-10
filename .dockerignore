@@ -5,6 +5,7 @@
 !/migrations
 !/public
 !/src
+!/tests
 !.env
 !composer.json
 !composer.lock
