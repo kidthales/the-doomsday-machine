@@ -50,7 +50,7 @@ jobs:
         run: docker compose exec -T cli bin/console -e test doctrine:migrations:migrate --no-interaction
 
       - name: Run PHPUnit
-        run: docker compose exec -T cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
+        run: docker compose exec -T -e APP_ENV=test -e XDEBUG_MODE=coverage cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
         
       - name: Make Coverage Badge
         uses: timkrase/phpunit-coverage-badge@v1.2.1
