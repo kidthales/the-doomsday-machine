@@ -12,7 +12,8 @@ WORKDIR /
 RUN set -eux; \
 	apt-get update && apt-get install -y --no-install-recommends \
 	bash \
-	postgresql-client-15; \
+	postgresql-client-15 \
+	unzip; \
 	rm -rf /var/lib/apt/lists/*;
 
 COPY --link --chmod=444 docker/containers/cli/rootfs ./
