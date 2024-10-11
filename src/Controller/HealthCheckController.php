@@ -68,9 +68,9 @@ final class HealthCheckController extends AbstractController
                     $this->migratorConnection
                 ),
                 new HttpHealthChecker(
-                    new CheckDetails('ExternalHttp', true),
+                    new CheckDetails('DiscordHttp', true),
                     $this->httpClient,
-                    new \GuzzleHttp\Psr7\Request('GET', 'https://www.google.com')
+                    new \GuzzleHttp\Psr7\Request('GET', 'https://discord.com')
                 )
             ],
             $psr17Factory,
