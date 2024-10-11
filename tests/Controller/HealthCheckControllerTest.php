@@ -28,6 +28,7 @@ final class HealthCheckControllerTest extends KernelTestCase
         $actual = json_decode($response->getContent(), true);
 
         self::assertSame('pass', $actual['status']);
+        self::assertIsArray($actual['checks']);
         self::assertNotEmpty($actual['checks']);
     }
 }
