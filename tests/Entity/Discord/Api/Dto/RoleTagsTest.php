@@ -5,6 +5,9 @@ namespace App\Tests\Entity\Discord\Api\Dto;
 use App\Entity\Discord\Api\Dto\RoleTags;
 use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 
+/**
+ * @covers \App\Entity\Discord\Api\Dto\RoleTags
+ */
 class RoleTagsTest extends AbstractSerializableSubjectTestCase
 {
     /**
