@@ -7,6 +7,9 @@ use App\Entity\Discord\Api\Enumeration\MembershipState;
 use App\Entity\Discord\Api\Enumeration\TeamMemberRole;
 use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 
+/**
+ * @covers \App\Entity\Discord\Api\Dto\TeamMember
+ */
 class TeamMemberTest extends AbstractSerializableSubjectTestCase
 {
     /**
