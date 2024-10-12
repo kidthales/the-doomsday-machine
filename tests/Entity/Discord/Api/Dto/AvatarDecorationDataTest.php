@@ -29,7 +29,7 @@ final class AvatarDecorationDataTest extends AbstractSerializableSubjectTestCase
         return [
             [
                 '{"asset":"test-asset","sku_id":"test-sku-id"}',
-                new AvatarDecorationData('test-asset', 'test-sku-id')
+                new AvatarDecorationData(asset: 'test-asset', sku_id: 'test-sku-id')
             ]
         ];
     }
