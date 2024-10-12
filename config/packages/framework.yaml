@@ -12,7 +12,7 @@ framework:
     http_client:
         default_options:
             headers:
-                User-Agent: TheDoomsdayMachine/7XL
+                User-Agent: TheDoomsdayMachine/latest
 
         scoped_clients:
             discord_api.client:
@@ -21,6 +21,7 @@ framework:
                 headers:
                     Accept: 'application/json'
                     Authorization: 'Bot %env(DISCORD_APP_BOT_TOKEN)%'
+                    User-Agent: 'TheDoomsdayMachine (https://github.com/kidthales/the-doomsday-machine, latest)'
 
 when@test:
     framework:

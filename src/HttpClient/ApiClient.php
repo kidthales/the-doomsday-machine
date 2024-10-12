@@ -72,7 +72,7 @@ class ApiClient
 
         $response = $this->httpClient->request(
             $endpointClass::getRequestMethod(),
-            $endpoint->getRequestPath(),
+            $this->getEndpointRequestPath($endpoint),
             $options
         );
 
@@ -93,5 +93,14 @@ class ApiClient
         }
 
         return $responseBodyType === null ? null : $response->getContent();
+    }
+
+    /**
+     * @param ApiEndpointInterface $endpoint
+     * @return string
+     */
+    protected function getEndpointRequestPath(ApiEndpointInterface $endpoint): string
+    {
+        return $endpoint->getRequestPath();
     }
 }
