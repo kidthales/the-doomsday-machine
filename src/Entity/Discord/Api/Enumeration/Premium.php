@@ -5,7 +5,7 @@ namespace App\Entity\Discord\Api\Enumeration;
 /**
  * @see https://discord.com/developers/docs/resources/user#user-object-premium-types
  */
-enum PremiumTypes: int
+enum Premium: int
 {
     case None = 0;
     case NitroClassic = 1;

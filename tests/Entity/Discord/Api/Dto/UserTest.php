@@ -2,9 +2,8 @@
 
 namespace App\Tests\Entity\Discord\Api\Dto;
 
-use App\Entity\Discord\Api\Dto\AvatarDecorationData;
 use App\Entity\Discord\Api\Dto\User;
-use App\Entity\Discord\Api\Enumeration\PremiumTypes;
+use App\Entity\Discord\Api\Enumeration\Premium;
 use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 
 /**
@@ -51,35 +50,37 @@ class UserTest extends AbstractSerializableSubjectTestCase
     {
         $subjectTemplate = '{"id":"test-id","username":"test-username","discriminator":"test-discriminator","global_name":%s,"avatar":%s%s}';
 
-        $baseExpected = new User(
-            id: 'test-id',
-            username: 'test-username',
-            discriminator: 'test-discriminator',
-            global_name: null,
-            avatar: null
-        );
+        $data = [];
 
-        $withPremiumType = clone $baseExpected;
-        $withPremiumType->premium_type = PremiumTypes::Nitro;
-
-        $withAvatarDecorationData = clone $baseExpected;
-        $withAvatarDecorationData->avatar_decoration_data = new AvatarDecorationData(
-            asset: 'test-asset',
-            sku_id: 'test-sku-id'
-        );
+        foreach (AvatarDecorationDataTest::provider_deserialization() as [$avatarDecorationDataTemplate, $avatarDecorationDataExpected]) {
+            foreach (Premium::cases() as $premium) {
+                $data[] = [
+                    sprintf($subjectTemplate, 'null', 'null', ',"premium_type":' . $premium->value . ',"avatar_decoration_data":' . $avatarDecorationDataTemplate),
+                    new User(
+                        id: 'test-id',
+                        username: 'test-username',
+                        discriminator: 'test-discriminator',
+                        global_name: null,
+                        avatar: null,
+                        premium_type: $premium,
+                        avatar_decoration_data: $avatarDecorationDataExpected
+                    )
+                ];
+            }
+        }
 
         return [
-            [sprintf($subjectTemplate, 'null', 'null', ''), $baseExpected],
-            [sprintf($subjectTemplate, 'null', 'null', ',"premium_type":2'), $withPremiumType],
             [
-                sprintf(
-                    $subjectTemplate,
-                    'null',
-                    'null',
-                    ',"avatar_decoration_data":{"asset":"test-asset","sku_id":"test-sku-id"}'
-                ),
-                $withAvatarDecorationData
-            ]
+                sprintf($subjectTemplate, 'null', 'null', ''),
+                new User(
+                    id: 'test-id',
+                    username: 'test-username',
+                    discriminator: 'test-discriminator',
+                    global_name: null,
+                    avatar: null
+                )
+            ],
+            ...$data
         ];
     }
 
