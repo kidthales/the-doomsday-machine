@@ -38,11 +38,11 @@ class TeamTest extends AbstractSerializableSubjectTestCase
         $subjectTemplate = '{"icon":%s,"id":"test-id","members":[%s],"name":"test-name","owner_user_id":"test-owner-user-id"}';
 
         $teamMemberTemplates = [];
-        $teamMemberExpecteds = [];
+        $teamMembersExpected = [];
 
         foreach (TeamMemberTest::provider_deserialization() as [$teamMemberTemplate, $teamMemberExpected]) {
             $teamMemberTemplates[] = $teamMemberTemplate;
-            $teamMemberExpecteds[] = $teamMemberExpected;
+            $teamMembersExpected[] = $teamMemberExpected;
         }
 
         return [
@@ -55,7 +55,7 @@ class TeamTest extends AbstractSerializableSubjectTestCase
                 new Team(
                     icon: 'test-icon',
                     id: 'test-id',
-                    members: $teamMemberExpecteds,
+                    members: $teamMembersExpected,
                     name: 'test-name',
                     owner_user_id: 'test-owner-user-id'
                 )
