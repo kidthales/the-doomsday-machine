@@ -96,6 +96,81 @@ class ApiClientTest extends KernelTestCase
                 new class extends AbstractJsonApiEndpoint {
                     public static function getRequestMethod(): string
                     {
+                        return 'GET';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return null;
+                    }
+
+                    public function getRequestHeaders(): array
+                    {
+                        return ['Accept' => 'text/plain'];
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://httpstat.us/200';
+                    }
+
+                    public function getRequestQueryParameters(): array
+                    {
+                        return ['sleep' => 500];
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return null;
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return false;
+                    }
+                },
+                null,
+                200
+            ],
+            [
+                new class extends AbstractJsonApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
+                        return 'GET';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return null;
+                    }
+
+                    public function getRequestHeaders(): array
+                    {
+                        return ['Accept' => 'text/plain'];
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://httpstat.us/200';
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return null;
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return false;
+                    }
+                },
+                null,
+                200
+            ],
+            [
+                new class extends AbstractJsonApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
                         return 'POST';
                     }
 
@@ -112,6 +187,41 @@ class ApiClientTest extends KernelTestCase
                     public function getRequestPath(): string
                     {
                         return 'https://jsonplaceholder.typicode.com/posts';
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return null;
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return true;
+                    }
+                },
+                ['title' => 'test-title', 'body' => 'test-body', 'userId' => 1, 'id' => 101],
+                201
+            ],
+            [
+                new class extends AbstractJsonApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
+                        return 'POST';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return ['title' => 'test-title', 'body' => 'test-body', 'userId' => 1];
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://jsonplaceholder.typicode.com/posts';
+                    }
+
+                    public function getRequestQueryParameters(): array
+                    {
+                        return ['sleep' => 500];
                     }
 
                     public function getResponseBodyType(): ?string
@@ -174,9 +284,89 @@ class ApiClientTest extends KernelTestCase
                         return ['test-field' => 'test-value'];
                     }
 
+                    public function getRequestHeaders(): array
+                    {
+                        return ['Accept' => 'application/json'];
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://httpstat.us/201';
+                    }
+
+                    public function getRequestQueryParameters(): array
+                    {
+                        return ['sleep' => 500];
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return null;
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return true;
+                    }
+                },
+                ['code' => 201, 'description' => 'Created'],
+                201
+            ],
+            [
+                new class extends AbstractApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
+                        return 'POST';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return ['test-field' => 'test-value'];
+                    }
+
                     public function getRequestContentType(): string
                     {
                         return 'multipart/form-data';
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://httpstat.us/204';
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return null;
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return true;
+                    }
+                },
+                null,
+                204
+            ],
+            [
+                new class extends AbstractApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
+                        return 'POST';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return ['test-field' => 'test-value'];
+                    }
+
+                    public function getRequestContentType(): string
+                    {
+                        return 'multipart/form-data';
+                    }
+
+                    public function getRequestHeaders(): array
+                    {
+                        return ['Accept' => 'text/plain'];
                     }
 
                     public function getRequestPath(): string
@@ -231,6 +421,41 @@ class ApiClientTest extends KernelTestCase
                 },
                 new TestResponseBody('test-title', 'test-body', 1, 101),
                 201
+            ],
+            [
+                new class extends AbstractApiEndpoint {
+                    public static function getRequestMethod(): string
+                    {
+                        return 'GET';
+                    }
+
+                    public function getRequestBody(): mixed
+                    {
+                        return null;
+                    }
+
+                    public function getRequestContentType(): string
+                    {
+                        return 'text/plain';
+                    }
+
+                    public function getRequestPath(): string
+                    {
+                        return 'https://www.google.com';
+                    }
+
+                    public function getResponseBodyType(): ?string
+                    {
+                        return 'text/html';
+                    }
+
+                    public function hasRequestBody(): bool
+                    {
+                        return false;
+                    }
+                },
+                '__html',
+                200
             ]
         ];
     }
@@ -269,6 +494,9 @@ class ApiClientTest extends KernelTestCase
             self::assertSame($expected->title, $actual->title);
             self::assertSame($expected->body, $actual->body);
             self::assertSame($expected->userId, $actual->userId);
+        } else if ($expected === '__html') {
+            self::assertIsString($actual);
+            self::assertNotEmpty($actual);
         } else {
             self::assertSame($expected, $actual);
         }

@@ -51,16 +51,15 @@ class ApiClient
 
         $options[$key] = $endpoint->getRequestBody();
 
-        if (
-            $requestContentType !== 'application/x-www-form-urlencoded' &&
-            $requestContentType !== 'application/json'
-        ) {
-            if (!isset($options['headers'])) {
-                $options['headers'] = [];
-            }
-
-            $options['headers']['Content-Type'] = $requestContentType;
+        if (in_array($requestContentType, ['application/json', 'application/x-www-form-urlencoded'])) {
+            return;
         }
+
+        if (!isset($options['headers'])) {
+            $options['headers'] = [];
+        }
+
+        $options['headers']['Content-Type'] = $requestContentType;
     }
 
     /**
