@@ -2,7 +2,7 @@
 
 namespace App\Entity\Discord\Api\Dto;
 
-use App\Entity\Discord\Api\Enumeration\Premium;
+use App\Entity\Discord\Api\Enumeration\PremiumType;
 
 /**
  * @see https://discord.com/developers/docs/resources/user#user-object-user-structure
@@ -25,7 +25,7 @@ class User
      * @param bool|null $verified Whether the email on this account has been verified.
      * @param string|null $email The user's email.
      * @param int|null $flags The flags on a user's account.
-     * @param Premium|null $premium_type The type of Nitro subscription on a user's account.
+     * @param PremiumType|null $premium_type The type of Nitro subscription on a user's account.
      * @param int|null $public_flags The public flags on a user's account.
      * @param AvatarDecorationData|null $avatar_decoration_data Data for the user's avatar decoration.
      */
@@ -44,7 +44,7 @@ class User
         public ?bool                 $verified = null,
         public ?string               $email = null,
         public ?int                  $flags = null,
-        public ?Premium              $premium_type = null,
+        public ?PremiumType          $premium_type = null,
         public ?int                  $public_flags = null,
         public ?AvatarDecorationData $avatar_decoration_data = null
     )

@@ -8,7 +8,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\Role
  */
-class RoleTest extends AbstractSerializableSubjectTestCase
+final class RoleTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param Role $expected

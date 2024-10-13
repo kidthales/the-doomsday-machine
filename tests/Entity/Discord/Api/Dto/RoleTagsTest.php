@@ -8,7 +8,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\RoleTags
  */
-class RoleTagsTest extends AbstractSerializableSubjectTestCase
+final class RoleTagsTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param RoleTags $expected

@@ -8,7 +8,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\Emoji
  */
-class EmojiTest extends AbstractSerializableSubjectTestCase
+final class EmojiTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param Emoji $expected

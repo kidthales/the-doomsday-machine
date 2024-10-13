@@ -8,7 +8,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\WelcomeScreenChannel
  */
-class WelcomeScreenChannelTest extends AbstractSerializableSubjectTestCase
+final class WelcomeScreenChannelTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param WelcomeScreenChannel $expected

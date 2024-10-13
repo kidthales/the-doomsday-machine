@@ -3,13 +3,13 @@
 namespace App\Tests\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Dto\User;
-use App\Entity\Discord\Api\Enumeration\Premium;
+use App\Entity\Discord\Api\Enumeration\PremiumType;
 use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 
 /**
  * @covers \App\Entity\Discord\Api\Dto\User
  */
-class UserTest extends AbstractSerializableSubjectTestCase
+final class UserTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param User $expected
@@ -53,7 +53,7 @@ class UserTest extends AbstractSerializableSubjectTestCase
         $data = [];
 
         foreach (AvatarDecorationDataTest::provider_deserialization() as [$avatarDecorationDataTemplate, $avatarDecorationDataExpected]) {
-            foreach (Premium::cases() as $premium) {
+            foreach (PremiumType::cases() as $premium) {
                 $data[] = [
                     sprintf($subjectTemplate, 'null', 'null', ',"premium_type":' . $premium->value . ',"avatar_decoration_data":' . $avatarDecorationDataTemplate),
                     new User(

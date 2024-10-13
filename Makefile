@@ -53,7 +53,7 @@ test: ## Start tests with phpunit, pass the parameter "c=" to add options to php
 	@$(DOCKER_COMP) exec -e APP_ENV=test -e XDEBUG_MODE=coverage cli bin/phpunit $(c)
 
 cov: ## Start tests with phpunit, and generates a coverage report for the entire project
-	@$(MAKE) test c='--coverage-text --coverage-html coverage'
+	@$(MAKE) test c='--path-coverage --coverage-text --coverage-html coverage'
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
 composer: ## Run composer. Pass the parameter "c=" to run a given command; example: make composer c='req symfony/orm-pack'

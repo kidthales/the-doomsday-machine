@@ -10,7 +10,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\TeamMember
  */
-class TeamMemberTest extends AbstractSerializableSubjectTestCase
+final class TeamMemberTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param TeamMember $expected
