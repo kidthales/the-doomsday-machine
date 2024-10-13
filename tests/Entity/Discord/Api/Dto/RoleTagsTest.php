@@ -70,6 +70,47 @@ final class RoleTagsTest extends AbstractSerializableSubjectTestCase
             [
                 '{"guild_connections":null}',
                 new RoleTags(premium_subscriber: false, available_for_purchase: false, guild_connections: true)
+            ],
+            [
+                '{"bot_id":"test-bot-id","integration_id":"test-integration-id"}',
+                new RoleTags(
+                    bot_id: 'test-bot-id',
+                    integration_id: 'test-integration-id',
+                    premium_subscriber: false,
+                    available_for_purchase: false,
+                    guild_connections: false
+                )
+            ],
+            [
+                '{"bot_id":"test-bot-id","subscription_listing_id":"test-subscription-listing-id"}',
+                new RoleTags(
+                    bot_id: 'test-bot-id',
+                    premium_subscriber: false,
+                    subscription_listing_id: 'test-subscription-listing-id',
+                    available_for_purchase: false,
+                    guild_connections: false
+                )
+            ],
+            [
+                '{"integration_id":"test-integration-id","subscription_listing_id":"test-subscription-listing-id"}',
+                new RoleTags(
+                    integration_id: 'test-integration-id',
+                    premium_subscriber: false,
+                    subscription_listing_id: 'test-subscription-listing-id',
+                    available_for_purchase: false,
+                    guild_connections: false
+                )
+            ],
+            [
+                '{"bot_id":"test-bot-id","integration_id":"test-integration-id","subscription_listing_id":"test-subscription-listing-id"}',
+                new RoleTags(
+                    bot_id: 'test-bot-id',
+                    integration_id: 'test-integration-id',
+                    premium_subscriber: false,
+                    subscription_listing_id: 'test-subscription-listing-id',
+                    available_for_purchase: false,
+                    guild_connections: false
+                )
             ]
         ];
     }
