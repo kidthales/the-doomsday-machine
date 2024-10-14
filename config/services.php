@@ -30,6 +30,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->parameters()->set('.container.dumper.inline_factories', true);
 
     // TODO: Remove the following entries once a given service is no longer removed or inlined when the service container is compiled; otherwise keep it here so we can still test...
-    $services->get(\App\HttpClient\ApiClient::class)->public();
+    $services->get(\App\Console\Style\DefinitionListConverter::class)->public();
     $services->get(\App\Discord\ApiClient::class)->public();
+    $services->get(\App\HttpClient\ApiClient::class)->public();
 };
