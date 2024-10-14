@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\DependencyInjection\Compiler;
 
 use App\DependencyInjection\Compiler\ConsoleStyleDefinitionListConverterPass;
