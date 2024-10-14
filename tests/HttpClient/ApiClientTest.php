@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\HttpClient;
 
 use App\HttpClient\AbstractApiEndpoint;
@@ -7,12 +9,10 @@ use App\HttpClient\AbstractJsonApiEndpoint;
 use App\HttpClient\ApiClient;
 use App\HttpClient\ApiEndpointInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @covers \App\HttpClient\AbstractApiEndpoint
