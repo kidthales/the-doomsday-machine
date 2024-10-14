@@ -2,7 +2,7 @@
 <html lang="en">
  <head>
   <meta charset="UTF-8">
-  <title>Dashboard for /app/src/HttpClient</title>
+  <title>Dashboard for /app/src/Entity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="../_css/bootstrap.min.css?v=9.2.32" rel="stylesheet" type="text/css">
   <link href="../_css/nv.d3.min.css?v=9.2.32" rel="stylesheet" type="text/css">
@@ -17,7 +17,7 @@
       <nav aria-label="breadcrumb">
        <ol class="breadcrumb">
          <li class="breadcrumb-item"><a href="../index.html">/app/src</a></li>
-         <li class="breadcrumb-item"><a href="index.html">HttpClient</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Entity</a></li>
          <li class="breadcrumb-item active">(Dashboard)</li>
 
        </ol>
@@ -155,7 +155,7 @@ $(document).ready(function() {
       .yAxis.tickFormat(d3.format('d'));
 
     d3.select('#classCoverageDistribution svg')
-      .datum(getCoverageDistributionData([0,0,0,0,0,0,0,0,0,0,0,3], "Class Coverage"))
+      .datum(getCoverageDistributionData([0,0,0,0,0,0,0,0,0,0,0,15], "Class Coverage"))
       .transition().duration(500).call(chart);
 
     nv.utils.windowResize(chart.update);
@@ -173,7 +173,7 @@ $(document).ready(function() {
       .yAxis.tickFormat(d3.format('d'));
 
     d3.select('#methodCoverageDistribution svg')
-      .datum(getCoverageDistributionData([0,0,0,0,0,0,0,0,0,0,0,14], "Method Coverage"))
+      .datum(getCoverageDistributionData([0,0,0,0,0,0,0,0,0,0,0,20], "Method Coverage"))
       .transition().duration(500).call(chart);
 
     nv.utils.windowResize(chart.update);
@@ -223,7 +223,7 @@ $(document).ready(function() {
     chart.yAxis.axisLabel('Cyclomatic Complexity');
 
     d3.select('#classComplexity svg')
-      .datum(getComplexityData([[100,3,"<a href=\"AbstractApiEndpoint.php.html#5\">App\\HttpClient\\AbstractApiEndpoint<\/a>"],[100,1,"<a href=\"AbstractJsonApiEndpoint.php.html#5\">App\\HttpClient\\AbstractJsonApiEndpoint<\/a>"],[100,15,"<a href=\"ApiClient.php.html#12\">App\\HttpClient\\ApiClient<\/a>"]], 'Class Complexity'))
+      .datum(getComplexityData([[100,1,"<a href=\"Discord\/Api\/Dto\/Application.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\Application<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/ApplicationIntegrationTypeConfiguration.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\ApplicationIntegrationTypeConfiguration<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/AvatarDecorationData.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\AvatarDecorationData<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Emoji.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\Emoji<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Guild.php.html#16\">App\\Entity\\Discord\\Api\\Dto\\Guild<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/InstallParams.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\InstallParams<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Role.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\Role<\/a>"],[100,5,"<a href=\"Discord\/Api\/Dto\/RoleTags.php.html#11\">App\\Entity\\Discord\\Api\\Dto\\RoleTags<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Sticker.php.html#11\">App\\Entity\\Discord\\Api\\Dto\\Sticker<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Team.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\Team<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/TeamMember.php.html#11\">App\\Entity\\Discord\\Api\\Dto\\TeamMember<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/User.php.html#10\">App\\Entity\\Discord\\Api\\Dto\\User<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/WelcomeScreen.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\WelcomeScreen<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/WelcomeScreenChannel.php.html#8\">App\\Entity\\Discord\\Api\\Dto\\WelcomeScreenChannel<\/a>"],[100,5,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#11\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint<\/a>"]], 'Class Complexity'))
       .transition()
       .duration(500)
       .call(chart);
@@ -247,7 +247,7 @@ $(document).ready(function() {
     chart.yAxis.axisLabel('Method Complexity');
 
     d3.select('#methodComplexity svg')
-      .datum(getComplexityData([[100,0,"<a href=\"AbstractApiEndpoint.php.html#10\">App\\HttpClient\\AbstractApiEndpoint::getRequestMethod<\/a>"],[100,0,"<a href=\"AbstractApiEndpoint.php.html#15\">App\\HttpClient\\AbstractApiEndpoint::getRequestBody<\/a>"],[100,1,"<a href=\"AbstractApiEndpoint.php.html#20\">App\\HttpClient\\AbstractApiEndpoint::getRequestContentType<\/a>"],[100,1,"<a href=\"AbstractApiEndpoint.php.html#28\">App\\HttpClient\\AbstractApiEndpoint::getRequestHeaders<\/a>"],[100,0,"<a href=\"AbstractApiEndpoint.php.html#36\">App\\HttpClient\\AbstractApiEndpoint::getRequestPath<\/a>"],[100,1,"<a href=\"AbstractApiEndpoint.php.html#41\">App\\HttpClient\\AbstractApiEndpoint::getRequestQueryParameters<\/a>"],[100,0,"<a href=\"AbstractApiEndpoint.php.html#49\">App\\HttpClient\\AbstractApiEndpoint::getResponseBodyType<\/a>"],[100,0,"<a href=\"AbstractApiEndpoint.php.html#54\">App\\HttpClient\\AbstractApiEndpoint::hasRequestBody<\/a>"],[100,1,"<a href=\"AbstractJsonApiEndpoint.php.html#10\">App\\HttpClient\\AbstractJsonApiEndpoint::getRequestContentType<\/a>"],[100,4,"<a href=\"ApiClient.php.html#18\">App\\HttpClient\\ApiClient::getRequestOptions<\/a>"],[100,4,"<a href=\"ApiClient.php.html#46\">App\\HttpClient\\ApiClient::assignRequestOptionsContent<\/a>"],[100,1,"<a href=\"ApiClient.php.html#69\">App\\HttpClient\\ApiClient::__construct<\/a>"],[100,5,"<a href=\"ApiClient.php.html#83\">App\\HttpClient\\ApiClient::request<\/a>"],[100,1,"<a href=\"ApiClient.php.html#120\">App\\HttpClient\\ApiClient::getEndpointRequestPath<\/a>"]], 'Method Complexity'))
+      .datum(getComplexityData([[100,1,"<a href=\"Discord\/Api\/Dto\/Application.php.html#46\">App\\Entity\\Discord\\Api\\Dto\\Application::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/ApplicationIntegrationTypeConfiguration.php.html#14\">App\\Entity\\Discord\\Api\\Dto\\ApplicationIntegrationTypeConfiguration::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/AvatarDecorationData.php.html#14\">App\\Entity\\Discord\\Api\\Dto\\AvatarDecorationData::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Emoji.php.html#20\">App\\Entity\\Discord\\Api\\Dto\\Emoji::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Guild.php.html#82\">App\\Entity\\Discord\\Api\\Dto\\Guild::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/InstallParams.php.html#14\">App\\Entity\\Discord\\Api\\Dto\\InstallParams::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Role.php.html#24\">App\\Entity\\Discord\\Api\\Dto\\Role::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/RoleTags.php.html#21\">App\\Entity\\Discord\\Api\\Dto\\RoleTags::__construct<\/a>"],[100,4,"<a href=\"Discord\/Api\/Dto\/RoleTags.php.html#39\">App\\Entity\\Discord\\Api\\Dto\\RoleTags::denormalize<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Sticker.php.html#26\">App\\Entity\\Discord\\Api\\Dto\\Sticker::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/Team.php.html#17\">App\\Entity\\Discord\\Api\\Dto\\Team::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/TeamMember.php.html#19\">App\\Entity\\Discord\\Api\\Dto\\TeamMember::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/User.php.html#32\">App\\Entity\\Discord\\Api\\Dto\\User::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/WelcomeScreen.php.html#14\">App\\Entity\\Discord\\Api\\Dto\\WelcomeScreen::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Dto\/WelcomeScreenChannel.php.html#17\">App\\Entity\\Discord\\Api\\Dto\\WelcomeScreenChannel::__construct<\/a>"],[100,1,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#16\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint::getRequestMethod<\/a>"],[100,1,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#24\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint::getRequestBody<\/a>"],[100,1,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#32\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint::getRequestPath<\/a>"],[100,1,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#40\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint::getResponseBodyType<\/a>"],[100,1,"<a href=\"Discord\/Api\/Endpoint\/GetCurrentApplicationEndpoint.php.html#48\">App\\Entity\\Discord\\Api\\Endpoint\\GetCurrentApplicationEndpoint::hasRequestBody<\/a>"]], 'Method Complexity'))
       .transition()
       .duration(500)
       .call(chart);
