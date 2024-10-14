@@ -19,7 +19,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * @covers \App\HttpClient\AbstractJsonApiEndpoint
  * @covers \App\HttpClient\ApiClient
  */
-class ApiClientTest extends KernelTestCase
+final class ApiClientTest extends KernelTestCase
 {
     /**
      * @return array
@@ -475,10 +475,8 @@ class ApiClientTest extends KernelTestCase
     {
         self::bootKernel();
 
-        $subject = new ApiClient(
-            self::getContainer()->get(HttpClientInterface::class),
-            self::getContainer()->get(SerializerInterface::class),
-        );
+        /** @var ApiClient $subject */
+        $subject = self::getContainer()->get(ApiClient::class);
 
         $actualStatusCode = null;
         $actualHeaders = null;

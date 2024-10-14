@@ -3,8 +3,13 @@
 namespace App\Tests\Discord;
 
 use App\Discord\ApiClient;
+use App\Entity\Discord\Api\Dto\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 use ValueError;
@@ -12,7 +17,7 @@ use ValueError;
 /**
  * @covers \App\Discord\ApiClient
  */
-class ApiClientTest extends KernelTestCase
+final class ApiClientTest extends KernelTestCase
 {
     /**
      * @return void
@@ -73,5 +78,25 @@ class ApiClientTest extends KernelTestCase
             self::assertInstanceOf(ValueError::class, $e);
             self::assertSame($expected->getMessage(), $e->getMessage());
         }
+    }
+
+    /**
+     * @return void
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function test_getCurrentApplication(): void
+    {
+        self::bootKernel();
+
+        /** @var ApiClient $subject */
+        $subject = self::getContainer()->get(ApiClient::class);
+
+        $actual = $subject->getCurrentApplication();
+
+        self::assertInstanceOf(Application::class, $actual);
+        self::assertNotEmpty($actual->id);
     }
 }

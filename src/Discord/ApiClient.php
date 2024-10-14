@@ -2,9 +2,15 @@
 
 namespace App\Discord;
 
+use App\Entity\Discord\Api\Dto\Application;
+use App\Entity\Discord\Api\Endpoint\GetCurrentApplicationEndpoint;
 use App\HttpClient\ApiClient as BaseApiClient;
 use App\HttpClient\ApiEndpointInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use ValueError;
 
@@ -69,6 +75,18 @@ final class ApiClient extends BaseApiClient
         }
 
         $this->apiVersion = $apiVersion;
+    }
+
+    /**
+     * @return Application
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getCurrentApplication(): Application
+    {
+        return $this->request(new GetCurrentApplicationEndpoint());
     }
 
     /**
