@@ -9,6 +9,20 @@ framework:
     #esi: true
     #fragments: true
 
+    http_client:
+        default_options:
+            headers:
+                User-Agent: TheDoomsdayMachine/latest
+
+        scoped_clients:
+            discord_api.client:
+                base_uri: 'https://discord.com/api/'
+
+                headers:
+                    Accept: 'application/json'
+                    Authorization: 'Bot %env(DISCORD_APP_BOT_TOKEN)%'
+                    User-Agent: 'TheDoomsdayMachine (https://github.com/kidthales/the-doomsday-machine, latest)'
+
 when@test:
     framework:
         test: true

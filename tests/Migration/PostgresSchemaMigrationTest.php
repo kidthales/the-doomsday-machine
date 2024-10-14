@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Tests\Migrations;
+namespace App\Tests\Migration;
 
-use App\Migrations\AbstractPostgresSchemaMigration;
+use App\Migration\AbstractPostgresSchemaMigration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Schema;
@@ -11,10 +11,9 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
-use function PHPUnit\Framework\assertSame;
 
 /**
- * @covers \App\Migrations\AbstractPostgresSchemaMigration
+ * @covers \App\Migration\AbstractPostgresSchemaMigration
  */
 final class PostgresSchemaMigrationTest extends KernelTestCase
 {
@@ -66,7 +65,7 @@ final class PostgresSchemaMigrationTest extends KernelTestCase
 
             $queries = $subject->getSql();
 
-            assertSame(13, count($queries));
+            self::assertSame(13, count($queries));
 
             $q = array_shift($queries);
 
@@ -188,7 +187,7 @@ final class PostgresSchemaMigrationTest extends KernelTestCase
 
             $queries = $subject->getSql();
 
-            assertSame(1, count($queries));
+            self::assertSame(1, count($queries));
 
             $q = array_shift($queries);
 
