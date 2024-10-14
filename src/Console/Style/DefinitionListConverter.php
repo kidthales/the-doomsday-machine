@@ -25,7 +25,7 @@ class DefinitionListConverter
     {
         $normalizedSubject = $this->normalizer->normalize($subject);
 
-        if (!(is_array($normalizedSubject) || $normalizedSubject instanceof ArrayObject)) {
+        if ($normalizedSubject === null || is_scalar($normalizedSubject)) {
             return [$normalizedSubject];
         }
 

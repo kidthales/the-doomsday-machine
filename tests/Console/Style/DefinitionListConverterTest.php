@@ -10,6 +10,9 @@ use App\Entity\Discord\Api\Enumeration\MembershipState;
 use App\Entity\Discord\Api\Enumeration\TeamMemberRole;
 use ArrayObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @covers \App\Console\Style\DefinitionListConverter
@@ -22,16 +25,57 @@ final class DefinitionListConverterTest extends KernelTestCase
     public static function provider_convert(): array
     {
         return [
-            [null, [null]],
-            [[], []],
-            [new ArrayObject(), []],
+            [null, [null], null],
+            [null, [null], ','],
+            [true, [true], null],
+            [true, [true], ','],
+            ['test', ['test'], null],
+            ['test', ['test'], ','],
+            [12, [12], null],
+            [12, [12], ','],
+            [12.7, [12.7], null],
+            [12.7, [12.7], ','],
+            [[], [], null],
+            [[], [], ','],
             [
-                ['test-key-1' => 'test-value-1', 'test-key-2' => 'test-value-2'],
-                [['test-key-1' => 'test-value-1'], ['test-key-2' => 'test-value-2']]
+                ['test-key-1' => 'test-value-1'],
+                [['test-key-1' => 'test-value-1']],
+                null
             ],
             [
-                new ArrayObject(['test-key-1' => 'test-value-1', 'test-key-2' => 'test-value-2']),
-                [['test-key-1' => 'test-value-1'], ['test-key-2' => 'test-value-2']]
+                ['test-key-1' => 'test-value-1'],
+                [['test-key-1' => 'test-value-1']],
+                ','
+            ],
+            [
+                ['test-key-1' => 'test-value-1', 'test-key-2' => 'test-value-2'],
+                [['test-key-1' => 'test-value-1'], ['test-key-2' => 'test-value-2']],
+                null
+            ],
+            [
+                ['test-key-1' => 'test-value-1', 'test-key-2' => 'test-value-2'],
+                [['test-key-1' => 'test-value-1'], ['test-key-2' => 'test-value-2']],
+                ','
+            ],
+            [
+                ['test-key-1' => [], 'test-key-2' => 'test-value-2'],
+                [['test-key-2' => 'test-value-2']],
+                null
+            ],
+            [
+                ['test-key-1' => [], 'test-key-2' => 'test-value-2'],
+                [['test-key-2' => 'test-value-2']],
+                ','
+            ],
+            [
+                ['test-key-1' => ['nested-test-key' => 'test-value-1'], 'test-key-2' => 'test-value-2'],
+                [['test-key-1.nested-test-key' => 'test-value-1'], ['test-key-2' => 'test-value-2']],
+                null
+            ],
+            [
+                ['test-key-1' => ['nested-test-key' => 'test-value-1'], 'test-key-2' => 'test-value-2'],
+                [['test-key-1,nested-test-key' => 'test-value-1'], ['test-key-2' => 'test-value-2']],
+                ','
             ],
             [
                 new Team(
@@ -80,6 +124,54 @@ final class DefinitionListConverterTest extends KernelTestCase
                     ['name' => 'test-name'],
                     ['owner_user_id' => 'test-owner-user-id']
                 ],
+                null
+            ],
+            [
+                new NormalizesAsEmptyArrayObject(),
+                [],
+                null
+            ],
+            [
+                new NormalizesAsArrayObject(id: 'test-id'),
+                [['id' => 'test-id'], ['nested' => null]],
+                null
+            ],
+            [
+                new NormalizesAsArrayObject(id: 'test-id', nested: new NormalizesAsArrayObject(id: 'test-id')),
+                [['id' => 'test-id'], ['nested.id' => 'test-id'], ['nested.nested' => null]],
+                null
+            ],
+            [
+                new NormalizesAsArrayObject(
+                    id: 'test-id',
+                    nested: new NormalizesAsArrayObject(
+                        id: 'test-id',
+                        nested: new NormalizesAsArrayObject(id: 'test-id')
+                    ),
+                ),
+                [
+                    ['id' => 'test-id'],
+                    ['nested.id' => 'test-id'],
+                    ['nested.nested.id' => 'test-id'],
+                    ['nested.nested.nested' => null]
+                ],
+                null
+            ],
+            [
+                new NormalizesAsArrayObject(
+                    id: 'test-id',
+                    nested: new NormalizesAsArrayObject(
+                        id: 'test-id',
+                        nested: new NormalizesAsArrayObject(id: 'test-id')
+                    ),
+                ),
+                [
+                    ['id' => 'test-id'],
+                    ['nested,id' => 'test-id'],
+                    ['nested,nested,id' => 'test-id'],
+                    ['nested,nested,nested' => null]
+                ],
+                ','
             ]
         ];
     }
@@ -87,21 +179,68 @@ final class DefinitionListConverterTest extends KernelTestCase
     /**
      * @param mixed $subject
      * @param array $expected
+     * @param string|null $separator
      * @return void
      * @dataProvider provider_convert
      */
-    public function test_convert(mixed $subject, array $expected): void
+    public function test_convert(mixed $subject, array $expected, string|null $separator): void
     {
         self::bootKernel();
 
         $converter = self::getContainer()->get(DefinitionListConverter::class);
 
-        $actual = $converter->convert($subject);
+        if ($separator === null) {
+            $actual = $converter->convert($subject);
+        } else {
+            $actual = $converter->convert($subject, $separator);
+        }
 
         self::assertSame(count($expected), count($actual));
 
         foreach ($expected as $key => $value) {
             self::assertSame($value, $actual[$key]);
         }
+    }
+}
+
+class NormalizesAsEmptyArrayObject implements NormalizableInterface
+{
+    public function normalize(
+        NormalizerInterface $normalizer,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|ArrayObject|null
+    {
+        return new ArrayObject();
+    }
+}
+
+class NormalizesAsArrayObject extends NormalizesAsEmptyArrayObject
+{
+    /**
+     * @param string $id
+     * @param NormalizesAsArrayObject|null $nested
+     */
+    public function __construct(public string $id, public ?NormalizesAsArrayObject $nested = null)
+    {
+    }
+
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param string|null $format
+     * @param array $context
+     * @return array|string|int|float|bool|ArrayObject|null
+     * @throws ExceptionInterface
+     */
+    public function normalize(
+        NormalizerInterface $normalizer,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|ArrayObject|null
+    {
+        return new ArrayObject([
+            'id' => $this->id,
+            'nested' => $normalizer->normalize($this->nested, $format, $context)
+        ]);
     }
 }
