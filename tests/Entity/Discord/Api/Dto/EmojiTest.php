@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Dto\Emoji;
