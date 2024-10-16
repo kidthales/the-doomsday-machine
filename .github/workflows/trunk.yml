@@ -56,7 +56,8 @@ jobs:
         run: curl -vk --fail-with-body https://localhost/health-check
 
       - name: Run PHPUnit
-        run: docker compose exec -T \
+        run: |
+          docker compose exec -T \
           -e APP_ENV=test \
           -e XDEBUG_MODE=coverage \
           -e DISCORD_APP_BOT_TOKEN=${{ secrets.DEV_DISCORD_APP_BOT_TOKEN }} \
