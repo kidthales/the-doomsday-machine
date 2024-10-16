@@ -4,6 +4,8 @@ services:
 
     environment:
       DISCORD_APP_BOT_TOKEN: ${DISCORD_APP_BOT_TOKEN:-!ChangeThisDiscordAppBotToken!}
+      DISCORD_APP_ID: ${DISCORD_APP_ID:-!ChangeThisDiscordAppId!}
+      DISCORD_APP_PUBLIC_KEY: ${DISCORD_APP_PUBLIC_KEY:-!ChangeThisDiscordAppPublicKey!}
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
       POSTGRES_CHARSET: ${POSTGRES_CHARSET:-utf8}
       POSTGRES_DB: ${POSTGRES_DB:-app}
@@ -40,6 +42,10 @@ services:
 
     environment:
       DISCORD_APP_BOT_TOKEN: ${DISCORD_APP_BOT_TOKEN:-!ChangeThisDiscordAppBotToken!}
+      DISCORD_APP_ID: ${DISCORD_APP_ID:-!ChangeThisDiscordAppId!}
+      DISCORD_APP_NAME: ${DISCORD_APP_NAME:-!ChangeThisDiscordAppName!}
+      DISCORD_APP_PUBLIC_KEY: ${DISCORD_APP_PUBLIC_KEY:-!ChangeThisDiscordAppPublicKey!}
+      DISCORD_DEV_GUILD_ID: ${DISCORD_DEV_GUILD_ID:-!ChangeThisDiscordDevGuildId!}
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
       POSTGRES_CHARSET: ${POSTGRES_CHARSET:-utf8}
       POSTGRES_DB: ${POSTGRES_DB:-app}

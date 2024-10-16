@@ -6,6 +6,9 @@ namespace App\Tests\Discord;
 
 use App\Discord\ApiClient;
 use App\Entity\Discord\Api\Dto\Application;
+use App\Entity\Discord\Api\Dto\ApplicationCommand;
+use App\Entity\Discord\Api\Dto\CreateGlobalApplicationCommandParams;
+use App\Entity\Discord\Api\Dto\CreateGuildApplicationCommandParams;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -80,6 +83,81 @@ final class ApiClientTest extends KernelTestCase
             self::assertInstanceOf(ValueError::class, $e);
             self::assertSame($expected->getMessage(), $e->getMessage());
         }
+    }
+
+    /**
+     * @return void
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function test_createAndDeleteGlobalApplicationCommand(): void
+    {
+        self::bootKernel();
+
+        /** @var ApiClient $subject */
+        $subject = self::getContainer()->get(ApiClient::class);
+
+        $isOverwrite = null;
+
+        $actual = $subject->createGlobalApplicationCommand(
+            getenv('DISCORD_APP_ID'),
+            new CreateGlobalApplicationCommandParams(
+                name: 'test-global-app',
+                description: 'Test global application command'
+            ),
+           $isOverwrite
+        );
+
+        self::assertIsBool($isOverwrite);
+        self::assertInstanceOf(ApplicationCommand::class, $actual);
+
+        sleep(1);
+
+        $actual = $subject->deleteGlobalApplicationCommand(getenv('DISCORD_APP_ID'), $actual->id);
+
+        self::assertNull($actual);
+    }
+
+    /**
+     * @return void
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function test_createAndDeleteGuildApplicationCommand(): void
+    {
+        self::bootKernel();
+
+        /** @var ApiClient $subject */
+        $subject = self::getContainer()->get(ApiClient::class);
+
+        $isOverwrite = null;
+
+        $actual = $subject->createGuildApplicationCommand(
+            getenv('DISCORD_APP_ID'),
+            getenv('DISCORD_DEV_GUILD_ID'),
+            new CreateGuildApplicationCommandParams(
+                name: 'test-global-app',
+                description: 'Test global application command'
+            ),
+            $isOverwrite
+        );
+
+        self::assertIsBool($isOverwrite);
+        self::assertInstanceOf(ApplicationCommand::class, $actual);
+
+        sleep(1);
+
+        $actual = $subject->deleteGuildApplicationCommand(
+            getenv('DISCORD_APP_ID'),
+            getenv('DISCORD_DEV_GUILD_ID'),
+            $actual->id
+        );
+
+        self::assertNull($actual);
     }
 
     /**

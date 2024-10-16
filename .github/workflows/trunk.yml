@@ -56,7 +56,15 @@ jobs:
         run: curl -vk --fail-with-body https://localhost/health-check
 
       - name: Run PHPUnit
-        run: docker compose exec -T -e APP_ENV=test -e XDEBUG_MODE=coverage -e DISCORD_APP_BOT_TOKEN=${{ secrets.DEV_DISCORD_APP_BOT_TOKEN }} cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
+        run: docker compose exec -T \
+          -e APP_ENV=test \
+          -e XDEBUG_MODE=coverage \
+          -e DISCORD_APP_BOT_TOKEN=${{ secrets.DEV_DISCORD_APP_BOT_TOKEN }} \
+          -e DISCORD_APP_ID=${{ secrets.DEV_DISCORD_APP_ID }} \
+          -e DISCORD_APP_NAME='${{ secrets.DEV_DISCORD_APP_NAME }}' \
+          -e DISCORD_APP_PUBLIC_KEY=${{ secrets.DEV_DISCORD_APP_PUBLIC_KEY }} \
+          -e DISCORD_DEV_GUILD_ID=${{ secrets.DISCORD_DEV_GUILD_ID }} \
+          cli bin/phpunit --coverage-text --coverage-clover clover.xml --coverage-html coverage 
 
       - name: Copy Coverage To Host
         if: github.ref == 'refs/heads/main'
