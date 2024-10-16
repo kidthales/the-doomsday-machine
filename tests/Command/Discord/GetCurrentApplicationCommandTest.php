@@ -32,6 +32,6 @@ final class GetCurrentApplicationCommandTest extends KernelTestCase
 
         $actual = $commandTester->getDisplay();
 
-        self::assertStringContainsString('[DEV] The Doomsday Machine', $actual);
+        self::assertStringContainsString(getenv('DISCORD_APP_NAME'), $actual);
     }
 }

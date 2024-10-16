@@ -5,6 +5,13 @@ declare(strict_types=1);
 namespace App\Discord;
 
 use App\Entity\Discord\Api\Dto\Application;
+use App\Entity\Discord\Api\Dto\ApplicationCommand;
+use App\Entity\Discord\Api\Dto\CreateGlobalApplicationCommandParams;
+use App\Entity\Discord\Api\Dto\CreateGuildApplicationCommandParams;
+use App\Entity\Discord\Api\Endpoint\CreateGlobalApplicationCommandEndpoint;
+use App\Entity\Discord\Api\Endpoint\CreateGuildApplicationCommandEndpoint;
+use App\Entity\Discord\Api\Endpoint\DeleteGlobalApplicationCommandEndpoint;
+use App\Entity\Discord\Api\Endpoint\DeleteGuildApplicationCommandEndpoint;
 use App\Entity\Discord\Api\Endpoint\GetCurrentApplicationEndpoint;
 use App\HttpClient\ApiClient as BaseApiClient;
 use App\HttpClient\ApiEndpointInterface;
@@ -77,6 +84,105 @@ final class ApiClient extends BaseApiClient
         }
 
         $this->apiVersion = $apiVersion;
+    }
+
+    /**
+     * @param string $applicationId
+     * @param CreateGlobalApplicationCommandParams $params
+     * @param bool|null $isOverwrite
+     * @return ApplicationCommand
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function createGlobalApplicationCommand(
+        string                               $applicationId,
+        CreateGlobalApplicationCommandParams $params,
+        ?bool                                &$isOverwrite = null
+    ): ApplicationCommand
+    {
+        $statusCode = null;
+
+        $body = $this->request(
+            new CreateGlobalApplicationCommandEndpoint(applicationId: $applicationId, params: $params),
+            $statusCode
+        );
+
+        $isOverwrite = $statusCode === 200;
+
+        return $body;
+    }
+
+    /**
+     * @param string $applicationId
+     * @param string $commandId
+     * @return null
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function deleteGlobalApplicationCommand(string $applicationId, string $commandId): null
+    {
+        return $this->request(
+            new DeleteGlobalApplicationCommandEndpoint(applicationId: $applicationId, commandId: $commandId)
+        );
+    }
+
+    /**
+     * @param string $applicationId
+     * @param string $guildId
+     * @param CreateGuildApplicationCommandParams $params
+     * @param bool|null $isOverwrite
+     * @return ApplicationCommand
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function createGuildApplicationCommand(
+        string                              $applicationId,
+        string                              $guildId,
+        CreateGuildApplicationCommandParams $params,
+        ?bool                               &$isOverwrite = null
+    ): ApplicationCommand
+    {
+        $statusCode = null;
+
+        $body = $this->request(
+            new CreateGuildApplicationCommandEndpoint(
+                applicationId: $applicationId,
+                guildId: $guildId,
+                params: $params
+            ),
+            $statusCode
+        );
+
+        $isOverwrite = $statusCode === 200;
+
+        return $body;
+    }
+
+    /**
+     * @param string $applicationId
+     * @param string $guildId
+     * @param string $commandId
+     * @return null
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function deleteGuildApplicationCommand(string $applicationId, string $guildId, string $commandId): null
+    {
+        return $this->request(
+            new DeleteGuildApplicationCommandEndpoint(
+                applicationId: $applicationId,
+                guildId: $guildId,
+                commandId: $commandId
+            )
+        );
     }
 
     /**
