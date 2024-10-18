@@ -11,7 +11,7 @@ use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 /**
  * @covers \App\Entity\Discord\Api\Dto\ChannelMention
  */
-class ChannelMentionTest extends AbstractSerializableSubjectTestCase
+final class ChannelMentionTest extends AbstractSerializableSubjectTestCase
 {
     /**
      * @param ChannelMention $expected
