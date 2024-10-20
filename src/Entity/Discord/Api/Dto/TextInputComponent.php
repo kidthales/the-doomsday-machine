@@ -6,11 +6,13 @@ namespace App\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Enumeration\ComponentType;
 use App\Entity\Discord\Api\Enumeration\TextInputStyle;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @see https://discord.com/developers/docs/interactions/message-components#text-input-object-text-input-structure
  */
-class TextInputComponent extends AbstractComponent
+class TextInputComponent extends AbstractComponent implements NormalizableInterface
 {
     /**
      * @param string $custom_id Developer-defined identifier for the input; max 100 characters.
@@ -34,5 +36,43 @@ class TextInputComponent extends AbstractComponent
     )
     {
         parent::__construct(type: ComponentType::TextInput);
+    }
+
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param string|null $format
+     * @param array $context
+     * @return array
+     */
+    public function normalize(NormalizerInterface $normalizer, ?string $format = null, array $context = []): array
+    {
+        $data = [
+            'type' => $this->type->value,
+            'custom_id' => $this->custom_id,
+            'style' => $this->style->value,
+            'label' => $this->label
+        ];
+
+        if ($this->min_length !== null) {
+            $data['min_length'] = $this->min_length;
+        }
+
+        if ($this->max_length !== null) {
+            $data['max_length'] = $this->max_length;
+        }
+
+        if ($this->required !== null) {
+            $data['required'] = $this->required;
+        }
+
+        if ($this->value !== null) {
+            $data['value'] = $this->value;
+        }
+
+        if ($this->placeholder !== null) {
+            $data['placeholder'] = $this->placeholder;
+        }
+
+        return $data;
     }
 }

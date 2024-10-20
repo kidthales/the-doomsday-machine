@@ -75,4 +75,35 @@ final class TextInputComponentTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, TextInputComponent::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return [
+            [
+                new TextInputComponent(custom_id: 'test-custom-id', style: TextInputStyle::Short, label: 'test-label'),
+                '{"type":4,"custom_id":"test-custom-id","style":1,"label":"test-label"}'
+            ],
+            ...$data
+        ];
+    }
+
+    /**
+     * @param TextInputComponent $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(TextInputComponent $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }
