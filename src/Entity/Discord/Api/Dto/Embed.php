@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Enumeration\EmbedType;
+use ArrayObject;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @see https://discord.com/developers/docs/resources/message#embed-object-embed-structure
  */
-class Embed
+class Embed implements NormalizableInterface
 {
     /**
      * @param string|null $title Title of embed.
@@ -42,5 +46,71 @@ class Embed
         public ?array          $fields = null
     )
     {
+    }
+
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param string|null $format
+     * @param array $context
+     * @return ArrayObject
+     * @throws ExceptionInterface
+     */
+    public function normalize(NormalizerInterface $normalizer, ?string $format = null, array $context = []): ArrayObject
+    {
+        $data = [];
+
+        if ($this->title !== null) {
+            $data['title'] = $this->title;
+        }
+
+        if ($this->type !== null) {
+            $data['type'] = $this->type->value;
+        }
+
+        if ($this->description !== null) {
+            $data['description'] = $this->description;
+        }
+
+        if ($this->url !== null) {
+            $data['url'] = $this->url;
+        }
+
+        if ($this->timestamp !== null) {
+            $data['timestamp'] = $this->timestamp;
+        }
+
+        if ($this->color !== null) {
+            $data['color'] = $this->color;
+        }
+
+        if ($this->footer !== null) {
+            $data['footer'] = $normalizer->normalize($this->footer, $format, $context);
+        }
+
+        if ($this->image !== null) {
+            $data['image'] = $normalizer->normalize($this->image, $format, $context);
+        }
+
+        if ($this->thumbnail !== null) {
+            $data['thumbnail'] = $normalizer->normalize($this->thumbnail, $format, $context);
+        }
+
+        if ($this->video !== null) {
+            $data['video'] = $normalizer->normalize($this->video, $format, $context);
+        }
+
+        if ($this->provider !== null) {
+            $data['provider'] = $normalizer->normalize($this->provider, $format, $context);
+        }
+
+        if ($this->author !== null) {
+            $data['author'] = $normalizer->normalize($this->author, $format, $context);
+        }
+
+        if ($this->fields !== null) {
+            $data['fields'] = $normalizer->normalize($this->fields, $format, $context);
+        }
+
+        return new ArrayObject($data);
     }
 }

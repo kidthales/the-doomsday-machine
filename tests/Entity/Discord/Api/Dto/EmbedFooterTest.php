@@ -58,4 +58,29 @@ final class EmbedFooterTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedFooter::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedFooter(text: 'test-text'), '{"text":"test-text"}'],
+            [
+                new EmbedFooter(text: 'test-text', icon_url: 'test-icon-url', proxy_icon_url: 'test-proxy-icon-url'),
+                '{"text":"test-text","icon_url":"test-icon-url","proxy_icon_url":"test-proxy-icon-url"}'
+            ],
+        ];
+    }
+
+    /**
+     * @param EmbedFooter $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedFooter $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

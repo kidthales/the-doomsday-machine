@@ -75,4 +75,29 @@ final class EmbedImageTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedImage::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedImage(url: 'test-url'), '{"url":"test-url"}'],
+            [
+                new EmbedImage(url: 'test-url', proxy_url: 'test-proxy-url', height: 10, width: 10),
+                '{"url":"test-url","proxy_url":"test-proxy-url","height":10,"width":10}'
+            ],
+        ];
+    }
+
+    /**
+     * @param EmbedImage $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedImage $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

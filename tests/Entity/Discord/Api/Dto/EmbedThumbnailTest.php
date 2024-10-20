@@ -75,4 +75,29 @@ final class EmbedThumbnailTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedThumbnail::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedThumbnail(url: 'test-url'), '{"url":"test-url"}'],
+            [
+                new EmbedThumbnail(url: 'test-url', proxy_url: 'test-proxy-url', height: 10, width: 10),
+                '{"url":"test-url","proxy_url":"test-proxy-url","height":10,"width":10}'
+            ],
+        ];
+    }
+
+    /**
+     * @param EmbedThumbnail $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedThumbnail $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

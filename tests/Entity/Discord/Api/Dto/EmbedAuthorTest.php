@@ -75,4 +75,34 @@ final class EmbedAuthorTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedAuthor::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedAuthor(name: 'test-name'), '{"name":"test-name"}'],
+            [
+                new EmbedAuthor(
+                    name: 'test-name',
+                    url: 'test-url',
+                    icon_url: 'test-icon-url',
+                    proxy_icon_url: 'test-proxy-icon-url'
+                ),
+                '{"name":"test-name","url":"test-url","icon_url":"test-icon-url","proxy_icon_url":"test-proxy-icon-url"}'
+            ]
+        ];
+    }
+
+    /**
+     * @param EmbedAuthor $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedAuthor $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

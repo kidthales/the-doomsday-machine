@@ -75,4 +75,29 @@ final class EmbedVideoTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedVideo::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedVideo(), '{}'],
+            [
+                new EmbedVideo(url: 'test-url', proxy_url: 'test-proxy-url', height: 10, width: 10),
+                '{"url":"test-url","proxy_url":"test-proxy-url","height":10,"width":10}'
+            ],
+        ];
+    }
+
+    /**
+     * @param EmbedVideo $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedVideo $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

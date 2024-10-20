@@ -51,4 +51,26 @@ final class EmbedProviderTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedProvider::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedProvider(), '{}'],
+            [new EmbedProvider(name: 'test-name', url: 'test-url'), '{"name":"test-name","url":"test-url"}']
+        ];
+    }
+
+    /**
+     * @param EmbedProvider $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedProvider $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

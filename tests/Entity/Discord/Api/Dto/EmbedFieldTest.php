@@ -50,4 +50,29 @@ final class EmbedFieldTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, EmbedField::class);
     }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        return [
+            [new EmbedField(name: 'test-name', value: 'test-value'), '{"name":"test-name","value":"test-value"}'],
+            [
+                new EmbedField(name: 'test-name', value: 'test-value', inline: true),
+                '{"name":"test-name","value":"test-value","inline":true}'
+            ],
+        ];
+    }
+
+    /**
+     * @param EmbedField $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(EmbedField $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Dto\Embed;
-use App\Entity\Discord\Api\Dto\EmbedFooter;
 use App\Entity\Discord\Api\Enumeration\EmbedType;
 use App\Tests\TestHelper\AbstractSerializableSubjectTestCase;
 
@@ -149,5 +148,42 @@ final class EmbedTest extends AbstractSerializableSubjectTestCase
     public function test_deserialization(string $subject, Embed $expected): void
     {
         self::testDeserialization($subject, $expected, Embed::class);
+    }
+
+    /**
+     * @return array[]
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return [
+            [new Embed(), '{}'],
+            [
+                new Embed(
+                    description: 'test-description',
+                    url: 'test-url',
+                    timestamp: 'test-timestamp',
+                    color: 0
+                ),
+                '{"description":"test-description","url":"test-url","timestamp":"test-timestamp","color":0}'
+            ],
+            ...$data
+        ];
+    }
+
+    /**
+     * @param Embed $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(Embed $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
     }
 }
