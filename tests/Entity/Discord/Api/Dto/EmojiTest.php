@@ -70,4 +70,36 @@ final class EmojiTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, Emoji::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return [
+            [new Emoji(id: null, name: null), '{"id":null,"name":null}'],
+            [
+                new Emoji(id: null, name: null, require_colons: false, managed: true, animated: true, available: true),
+                '{"id":null,"name":null,"require_colons":false,"managed":true,"animated":true,"available":true}'
+            ],
+            ...$data
+        ];
+    }
+
+    /**
+     * @param Emoji $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(Emoji $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

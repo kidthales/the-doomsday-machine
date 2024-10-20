@@ -57,7 +57,7 @@ final class UserTest extends AbstractSerializableSubjectTestCase
         foreach (AvatarDecorationDataTest::provider_deserialization() as [$avatarDecorationDataTemplate, $avatarDecorationDataExpected]) {
             foreach (PremiumType::cases() as $premium) {
                 $data[] = [
-                    sprintf($subjectTemplate, 'null', 'null', ',"premium_type":' . $premium->value . ',"avatar_decoration_data":' . $avatarDecorationDataTemplate),
+                    sprintf($subjectTemplate, 'null', 'null', ',"banner":null,"accent_color":null,"email":null,"premium_type":' . $premium->value . ',"avatar_decoration_data":' . $avatarDecorationDataTemplate),
                     new User(
                         id: 'test-id',
                         username: 'test-username',
@@ -73,7 +73,7 @@ final class UserTest extends AbstractSerializableSubjectTestCase
 
         return [
             [
-                sprintf($subjectTemplate, 'null', 'null', ''),
+                sprintf($subjectTemplate, 'null', 'null', ',"banner":null,"accent_color":null,"email":null,"avatar_decoration_data":null'),
                 new User(
                     id: 'test-id',
                     username: 'test-username',
@@ -95,5 +95,51 @@ final class UserTest extends AbstractSerializableSubjectTestCase
     public function test_deserialization(string $subject, User $expected): void
     {
         self::testDeserialization($subject, $expected, User::class);
+    }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return [
+            [
+                new User(
+                    id: 'test-id',
+                    username: 'test-username',
+                    discriminator: 'test-discriminator',
+                    global_name: null,
+                    avatar: null,
+                    bot: true,
+                    system: true,
+                    mfa_enabled: true,
+                    banner: 'test-banner',
+                    accent_color: 0,
+                    locale: 'test-locale',
+                    verified: true,
+                    flags: 6,
+                    public_flags: 7
+                ),
+                '{"id":"test-id","username":"test-username","discriminator":"test-discriminator","global_name":null,"avatar":null,"bot":true,"system":true,"mfa_enabled":true,"banner":"test-banner","accent_color":0,"locale":"test-locale","verified":true,"email":null,"flags":6,"public_flags":7,"avatar_decoration_data":null}'
+            ],
+            ...$data
+        ];
+    }
+
+    /**
+     * @param User $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(User $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
     }
 }

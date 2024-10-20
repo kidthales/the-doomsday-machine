@@ -121,4 +121,29 @@ final class SelectMenuComponentTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, SelectMenuComponent::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param SelectMenuComponent $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(SelectMenuComponent $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

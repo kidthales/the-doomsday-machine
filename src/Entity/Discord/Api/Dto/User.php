@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Enumeration\PremiumType;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @see https://discord.com/developers/docs/resources/user#user-object-user-structure
  */
-class User
+class User implements NormalizableInterface
 {
     /**
      * @param string $id The user's id.
@@ -51,5 +54,64 @@ class User
         public ?AvatarDecorationData $avatar_decoration_data = null
     )
     {
+    }
+
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param string|null $format
+     * @param array $context
+     * @return array
+     * @throws ExceptionInterface
+     */
+    public function normalize(NormalizerInterface $normalizer, ?string $format = null, array $context = []): array
+    {
+        $data = [
+            'id' => $this->id,
+            'username' => $this->username,
+            'discriminator' => $this->discriminator,
+            'global_name' => $this->global_name,
+            'avatar' => $this->avatar
+        ];
+
+        if ($this->bot !== null) {
+            $data['bot'] = $this->bot;
+        }
+
+        if ($this->system !== null) {
+            $data['system'] = $this->system;
+        }
+
+        if ($this->mfa_enabled !== null) {
+            $data['mfa_enabled'] = $this->mfa_enabled;
+        }
+
+        $data['banner'] = $this->banner;
+        $data['accent_color'] = $this->accent_color;
+
+        if ($this->locale !== null) {
+            $data['locale'] = $this->locale;
+        }
+
+        if ($this->verified !== null) {
+            $data['verified'] = $this->verified;
+        }
+
+        $data['email'] = $this->email;
+
+        if ($this->flags !== null) {
+            $data['flags'] = $this->flags;
+        }
+
+        if ($this->premium_type !== null) {
+            $data['premium_type'] = $this->premium_type->value;
+        }
+
+        if ($this->public_flags !== null) {
+            $data['public_flags'] = $this->public_flags;
+        }
+
+        $data['avatar_decoration_data'] = $normalizer->normalize($this->avatar_decoration_data, $format, $context);
+
+        return $data;
     }
 }

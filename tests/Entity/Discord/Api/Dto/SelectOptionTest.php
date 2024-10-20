@@ -70,4 +70,29 @@ final class SelectOptionTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, SelectOption::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param SelectOption $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(SelectOption $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }

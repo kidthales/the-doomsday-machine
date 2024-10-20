@@ -6,11 +6,14 @@ namespace App\Entity\Discord\Api\Dto;
 
 use App\Entity\Discord\Api\Enumeration\ChannelType;
 use App\Entity\Discord\Api\Enumeration\ComponentType;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @see https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
  */
-class SelectMenuComponent extends AbstractComponent
+class SelectMenuComponent extends AbstractComponent implements NormalizableInterface
 {
     /**
      * @param ComponentType $type Type of select menu component (text: 3, user: 5, role: 6, mentionable: 7,
@@ -40,5 +43,47 @@ class SelectMenuComponent extends AbstractComponent
     )
     {
         parent::__construct(type: $type);
+    }
+
+    /**
+     * @param NormalizerInterface $normalizer
+     * @param string|null $format
+     * @param array $context
+     * @return array
+     * @throws ExceptionInterface
+     */
+    public function normalize(NormalizerInterface $normalizer, ?string $format = null, array $context = []): array
+    {
+        $data = ['type' => $this->type->value, 'custom_id' => $this->custom_id];
+
+        if ($this->options !== null) {
+            $data['options'] = $normalizer->normalize($this->options, $format, $context);
+        }
+
+        if ($this->channel_types !== null) {
+            $data['channel_types'] = $normalizer->normalize($this->channel_types, $format, $context);
+        }
+
+        if ($this->placeholder !== null) {
+            $data['placeholder'] = $this->placeholder;
+        }
+
+        if ($this->default_values !== null) {
+            $data['default_values'] = $normalizer->normalize($this->default_values, $format, $context);
+        }
+
+        if ($this->min_values !== null) {
+            $data['min_values'] = $this->min_values;
+        }
+
+        if ($this->max_values !== null) {
+            $data['max_values'] = $this->max_values;
+        }
+
+        if ($this->disabled !== null) {
+            $data['disabled'] = $this->disabled;
+        }
+
+        return $data;
     }
 }
