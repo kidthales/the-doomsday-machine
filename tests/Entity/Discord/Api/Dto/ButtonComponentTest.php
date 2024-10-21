@@ -81,4 +81,29 @@ final class ButtonComponentTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, ButtonComponent::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param ButtonComponent $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(ButtonComponent $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }
