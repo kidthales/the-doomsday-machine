@@ -40,11 +40,11 @@ final class AttachmentTest extends AbstractSerializableSubjectTestCase
      */
     public static function provider_deserialization(): array
     {
-        $subjectTemplate = '{"id":"test-id","filename":"test-filename","size":8,"url":"test-url","proxy_url":"test-proxy-url"%s}';
+        $subjectTemplate = '{"id":"test-id","filename":"test-filename",%s"size":8,"url":"test-url","proxy_url":"test-proxy-url"%s}';
 
         return [
             [
-                sprintf($subjectTemplate, ''),
+                sprintf($subjectTemplate, '', ',"height":null,"width":null'),
                 new Attachment(
                     id: 'test-id',
                     filename: 'test-filename',
@@ -54,7 +54,7 @@ final class AttachmentTest extends AbstractSerializableSubjectTestCase
                 )
             ],
             [
-                sprintf($subjectTemplate, ',"title":"test-title","description":"test-description","content_type":"test-content-type","height":10,"width":10,"ephemeral":true,"duration_secs":1.7,"waveform":"test-waveform","flags":42'),
+                sprintf($subjectTemplate, '"title":"test-title","description":"test-description","content_type":"test-content-type",', ',"height":10,"width":10,"ephemeral":true,"duration_secs":1.7,"waveform":"test-waveform","flags":42'),
                 new Attachment(
                     id: 'test-id',
                     filename: 'test-filename',
@@ -84,5 +84,30 @@ final class AttachmentTest extends AbstractSerializableSubjectTestCase
     public function test_deserialization(string $subject, Attachment $expected): void
     {
         self::testDeserialization($subject, $expected, Attachment::class);
+    }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param Attachment $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(Attachment $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
     }
 }

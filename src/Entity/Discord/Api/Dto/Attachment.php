@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity\Discord\Api\Dto;
 
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
 /**
  * @see https://discord.com/developers/docs/resources/message#attachment-object-attachment-structure
  */
-class Attachment
+class Attachment implements NormalizableInterface
 {
     /**
      * @param string $id Attachment id.
@@ -43,5 +46,46 @@ class Attachment
         public ?int    $flags = null
     )
     {
+    }
+
+    public function normalize(NormalizerInterface $normalizer, ?string $format = null, array $context = []): array
+    {
+        $data = ['id' => $this->id, 'filename' => $this->filename];
+
+        if ($this->title !== null) {
+            $data['title'] = $this->title;
+        }
+
+        if ($this->description !== null) {
+            $data['description'] = $this->description;
+        }
+
+        if ($this->content_type !== null) {
+            $data['content_type'] = $this->content_type;
+        }
+
+        $data['size'] = $this->size;
+        $data['url'] = $this->url;
+        $data['proxy_url'] = $this->proxy_url;
+        $data['height'] = $this->height;
+        $data['width'] = $this->width;
+
+        if ($this->ephemeral !== null) {
+            $data['ephemeral'] = $this->ephemeral;
+        }
+
+        if ($this->duration_secs !== null) {
+            $data['duration_secs'] = $this->duration_secs;
+        }
+
+        if ($this->waveform !== null) {
+            $data['waveform'] = $this->waveform;
+        }
+
+        if ($this->flags !== null) {
+            $data['flags'] = $this->flags;
+        }
+
+        return $data;
     }
 }
