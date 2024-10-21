@@ -60,4 +60,29 @@ final class PollMediaTest extends AbstractSerializableSubjectTestCase
     {
         self::testDeserialization($subject, $expected, PollMedia::class);
     }
+
+    /**
+     * @return array
+     */
+    public static function provider_serialization(): array
+    {
+        $data = [];
+
+        foreach (self::provider_deserialization() as [$template, $expected]) {
+            $data[] = [$expected, $template];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param PollMedia $subject
+     * @param string $expected
+     * @return void
+     * @dataProvider provider_serialization
+     */
+    public function test_serialization(PollMedia $subject, string $expected): void
+    {
+        self::testSerialization($subject, $expected);
+    }
 }
