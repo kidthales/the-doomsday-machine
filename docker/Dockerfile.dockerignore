@@ -8,4 +8,5 @@
 !.env.dev
 !composer.json
 !composer.lock
+!LICENSE
 !symfony.lock
