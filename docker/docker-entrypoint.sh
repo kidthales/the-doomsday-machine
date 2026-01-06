@@ -10,6 +10,8 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	# Or about an error in project initialization
 	php bin/console -V
 
+	mkdir -p ./data/"${APP_ENV}"
+
 	echo 'PHP app ready!'
 fi
 

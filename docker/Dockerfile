@@ -19,6 +19,7 @@ RUN set -eux; \
 		apcu \
 		intl \
 		opcache \
+		pdo_sqlite \
 		zip \
 	;
 
