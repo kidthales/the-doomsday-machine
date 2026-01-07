@@ -10,7 +10,7 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	# Or about an error in project initialization
 	php bin/console -V
 
-	mkdir -p ./data/"${APP_ENV}"
+	mkdir -p ./data/"${APP_ENV}" ./data/"${APP_ENV}"/file_depot
 
 	echo "Waiting for database to be ready..."
 	ATTEMPTS_LEFT_TO_REACH_DATABASE=60
