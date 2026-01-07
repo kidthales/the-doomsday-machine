@@ -2,6 +2,7 @@
 !bin/
 !config/
 !docker/
+!migrations/
 !public/
 !src/
 !.env
