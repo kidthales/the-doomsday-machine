@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: '10 16 * * FRI'
+      timezone: Canada/Pacific
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: '15 16 * * FRI'
+      timezone: Canada/Pacific
+    open-pull-requests-limit: 50
+    versioning-strategy: lockfile-only
+    allow:
+      - dependency-type: all
+    groups:
+      symfony:
+        patterns:
+          - 'symfony/*'
+      doctrine:
+        patterns:
+          - 'doctrine/*'

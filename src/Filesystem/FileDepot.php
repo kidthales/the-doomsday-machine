@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Filesystem;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Path;
 
@@ -29,6 +30,7 @@ use Symfony\Component\Filesystem\Path;
  *
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Autoconfigure(public: true)]
 final readonly class FileDepot
 {
     /**
