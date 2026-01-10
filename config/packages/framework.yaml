@@ -8,6 +8,11 @@ framework:
     #esi: true
     #fragments: true
 
+    http_client:
+        scoped_clients:
+            footy_stats.client:
+                base_uri: https://footystats.org/
+
 when@test:
     framework:
         test: true

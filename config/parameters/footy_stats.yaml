@@ -1,0 +1,17 @@
+parameters:
+    app.footy_stats.scraper:
+        endpoint: ajax_league.php
+        current_season_ttl: '%env(int:FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
+        nation_competitions:
+            England:
+                Premier League:
+                    overview_path: england/premier-league
+                    fixtures_path: england/premier-league/fixtures
+                Championship:
+                    overview_path: england/championship
+                    fixtures_path: england/championship/fixtures
+
+            Germany:
+                Bundesliga:
+                    overview_path: germany/bundesliga
+                    fixtures_path: germany/bundesliga/fixtures
