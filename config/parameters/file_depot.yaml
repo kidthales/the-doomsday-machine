@@ -1,0 +1,2 @@
+parameters:
+    app.file_depot.path: '%env(resolve:FILE_DEPOT_PATH)%'

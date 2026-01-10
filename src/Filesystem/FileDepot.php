@@ -25,6 +25,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
+use Throwable;
 
 /**
  * A file depot abstraction of the filesystem.
@@ -39,7 +40,7 @@ final readonly class FileDepot
      * @param Filesystem $filesystem
      */
     public function __construct(
-        #[Autowire(param: 'app.file_depot_path')] private string $fileDepotPath,
+        #[Autowire(param: 'app.file_depot.path')] private string $fileDepotPath,
         private Filesystem                                       $filesystem
     )
     {
@@ -64,7 +65,7 @@ final readonly class FileDepot
      */
     public function exists(iterable|string $files): bool
     {
-        return $this->filesystem->exists($this->toIterable($files));
+        return $this->filesystem->exists($this->toArray($files));
     }
 
     /**
@@ -75,7 +76,7 @@ final readonly class FileDepot
      */
     public function remove(iterable|string $files): void
     {
-        $this->filesystem->remove($this->toIterable($files));
+        $this->filesystem->remove($this->toArray($files));
     }
 
     /**
@@ -104,7 +105,24 @@ final readonly class FileDepot
         return $this->filesystem->readFile($this->makePath($filename));
     }
 
-    private function toIterable(string|iterable $files): iterable
+    /**
+     * Gets file modification time.
+     *
+     * @param string $filename
+     * @return false|int
+     */
+    public function filemtime(string $filename): false|int
+    {
+        $path = $this->makePath($filename);
+
+        if ($this->filesystem->exists($path)) {
+            return filemtime($path);
+        }
+
+        return false;
+    }
+
+    private function toArray(iterable|string $files): iterable
     {
         $paths = [];
 

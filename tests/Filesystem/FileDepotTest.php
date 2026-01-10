@@ -178,4 +178,30 @@ final class FileDepotTest extends KernelTestCase
 
         self::assertSame($expected, $actual);
     }
+
+    public static function provide_test_filemtime(): array
+    {
+        return [
+            'not found' => [self::NOT_FOUND_FILE_PATH, false],
+            'existing file' => [self::TEST_FILE_PATH_A, null],
+            'existing file 2' => [self::TEST_FILE_PATH_B, null]
+        ];
+    }
+
+    #[DataProvider('provide_test_filemtime')]
+    public function test_filemtime(string $subject, null|false $expected): void
+    {
+        self::bootKernel();
+
+        /** @var FileDepot $fileDepot */
+        $fileDepot = self::getContainer()->get(FileDepot::class);
+
+        $actual = $fileDepot->filemtime($subject);
+
+        if ($expected === null) {
+            self::assertIsInt($actual);
+        } else {
+            self::assertFalse($actual);
+        }
+    }
 }
