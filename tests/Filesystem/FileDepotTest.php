@@ -157,6 +157,12 @@ final class FileDepotTest extends KernelTestCase
         ];
     }
 
+    /**
+     * @param string $subject
+     * @param string|Throwable $expected
+     * @return void
+     * @throws Throwable
+     */
     #[DataProvider('provide_test_readFile')]
     public function test_readFile(string $subject, string|Throwable $expected): void
     {
@@ -171,9 +177,13 @@ final class FileDepotTest extends KernelTestCase
             if ($expected instanceof Throwable) {
                 self::assertInstanceOf(get_class($expected), $e);
             } else {
-                self::fail('Unexpected exception: ' . $e->getMessage());
+                throw $e;
             }
             return;
+        }
+
+        if ($expected instanceof Throwable) {
+            self::fail('Expected exception to be thrown');
         }
 
         self::assertSame($expected, $actual);
