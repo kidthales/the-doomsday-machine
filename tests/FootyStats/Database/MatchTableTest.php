@@ -9,11 +9,11 @@ use App\FootyStats\Target;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 #[CoversClass(MatchTable::class)]
 #[UsesClass(Target::class)]
-final class MatchTableTest extends TestCase
+final class MatchTableTest extends KernelTestCase
 {
     public static function provide_test_getName(): array
     {

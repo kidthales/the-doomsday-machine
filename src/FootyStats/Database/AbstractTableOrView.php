@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\FootyStats\Database;
 
 use App\FootyStats\Target;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use function Symfony\Component\String\s;
 
@@ -36,7 +38,7 @@ abstract readonly class AbstractTableOrView
     public const ?string BASE_NAME = null;
 
     /**
-     * Get the table or view name for the specified nation/competition/season combination.
+     * Get the table or view name for the specified target.
      *
      * @param Target $target
      * @return string
@@ -55,4 +57,23 @@ abstract readonly class AbstractTableOrView
     abstract public static function getCreateSql(Target $target): string;
 
     abstract public static function getDropSql(Target $target): string;
+
+    public function __construct(protected Connection $connection)
+    {
+    }
+
+    abstract public function exists(Target $target): bool;
+
+    /**
+     * @param string $type
+     * @param Target $target
+     * @return bool
+     * @throws DBALException
+     */
+    final protected function checkTableOrView(string $type, Target $target): bool
+    {
+        return (bool)$this->connection
+            ->executeQuery('COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?', [$type, static::getName($target)])
+            ->fetchOne();
+    }
 }

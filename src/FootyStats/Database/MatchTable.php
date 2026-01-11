@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\FootyStats\Database;
 
 use App\FootyStats\Target;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use function Symfony\Component\String\s;
 
 /**
@@ -48,5 +50,10 @@ SQL;
         return s($sql)
             ->replace('<table_name>', self::getName($target))
             ->toString();
+    }
+
+    public function __construct(#[Autowire(service: 'doctrine.dbal.footy_stats_connection')] Connection $connection)
+    {
+        parent::__construct($connection);
     }
 }
