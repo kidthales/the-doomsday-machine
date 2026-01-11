@@ -21,27 +21,31 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
-use LogicException;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractTeamStandingView extends AbstractView
+final readonly class MatchTable extends AbstractTable
 {
-    protected const ?string CREATE_SQL_TEMPLATE = null;
+    public const string BASE_NAME = 'match';
 
     public static function getCreateSql(string $nation, string $competition, string $season): string
     {
-        // @codeCoverageIgnoreStart
-        if (static::CREATE_SQL_TEMPLATE === null) {
-            throw new LogicException('CREATE_SQL_TEMPLATE is not defined');
-        }
-        // @codeCoverageIgnoreEnd
+        $sql = <<<'SQL'
+            CREATE TABLE <table_name> (
+                home_team_name TEXT NOT NULL,
+                away_team_name TEXT NOT NULL,
+                home_team_score SMALLINT DEFAULT NULL,
+                away_team_score SMALLINT DEFAULT NULL,
+                timestamp BIGINT DEFAULT NULL,
+                extra TEXT DEFAULT NULL,
+                PRIMARY KEY (home_team_name, away_team_name)
+            );
+SQL;
 
-        return s(static::CREATE_SQL_TEMPLATE)
-            ->replace('<view_name>', static::getName($nation, $competition, $season))
-            ->replace('<match_table_name>', MatchTable::getName($nation, $competition, $season))
+        return s($sql)
+            ->replace('<table_name>', self::getName($nation, $competition, $season))
             ->toString();
     }
 }

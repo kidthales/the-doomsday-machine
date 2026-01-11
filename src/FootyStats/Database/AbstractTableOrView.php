@@ -44,9 +44,11 @@ abstract readonly class AbstractTableOrView
      */
     final public static function getName(string $nation, string $competition, string $season): string
     {
+        // @codeCoverageIgnoreStart
         if (static::BASE_NAME === null) {
             throw new LogicException('BASE_NAME is not defined');
         }
+        // @codeCoverageIgnoreEnd
 
         return sprintf(
             '%s_%s_%s_%s',
