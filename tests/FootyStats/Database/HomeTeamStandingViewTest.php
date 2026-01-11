@@ -57,19 +57,28 @@ final class HomeTeamStandingViewTest extends TestCase
         return [
             'England Championship 2025/26' => [
                 ['England', 'Championship', '2025/26'],
-                'CREATE VIEW england_championship_202526_home_team_standing AS'
+                [
+                    'CREATE VIEW england_championship_202526_home_team_standing AS',
+                    'FROM england_championship_202526_match'
+                ]
             ],
             'England Premier League 2012/13' => [
                 ['England', 'Premier League', '2012/13'],
-                'CREATE VIEW england_premier_league_201213_home_team_standing AS'
+                [
+                    'CREATE VIEW england_premier_league_201213_home_team_standing AS',
+                    'FROM england_premier_league_201213_match'
+                ]
             ],
         ];
     }
 
     #[DataProvider('provide_test_getCreateSql')]
-    public function test_getCreateSql(array $subject, string $expected): void
+    public function test_getCreateSql(array $subject, array $expected): void
     {
         $actual = HomeTeamStandingView::getCreateSql(...$subject);
-        self::assertStringContainsString($expected, $actual);
+
+        foreach ($expected as $exp) {
+            self::assertStringContainsString($exp, $actual);
+        }
     }
 }
