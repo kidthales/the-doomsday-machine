@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\FootyStats\Dto;
+namespace App\Tests\FootyStats;
 
-use App\FootyStats\Dto\EndpointPayload;
+use App\FootyStats\EndpointPayload;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DomCrawler\Crawler;

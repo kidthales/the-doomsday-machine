@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\FootyStats;
 
-use App\FootyStats\Dto\EndpointPayload;
+use App\FootyStats\EndpointPayload;
 use App\FootyStats\Scraper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
