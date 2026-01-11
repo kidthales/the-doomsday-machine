@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
 use LogicException;
 use function Symfony\Component\String\s;
 
@@ -37,12 +38,10 @@ abstract readonly class AbstractTableOrView
     /**
      * Get the table or view name for the specified nation/competition/season combination.
      *
-     * @param string $nation
-     * @param string $competition
-     * @param string $season
+     * @param Target $target
      * @return string
      */
-    final public static function getName(string $nation, string $competition, string $season): string
+    final public static function getName(Target $target): string
     {
         // @codeCoverageIgnoreStart
         if (static::BASE_NAME === null) {
@@ -50,16 +49,10 @@ abstract readonly class AbstractTableOrView
         }
         // @codeCoverageIgnoreEnd
 
-        return sprintf(
-            '%s_%s_%s_%s',
-            s($nation)->snake()->toString(),
-            s($competition)->snake()->toString(),
-            s($season)->snake()->toString(),
-            s(static::BASE_NAME)->snake()->toString()
-        );
+        return sprintf('%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
     }
 
-    abstract public static function getCreateSql(string $nation, string $competition, string $season): string;
+    abstract public static function getCreateSql(Target $target): string;
 
-    abstract public static function getDropSql(string $nation, string $competition, string $season): string;
+    abstract public static function getDropSql(Target $target): string;
 }

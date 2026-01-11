@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
 use function Symfony\Component\String\s;
 
 /**
@@ -30,7 +31,7 @@ final readonly class TeamStrengthView extends AbstractView
 {
     public const string BASE_NAME = 'team_strength';
 
-    public static function getCreateSql(string $nation, string $competition, string $season): string
+    public static function getCreateSql(Target $target): string
     {
         $sql = <<<'SQL'
             CREATE VIEW <view_name> AS
@@ -42,8 +43,8 @@ final readonly class TeamStrengthView extends AbstractView
 SQL;
 
         return s($sql)
-            ->replace('<view_name>', self::getName($nation, $competition, $season))
-            ->replace('<team_standing_view_name>', TeamStandingView::getName($nation, $competition, $season))
+            ->replace('<view_name>', self::getName($target))
+            ->replace('<team_standing_view_name>', TeamStandingView::getName($target))
             ->toString();
     }
 }

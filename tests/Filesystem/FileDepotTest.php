@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Filesystem;
 
 use App\Filesystem\FileDepot;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Throwable;
 
+#[CoversClass(FileDepot::class)]
 final class FileDepotTest extends KernelTestCase
 {
     public const string FILE_DEPOT_PATH = '/app/data/test/file_depot';

@@ -21,13 +21,15 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 abstract readonly class AbstractTable extends AbstractTableOrView
 {
-    public static function getDropSql(string $nation, string $competition, string $season): string
+    public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP TABLE %s;', static::getName($nation, $competition, $season));
+        return sprintf('DROP TABLE %s;', static::getName($target));
     }
 }

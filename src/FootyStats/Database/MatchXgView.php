@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
 use function Symfony\Component\String\s;
 
 /**
@@ -30,7 +31,7 @@ final readonly class MatchXgView extends AbstractView
 {
     public const string BASE_NAME = 'match_xg';
 
-    public static function getCreateSql(string $nation, string $competition, string $season): string
+    public static function getCreateSql(Target $target): string
     {
         $sql = <<<'SQL'
             CREATE VIEW <view_name> AS
@@ -48,11 +49,11 @@ final readonly class MatchXgView extends AbstractView
 SQL;
 
         return s($sql)
-            ->replace('<view_name>', self::getName($nation, $competition, $season))
-            ->replace('<home_team_standing_view_name>', HomeTeamStandingView::getName($nation, $competition, $season))
-            ->replace('<away_team_standing_view_name>', AwayTeamStandingView::getName($nation, $competition, $season))
-            ->replace('<match_table_name>', MatchTable::getName($nation, $competition, $season))
-            ->replace('<team_strength_view_name>', TeamStrengthView::getName($nation, $competition, $season))
+            ->replace('<view_name>', self::getName($target))
+            ->replace('<home_team_standing_view_name>', HomeTeamStandingView::getName($target))
+            ->replace('<away_team_standing_view_name>', AwayTeamStandingView::getName($target))
+            ->replace('<match_table_name>', MatchTable::getName($target))
+            ->replace('<team_strength_view_name>', TeamStrengthView::getName($target))
             ->toString();
     }
 }

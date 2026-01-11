@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
 use function Symfony\Component\String\s;
 
 /**
@@ -30,7 +31,7 @@ final readonly class MatchTable extends AbstractTable
 {
     public const string BASE_NAME = 'match';
 
-    public static function getCreateSql(string $nation, string $competition, string $season): string
+    public static function getCreateSql(Target $target): string
     {
         $sql = <<<'SQL'
             CREATE TABLE <table_name> (
@@ -45,7 +46,7 @@ final readonly class MatchTable extends AbstractTable
 SQL;
 
         return s($sql)
-            ->replace('<table_name>', self::getName($nation, $competition, $season))
+            ->replace('<table_name>', self::getName($target))
             ->toString();
     }
 }
