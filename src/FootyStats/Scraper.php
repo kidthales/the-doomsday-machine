@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace App\FootyStats;
 
 use App\Filesystem\FileDepot;
-use App\FootyStats\Dto\EndpointPayload;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

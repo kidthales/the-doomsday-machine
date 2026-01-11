@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\FootyStats\Dto;
+namespace App\FootyStats;
 
 use Symfony\Component\DomCrawler\Crawler;
 
