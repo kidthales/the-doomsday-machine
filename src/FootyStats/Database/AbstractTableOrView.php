@@ -24,6 +24,7 @@ namespace App\FootyStats\Database;
 use App\FootyStats\Target;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Query\QueryBuilder;
 use LogicException;
 use function Symfony\Component\String\s;
 
@@ -63,6 +64,11 @@ abstract readonly class AbstractTableOrView
     }
 
     abstract public function exists(Target $target): bool;
+
+    public function createSelectQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
+    {
+        return $this->connection->createQueryBuilder()->from(static::getName($target), $alias);
+    }
 
     /**
      * @param string $type
