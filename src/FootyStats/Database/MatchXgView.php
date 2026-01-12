@@ -23,12 +23,14 @@ namespace App\FootyStats\Database;
 
 use App\FootyStats\Target;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Autoconfigure(public: true)]
 final readonly class MatchXgView extends AbstractView
 {
     public const string BASE_NAME = 'match_xg';

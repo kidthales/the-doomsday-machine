@@ -6,15 +6,59 @@ namespace App\Tests\FootyStats\Database;
 
 use App\FootyStats\Database\MatchXgView;
 use App\FootyStats\Target;
+use App\Tests\FootyStats\Database\Trait\AwayTeamStandingViewSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\HomeTeamStandingViewSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\TeamStrengthViewSetUpTearDownTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Throwable;
 
 #[CoversClass(MatchXgView::class)]
 #[UsesClass(Target::class)]
-final class MatchXgViewTest extends KernelTestCase
+final class MatchXgViewTest extends AbstractDatabaseTestCase
 {
+    use MatchTableSetUpTearDownTrait,
+        HomeTeamStandingViewSetUpTearDownTrait,
+        AwayTeamStandingViewSetUpTearDownTrait,
+        TeamStrengthViewSetUpTearDownTrait;
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMatchTable();
+        $this->setUpHomeTeamStandingView();
+        $this->setUpAwayTeamStandingView();
+        $this->setUpTeamStrengthView();
+
+        try {
+            $this->connection->executeStatement(MatchXgView::getDropSql($this->target));
+        } catch (Throwable) {}
+
+        $this->connection->executeStatement(MatchXgView::getCreateSql($this->target));
+    }
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function tearDown(): void
+    {
+        $this->connection->executeStatement(MatchXgView::getDropSql($this->target));
+
+        $this->tearDownTeamStrengthView();
+        $this->tearDownAwayTeamStandingView();
+        $this->tearDownHomeTeamStandingView();
+        $this->tearDownMatchTable();
+        parent::tearDown();
+    }
+
     public static function provide_test_getName(): array
     {
         return [
@@ -91,5 +135,29 @@ final class MatchXgViewTest extends KernelTestCase
         foreach ($expected as $exp) {
             self::assertStringContainsString($exp, $actual);
         }
+    }
+
+    public static function provide_test_exists(): array
+    {
+        return [
+            'true' => [new Target('Test', 'Test', 'Test'), true],
+            'false' => [new Target('Test', 'Test', 'Not Found'), false],
+        ];
+    }
+
+    /**
+     * @param Target $subject
+     * @param bool $expected
+     * @return void
+     * @throws DBALException
+     */
+    #[DataProvider('provide_test_exists')]
+    public function test_exists(Target $subject, bool $expected): void
+    {
+        /** @var MatchXgView $matchXgView */
+        $matchXgView = self::getContainer()->get(MatchXgView::class);
+
+        $actual = $matchXgView->exists($subject);
+        self::assertSame($expected, $actual);
     }
 }

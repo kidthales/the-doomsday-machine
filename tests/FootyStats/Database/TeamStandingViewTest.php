@@ -6,15 +6,41 @@ namespace App\Tests\FootyStats\Database;
 
 use App\FootyStats\Database\TeamStandingView;
 use App\FootyStats\Target;
+use App\Tests\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\TeamStandingViewSetUpTearDownTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 #[CoversClass(TeamStandingView::class)]
 #[UsesClass(Target::class)]
-final class TeamStandingViewTest extends KernelTestCase
+final class TeamStandingViewTest extends AbstractDatabaseTestCase
 {
+    use MatchTableSetUpTearDownTrait, TeamStandingViewSetUpTearDownTrait;
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMatchTable();
+        $this->setUpTeamStandingView();
+    }
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function tearDown(): void
+    {
+        $this->tearDownTeamStandingView();
+        $this->tearDownMatchTable();
+        parent::tearDown();
+    }
+
     public static function provide_test_getName(): array
     {
         return [
@@ -85,5 +111,29 @@ final class TeamStandingViewTest extends KernelTestCase
         foreach ($expected as $exp) {
             self::assertStringContainsString($exp, $actual);
         }
+    }
+
+    public static function provide_test_exists(): array
+    {
+        return [
+            'true' => [new Target('Test', 'Test', 'Test'), true],
+            'false' => [new Target('Test', 'Test', 'Not Found'), false],
+        ];
+    }
+
+    /**
+     * @param Target $subject
+     * @param bool $expected
+     * @return void
+     * @throws DBALException
+     */
+    #[DataProvider('provide_test_exists')]
+    public function test_exists(Target $subject, bool $expected): void
+    {
+        /** @var TeamStandingView $teamStandingView */
+        $teamStandingView = self::getContainer()->get(TeamStandingView::class);
+
+        $actual = $teamStandingView->exists($subject);
+        self::assertSame($expected, $actual);
     }
 }

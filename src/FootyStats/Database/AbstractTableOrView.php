@@ -73,7 +73,7 @@ abstract readonly class AbstractTableOrView
     final protected function checkTableOrView(string $type, Target $target): bool
     {
         return (bool)$this->connection
-            ->executeQuery('COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?', [$type, static::getName($target)])
+            ->executeQuery('SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?', [$type, static::getName($target)])
             ->fetchOne();
     }
 }

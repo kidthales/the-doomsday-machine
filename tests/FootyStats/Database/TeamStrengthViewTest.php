@@ -6,15 +6,44 @@ namespace App\Tests\FootyStats\Database;
 
 use App\FootyStats\Database\TeamStrengthView;
 use App\FootyStats\Target;
+use App\Tests\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\TeamStandingViewSetUpTearDownTrait;
+use App\Tests\FootyStats\Database\Trait\TeamStrengthViewSetUpTearDownTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 #[CoversClass(TeamStrengthView::class)]
 #[UsesClass(Target::class)]
-final class TeamStrengthViewTest extends KernelTestCase
+final class TeamStrengthViewTest extends AbstractDatabaseTestCase
 {
+    use MatchTableSetUpTearDownTrait, TeamStandingViewSetUpTearDownTrait, TeamStrengthViewSetUpTearDownTrait;
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMatchTable();
+        $this->setUpTeamStandingView();
+        $this->setUpTeamStrengthView();
+    }
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function tearDown(): void
+    {
+        $this->tearDownTeamStrengthView();
+        $this->tearDownTeamStandingView();
+        $this->tearDownMatchTable();
+        parent::tearDown();
+    }
+
     public static function provide_test_getName(): array
     {
         return [
@@ -85,5 +114,29 @@ final class TeamStrengthViewTest extends KernelTestCase
         foreach ($expected as $exp) {
             self::assertStringContainsString($exp, $actual);
         }
+    }
+
+    public static function provide_test_exists(): array
+    {
+        return [
+            'true' => [new Target('Test', 'Test', 'Test'), true],
+            'false' => [new Target('Test', 'Test', 'Not Found'), false],
+        ];
+    }
+
+    /**
+     * @param Target $subject
+     * @param bool $expected
+     * @return void
+     * @throws DBALException
+     */
+    #[DataProvider('provide_test_exists')]
+    public function test_exists(Target $subject, bool $expected): void
+    {
+        /** @var TeamStrengthView $teamStrengthView */
+        $teamStrengthView = self::getContainer()->get(TeamStrengthView::class);
+
+        $actual = $teamStrengthView->exists($subject);
+        self::assertSame($expected, $actual);
     }
 }

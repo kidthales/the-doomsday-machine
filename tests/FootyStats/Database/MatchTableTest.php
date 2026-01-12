@@ -6,15 +6,38 @@ namespace App\Tests\FootyStats\Database;
 
 use App\FootyStats\Database\MatchTable;
 use App\FootyStats\Target;
+use App\Tests\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 #[CoversClass(MatchTable::class)]
 #[UsesClass(Target::class)]
-final class MatchTableTest extends KernelTestCase
+final class MatchTableTest extends AbstractDatabaseTestCase
 {
+    use MatchTableSetUpTearDownTrait;
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpMatchTable();
+    }
+
+    /**
+     * @return void
+     * @throws DBALException
+     */
+    public function tearDown(): void
+    {
+        $this->tearDownMatchTable();
+        parent::tearDown();
+    }
+
     public static function provide_test_getName(): array
     {
         return [
@@ -76,5 +99,29 @@ final class MatchTableTest extends KernelTestCase
     {
         $actual = MatchTable::getCreateSql($subject);
         self::assertStringContainsString($expected, $actual);
+    }
+
+    public static function provide_test_exists(): array
+    {
+        return [
+            'true' => [new Target('Test', 'Test', 'Test'), true],
+            'false' => [new Target('Test', 'Test', 'Not Found'), false],
+        ];
+    }
+
+    /**
+     * @param Target $subject
+     * @param bool $expected
+     * @return void
+     * @throws DBALException
+     */
+    #[DataProvider('provide_test_exists')]
+    public function test_exists(Target $subject, bool $expected): void
+    {
+        /** @var MatchTable $matchTable */
+        $matchTable = self::getContainer()->get(MatchTable::class);
+
+        $actual = $matchTable->exists($subject);
+        self::assertSame($expected, $actual);
     }
 }
