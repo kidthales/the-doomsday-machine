@@ -6,6 +6,7 @@ namespace App\Tests\FootyStats;
 
 use App\FootyStats\EndpointPayload;
 use App\FootyStats\Scraper;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -18,6 +19,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Throwable;
 
+#[CoversClass(Scraper::class)]
 final class ScraperTest extends KernelTestCase
 {
     public function tearDown(): void

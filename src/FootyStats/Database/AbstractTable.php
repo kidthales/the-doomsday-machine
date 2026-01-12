@@ -21,13 +21,42 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
+use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Query\QueryBuilder;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 abstract readonly class AbstractTable extends AbstractTableOrView
 {
-    public static function getDropSql(string $nation, string $competition, string $season): string
+    public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP TABLE %s;', static::getName($nation, $competition, $season));
+        return sprintf('DROP TABLE %s;', static::getName($target));
+    }
+
+    /**
+     * @param Target $target
+     * @return bool
+     * @throws DBALException
+     */
+    public function exists(Target $target): bool
+    {
+        return $this->checkTableOrView('table', $target);
+    }
+
+    public function createInsertQueryBuilder(Target $target): QueryBuilder
+    {
+        return $this->connection->createQueryBuilder()->insert(static::getName($target));
+    }
+
+    public function createUpdateQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
+    {
+        return $this->connection->createQueryBuilder()->update(static::getName($target), $alias);
+    }
+
+    public function createDeleteQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
+    {
+        return $this->connection->createQueryBuilder()->delete(static::getName($target), $alias);
     }
 }

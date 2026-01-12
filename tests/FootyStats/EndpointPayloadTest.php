@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\FootyStats;
 
 use App\FootyStats\EndpointPayload;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
+#[CoversClass(EndpointPayload::class)]
 final class EndpointPayloadTest extends TestCase
 {
     public static function provide_test_fromNode(): array

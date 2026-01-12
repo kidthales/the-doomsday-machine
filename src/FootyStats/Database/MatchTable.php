@@ -21,16 +21,21 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Autoconfigure(public: true)]
 final readonly class MatchTable extends AbstractTable
 {
     public const string BASE_NAME = 'match';
 
-    public static function getCreateSql(string $nation, string $competition, string $season): string
+    public static function getCreateSql(Target $target): string
     {
         $sql = <<<'SQL'
             CREATE TABLE <table_name> (
@@ -45,7 +50,12 @@ final readonly class MatchTable extends AbstractTable
 SQL;
 
         return s($sql)
-            ->replace('<table_name>', self::getName($nation, $competition, $season))
+            ->replace('<table_name>', self::getName($target))
             ->toString();
+    }
+
+    public function __construct(#[Autowire(service: 'doctrine.dbal.footy_stats_connection')] Connection $connection)
+    {
+        parent::__construct($connection);
     }
 }

@@ -21,9 +21,14 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Autoconfigure(public: true)]
 final readonly class TeamStandingView extends AbstractTeamStandingView
 {
     public const string BASE_NAME = 'team_standing';
@@ -65,4 +70,9 @@ final readonly class TeamStandingView extends AbstractTeamStandingView
                  GROUP BY team_name
                  ORDER BY points DESC, goal_difference DESC, goals_for DESC, team_name);
 SQL;
+
+    public function __construct(#[Autowire(service: 'doctrine.dbal.footy_stats_connection')] Connection $connection)
+    {
+        parent::__construct($connection);
+    }
 }

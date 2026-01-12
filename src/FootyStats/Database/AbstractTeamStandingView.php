@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
 use LogicException;
 use function Symfony\Component\String\s;
 
@@ -31,7 +32,7 @@ abstract readonly class AbstractTeamStandingView extends AbstractView
 {
     protected const ?string CREATE_SQL_TEMPLATE = null;
 
-    public static function getCreateSql(string $nation, string $competition, string $season): string
+    public static function getCreateSql(Target $target): string
     {
         // @codeCoverageIgnoreStart
         if (static::CREATE_SQL_TEMPLATE === null) {
@@ -40,8 +41,8 @@ abstract readonly class AbstractTeamStandingView extends AbstractView
         // @codeCoverageIgnoreEnd
 
         return s(static::CREATE_SQL_TEMPLATE)
-            ->replace('<view_name>', static::getName($nation, $competition, $season))
-            ->replace('<match_table_name>', MatchTable::getName($nation, $competition, $season))
+            ->replace('<view_name>', static::getName($target))
+            ->replace('<match_table_name>', MatchTable::getName($target))
             ->toString();
     }
 }

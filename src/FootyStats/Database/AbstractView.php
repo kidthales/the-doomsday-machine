@@ -21,13 +21,26 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
+use Doctrine\DBAL\Exception as DBALException;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 abstract readonly class AbstractView extends AbstractTableOrView
 {
-    public static function getDropSql(string $nation, string $competition, string $season): string
+    public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP VIEW %s;', static::getName($nation, $competition, $season));
+        return sprintf('DROP VIEW %s;', static::getName($target));
+    }
+
+    /**
+     * @param Target $target
+     * @return bool
+     * @throws DBALException
+     */
+    public function exists(Target $target): bool
+    {
+        return $this->checkTableOrView('view', $target);
     }
 }

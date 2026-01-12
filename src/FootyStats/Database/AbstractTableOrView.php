@@ -21,6 +21,10 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
+use App\FootyStats\Target;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Query\QueryBuilder;
 use LogicException;
 use function Symfony\Component\String\s;
 
@@ -35,14 +39,12 @@ abstract readonly class AbstractTableOrView
     public const ?string BASE_NAME = null;
 
     /**
-     * Get the table or view name for the specified nation/competition/season combination.
+     * Get the table or view name for the specified target.
      *
-     * @param string $nation
-     * @param string $competition
-     * @param string $season
+     * @param Target $target
      * @return string
      */
-    final public static function getName(string $nation, string $competition, string $season): string
+    final public static function getName(Target $target): string
     {
         // @codeCoverageIgnoreStart
         if (static::BASE_NAME === null) {
@@ -50,16 +52,34 @@ abstract readonly class AbstractTableOrView
         }
         // @codeCoverageIgnoreEnd
 
-        return sprintf(
-            '%s_%s_%s_%s',
-            s($nation)->snake()->toString(),
-            s($competition)->snake()->toString(),
-            s($season)->snake()->toString(),
-            s(static::BASE_NAME)->snake()->toString()
-        );
+        return sprintf('%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
     }
 
-    abstract public static function getCreateSql(string $nation, string $competition, string $season): string;
+    abstract public static function getCreateSql(Target $target): string;
 
-    abstract public static function getDropSql(string $nation, string $competition, string $season): string;
+    abstract public static function getDropSql(Target $target): string;
+
+    public function __construct(protected Connection $connection)
+    {
+    }
+
+    abstract public function exists(Target $target): bool;
+
+    public function createSelectQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
+    {
+        return $this->connection->createQueryBuilder()->from(static::getName($target), $alias);
+    }
+
+    /**
+     * @param string $type
+     * @param Target $target
+     * @return bool
+     * @throws DBALException
+     */
+    final protected function checkTableOrView(string $type, Target $target): bool
+    {
+        return (bool)$this->connection
+            ->executeQuery('SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?', [$type, static::getName($target)])
+            ->fetchOne();
+    }
 }
