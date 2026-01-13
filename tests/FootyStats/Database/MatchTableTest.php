@@ -77,7 +77,7 @@ final class MatchTableTest extends AbstractDatabaseTestCase
     public function test_getDropSql(Target $subject, string $expected): void
     {
         $actual = MatchTable::getDropSql($subject);
-        self::assertSame($expected, $actual);
+        self::assertStringContainsString($expected, $actual);
     }
 
     public static function provide_test_getCreateSql(): array

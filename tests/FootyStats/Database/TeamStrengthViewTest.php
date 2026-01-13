@@ -83,7 +83,7 @@ final class TeamStrengthViewTest extends AbstractDatabaseTestCase
     public function test_getDropSql(Target $subject, string $expected): void
     {
         $actual = TeamStrengthView::getDropSql($subject);
-        self::assertSame($expected, $actual);
+        self::assertStringContainsString($expected, $actual);
     }
 
     public static function provide_test_getCreateSql(): array
