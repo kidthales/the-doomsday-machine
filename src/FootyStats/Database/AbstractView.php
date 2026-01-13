@@ -23,6 +23,7 @@ namespace App\FootyStats\Database;
 
 use App\FootyStats\Target;
 use Doctrine\DBAL\Exception as DBALException;
+use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -31,7 +32,11 @@ abstract readonly class AbstractView extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP VIEW %s;', static::getName($target));
+        $sql = <<<'SQL'
+            DROP VIEW <view_name>;
+SQL;
+
+        return s($sql)->replace('<view_name>', static::getName($target))->toString();
     }
 
     /**

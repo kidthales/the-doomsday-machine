@@ -24,6 +24,7 @@ namespace App\FootyStats\Database;
 use App\FootyStats\Target;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Query\QueryBuilder;
+use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -32,7 +33,11 @@ abstract readonly class AbstractTable extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP TABLE %s;', static::getName($target));
+        $sql = <<<'SQL'
+            DROP TABLE <table_name>;
+SQL;
+
+        return s($sql)->replace('<table_name>', static::getName($target))->toString();
     }
 
     /**
