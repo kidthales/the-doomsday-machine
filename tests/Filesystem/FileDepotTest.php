@@ -31,12 +31,12 @@ final class FileDepotTest extends KernelTestCase
 
     public function tearDown(): void
     {
-        parent::tearDown();
-
         unlink(self::FILE_DEPOT_PATH . '/' . self::NOT_FOUND_FILE_PATH);
         unlink(self::FILE_DEPOT_PATH . '/' . self::TEST_FILE_PATH_B);
         unlink(self::FILE_DEPOT_PATH . '/' . self::TEST_FILE_PATH_A);
         rmdir(self::FILE_DEPOT_PATH . '/' . self::TEST_DIR_PATH);
+
+        parent::tearDown();
     }
 
     public static function provide_test_makePath(): array
