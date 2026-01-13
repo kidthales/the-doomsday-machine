@@ -96,8 +96,9 @@ footy-stats-migrations-execute: ## Execute one or more Footy Stats migration ver
 	@$(eval c ?=)
 	@$(MIGRATIONS)execute $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
 
-footy-stats-migrations-generate: ## Generate a Footy Stats migration class
-	@echo TODO
+footy-stats-migrations-generate: ## Generate a Footy Stats migration class, pass the parameter "c=" to include options, example: make footy-stats-migrations-generate c=--help
+	@$(eval c ?=)
+	@$(SYMFONY) app:footy-stats:migrations:generate $(c)
 
 footy-stats-migrations-latest: ## Outputs the latest Footy Stats migration version, pass the parameter "c=" to include options, example: make footy-stats-migrations-latest c=--help
 	@$(eval c ?=)
