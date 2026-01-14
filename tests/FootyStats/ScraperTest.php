@@ -6,8 +6,10 @@ namespace App\Tests\FootyStats;
 
 use App\FootyStats\EndpointPayload;
 use App\FootyStats\Scraper;
+use App\FootyStats\Target;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -20,6 +22,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Throwable;
 
 #[CoversClass(Scraper::class)]
+#[UsesClass(Target::class)]
 final class ScraperTest extends KernelTestCase
 {
     public function tearDown(): void
@@ -275,22 +278,22 @@ HTML)
     {
         return [
             'Unsupported Nation' => [
-                ['Unsupported Nation', '', ''],
+                new Target('Unsupported Nation', '', ''),
                 [new MockResponse('')],
                 new RuntimeException('Unsupported nation: Unsupported Nation')
             ],
             'Unsupported Competition' => [
-                ['England', 'Unsupported Competition', ''],
+                new Target('England', 'Unsupported Competition', ''),
                 [new MockResponse('')],
                 new RuntimeException('Unsupported competition: Unsupported Competition')
             ],
             'Empty Content' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [new MockResponse(''), new MockResponse('')],
                 new RuntimeException('Unsupported season: 2025/26')
             ],
             'Empty Content 2' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -320,7 +323,7 @@ HTML),
                 []
             ],
             'Mismatched Counts' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -363,7 +366,7 @@ HTML),
                 new RuntimeException('Overview team name count (3) does not match fixtures team name count (2)')
             ],
             'Mismatched Team href' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -407,7 +410,7 @@ HTML),
                 new RuntimeException('Overview team name href (/clubs/ipswich-town-fc-220) does not match fixtures team name href (/clubs/ipswich-town-fc-1337)'),
             ],
             'Valid Content, Current Season' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -455,7 +458,7 @@ HTML),
                 ],
             ],
             'Valid Content, Previous Season' => [
-                ['England', 'Championship', '2024/25'],
+                new Target('England', 'Championship', '2024/25'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -510,18 +513,17 @@ HTML)
     }
 
     /**
-     * @param array $subject
+     * @param Target $subject
      * @param array $mockResponses
      * @param array|Throwable $expected
      * @return void
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
-     * @throws Throwable
      * @throws TransportExceptionInterface
      */
     #[DataProvider('provide_test_scrapeTeamNames')]
-    public function test_scrapeTeamNames(array $subject, array $mockResponses, array|Throwable $expected): void
+    public function test_scrapeTeamNames(Target $subject, array $mockResponses, array|Throwable $expected): void
     {
         self::bootKernel();
         self::getContainer()->set('footy_stats.client', new MockHttpClient($mockResponses));
@@ -530,7 +532,7 @@ HTML)
         $scraper = self::getContainer()->get(Scraper::class);
 
         try {
-            $actual = $scraper->scrapeTeamNames(...$subject);
+            $actual = $scraper->scrapeTeamNames($subject);
         } catch (Throwable $e) {
             if ($expected instanceof Throwable) {
                 self::assertInstanceOf(get_class($expected), $e);
@@ -553,7 +555,7 @@ HTML)
             self::assertSame($expected[$i][1], $actual[$i][1]);
         }
 
-        $actual2 = $scraper->scrapeTeamNames(...$subject);
+        $actual2 = $scraper->scrapeTeamNames($subject);
 
         self::assertCount(count($expected), $actual2);
 
@@ -568,22 +570,22 @@ HTML)
     {
         return [
             'Unsupported Nation' => [
-                ['Unsupported Nation', '', ''],
+                new Target('Unsupported Nation', '', ''),
                 [new MockResponse('')],
                 new RuntimeException('Unsupported nation: Unsupported Nation')
             ],
             'Unsupported Competition' => [
-                ['England', 'Unsupported Competition', ''],
+                new Target('England', 'Unsupported Competition', ''),
                 [new MockResponse('')],
                 new RuntimeException('Unsupported competition: Unsupported Competition')
             ],
             'Empty Content' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [new MockResponse(''), new MockResponse('')],
                 new RuntimeException('Unsupported season: 2025/26')
             ],
             'Empty Content 2' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -613,7 +615,7 @@ HTML),
                 []
             ],
             'Valid Content, Current Season' => [
-                ['England', 'Championship', '2025/26'],
+                new Target('England', 'Championship', '2025/26'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -712,7 +714,7 @@ HTML),
                 ]
             ],
             'Valid Content, Previous Season' => [
-                ['England', 'Championship', '2024/25'],
+                new Target('England', 'Championship', '2024/25'),
                 [
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
@@ -817,18 +819,17 @@ HTML)
     }
 
     /**
-     * @param array $subject
+     * @param Target $subject
      * @param array $mockResponses
      * @param array|Throwable $expected
      * @return void
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
-     * @throws Throwable
      * @throws TransportExceptionInterface
      */
     #[DataProvider('provide_test_scrapeMatches')]
-    public function test_scrapeMatches(array $subject, array $mockResponses, array|Throwable $expected): void
+    public function test_scrapeMatches(Target $subject, array $mockResponses, array|Throwable $expected): void
     {
         self::bootKernel();
         self::getContainer()->set('footy_stats.client', new MockHttpClient($mockResponses));
@@ -837,7 +838,7 @@ HTML)
         $scraper = self::getContainer()->get(Scraper::class);
 
         try {
-            $actual = $scraper->scrapeMatches(...$subject);
+            $actual = $scraper->scrapeMatches($subject);
         } catch (Throwable $e) {
             if ($expected instanceof Throwable) {
                 self::assertInstanceOf(get_class($expected), $e);
@@ -863,7 +864,7 @@ HTML)
             self::assertSame($expected[$i]['extra'], $actual[$i]['extra']);
         }
 
-        $actual2 = $scraper->scrapeMatches(...$subject);
+        $actual2 = $scraper->scrapeMatches($subject);
 
         self::assertCount(count($expected), $actual2);
 
