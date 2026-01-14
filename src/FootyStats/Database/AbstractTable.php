@@ -64,4 +64,19 @@ SQL;
     {
         return $this->connection->createQueryBuilder()->delete(static::getName($target), $alias);
     }
+
+    /**
+     * @param Target $target
+     * @return string
+     * @throws DBALException
+     */
+    public function backup(Target $target): string
+    {
+        $tableName = static::getName($target);
+        $backupTableName = $tableName . '_backup_' . time();
+
+        $this->connection->executeStatement(sprintf('INSERT INTO %s SELECT * FROM %s;', $backupTableName, $tableName));
+
+        return $backupTableName;
+    }
 }

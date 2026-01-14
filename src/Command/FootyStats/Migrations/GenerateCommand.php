@@ -25,11 +25,13 @@ use App\Command\FootyStats\Trait\TargetOptionChoiceTrait;
 use App\FootyStats\Database\AwayTeamStandingView;
 use App\FootyStats\Database\HomeTeamStandingView;
 use App\FootyStats\Database\MatchTable;
+use App\FootyStats\Database\MatchTableAwareTrait;
 use App\FootyStats\Database\MatchXgView;
 use App\FootyStats\Database\TeamStandingView;
 use App\FootyStats\Database\TeamStrengthView;
 use App\FootyStats\MigrationGenerator;
 use App\FootyStats\Scraper;
+use App\FootyStats\ScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -53,12 +55,9 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use TargetOptionChoiceTrait;
+    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionChoiceTrait;
 
     private MigrationGenerator $migrationGenerator;
-    private Scraper $scraper;
-
-    private MatchTable $matchTable;
     private TeamStandingView $teamStandingView;
     private HomeTeamStandingView $homeTeamStandingView;
     private AwayTeamStandingView $awayTeamStandingView;
@@ -78,8 +77,7 @@ final class GenerateCommand extends Command
     }
 
     #[Required]
-    public function setDatabaseAccessors(
-        MatchTable $matchTable,
+    public function setViews(
         TeamStandingView $teamStandingView,
         HomeTeamStandingView $homeTeamStandingView,
         AwayTeamStandingView $awayTeamStandingView,
@@ -87,7 +85,6 @@ final class GenerateCommand extends Command
         MatchXgView $matchXgView,
     ): void
     {
-        $this->matchTable = $matchTable;
         $this->teamStandingView = $teamStandingView;
         $this->homeTeamStandingView = $homeTeamStandingView;
         $this->awayTeamStandingView = $awayTeamStandingView;
@@ -115,6 +112,8 @@ final class GenerateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
+
+        $this->io->title('Generate Footy Stats Migration');
 
         if ($input->getOption('blank')) {
             $this->io->success('Migration written to ' . $this->migrationGenerator->generate([], [], ''));
