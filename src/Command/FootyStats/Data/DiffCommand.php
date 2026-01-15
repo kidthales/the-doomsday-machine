@@ -78,9 +78,15 @@ final class DiffCommand extends Command
 
         if (!$this->matchTable->exists($target)) {
             $this->io->error([
-                'Match table not found',
-                'Please run app:footy-stats:migrations:generate for ' . $target,
-                'Always review the generated migration before applying it'
+                'Match table not found. Please run:',
+                sprintf(
+                    '1) php bin/console app:footy-stats:migrations:generate --nation "%s" --competition "%s" --season "%s"',
+                    $target->nation,
+                    $target->competition,
+                    $target->season
+                ),
+                '2) php bin/console doctrine:migrations:migrate --up',
+                'Then run this command again'
             ]);
 
             return Command::FAILURE;
