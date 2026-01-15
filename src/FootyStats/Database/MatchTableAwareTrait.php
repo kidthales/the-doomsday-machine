@@ -21,31 +21,18 @@ declare(strict_types=1);
 
 namespace App\FootyStats\Database;
 
-use App\FootyStats\Target;
-use Doctrine\DBAL\Exception as DBALException;
-use function Symfony\Component\String\s;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractView extends AbstractTableOrView
+trait MatchTableAwareTrait
 {
-    public static function getDropSql(Target $target): string
-    {
-        $sql = <<<'SQL'
-            DROP VIEW <view_name>;
-SQL;
+    protected MatchTable $matchTable;
 
-        return s($sql)->replace('<view_name>', static::getName($target))->toString();
-    }
-
-    /**
-     * @param Target $target
-     * @return bool
-     * @throws DBALException
-     */
-    public function exists(Target $target): bool
+    #[Required]
+    public function setMatchTable(MatchTable $matchTable): void
     {
-        return $this->checkTableOrView('view', $target);
+        $this->matchTable = $matchTable;
     }
 }

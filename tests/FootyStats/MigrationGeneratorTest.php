@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\FootyStats;
 
 use App\FootyStats\MigrationGenerator;
+use Doctrine\Migrations\Configuration\Configuration;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -35,7 +36,7 @@ final class MigrationGeneratorTest extends KernelTestCase
                 <<<'PHP'
     public function getDescription(): string
     {
-        return 'This is a test!';
+        return 'Footy Stats: This is a test!';
     }
 
     public function up(Schema $schema): void
@@ -58,7 +59,7 @@ PHP
                 <<<'PHP'
     public function getDescription(): string
     {
-        return 'This is another test!';
+        return 'Footy Stats: This is another test!';
     }
 
     public function up(Schema $schema): void
@@ -96,8 +97,12 @@ PHP
     {
         self::bootKernel();
 
+        $config = new Configuration();
+        $config->addMigrationsDirectory('DoctrineMigrations', self::MIGRATIONS_PATH);
+        self::getContainer()->set('doctrine.migrations.configuration', $config);
+
         /** @var MigrationGenerator $migrationGenerator */
-        $migrationGenerator = $this->getContainer()->get(MigrationGenerator::class);
+        $migrationGenerator = self::getContainer()->get(MigrationGenerator::class);
 
         $actualPath = $migrationGenerator->generate(...$subject);
 

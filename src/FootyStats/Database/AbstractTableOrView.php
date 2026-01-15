@@ -52,7 +52,7 @@ abstract readonly class AbstractTableOrView
         }
         // @codeCoverageIgnoreEnd
 
-        return sprintf('%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
+        return sprintf('footy_stats_%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
     }
 
     abstract public static function getCreateSql(Target $target): string;

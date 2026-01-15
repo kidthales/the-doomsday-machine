@@ -24,6 +24,7 @@ namespace App\FootyStats\Database;
 use App\FootyStats\Target;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Query\QueryBuilder;
+use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -32,7 +33,11 @@ abstract readonly class AbstractTable extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string
     {
-        return sprintf('DROP TABLE %s;', static::getName($target));
+        $sql = <<<'SQL'
+            DROP TABLE <table_name>;
+SQL;
+
+        return s($sql)->replace('<table_name>', static::getName($target))->toString();
     }
 
     /**
@@ -58,5 +63,50 @@ abstract readonly class AbstractTable extends AbstractTableOrView
     public function createDeleteQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
     {
         return $this->connection->createQueryBuilder()->delete(static::getName($target), $alias);
+    }
+
+    /**
+     * @param Target $target
+     * @return string
+     * @throws DBALException
+     */
+    public function backup(Target $target): string
+    {
+        $tableName = static::getName($target);
+        $backupTableName = $tableName . '_backup_' . time();
+
+        $createBackupTableSql = s(static::getCreateSql($target))->replace($tableName, $backupTableName);
+
+        $this->connection->executeStatement($createBackupTableSql);
+        $this->connection->executeStatement(sprintf('INSERT INTO %s SELECT * FROM %s;', $backupTableName, $tableName));
+
+        return $backupTableName;
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function rollback(): bool
+    {
+        return $this->connection->rollback();
     }
 }

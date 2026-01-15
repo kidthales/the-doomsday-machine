@@ -213,20 +213,18 @@ final class Scraper
     }
 
     /**
-     * @param string $nation
-     * @param string $competition
-     * @param string $season
+     * @param Target $target
      * @return string[][]
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function scrapeTeamNames(string $nation, string $competition, string $season): array
+    public function scrapeTeamNames(Target $target): array
     {
-        $this->validateNationCompetition($nation, $competition);
+        $this->validateNationCompetition($target->nation, $target->competition);
 
-        $content = $this->fetchContent($nation, $competition, $season);
+        $content = $this->fetchContent($target);
 
         $overviewTeamNames = (new Crawler($content['overview']))
             ->filter('tbody')
@@ -270,9 +268,7 @@ final class Scraper
     }
 
     /**
-     * @param string $nation
-     * @param string $competition
-     * @param string $season
+     * @param Target $target
      * @return array<array{
      *     timestamp: int,
      *     home_team_name: string,
@@ -286,11 +282,11 @@ final class Scraper
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function scrapeMatches(string $nation, string $competition, string $season): array
+    public function scrapeMatches(Target $target): array
     {
-        $this->validateNationCompetition($nation, $competition);
+        $this->validateNationCompetition($target->nation, $target->competition);
 
-        $content = $this->fetchContent($nation, $competition, $season)['fixtures'];
+        $content = $this->fetchContent($target)['fixtures'];
 
         $matchRowsCrawler = (new Crawler($content))->filter('#matches-list ul.match.row');
 
@@ -335,9 +331,7 @@ final class Scraper
     }
 
     /**
-     * @param string $nation
-     * @param string $competition
-     * @param string $season
+     * @param Target $target
      * @return array{
      *      overview: string,
      *      fixtures: string
@@ -347,25 +341,25 @@ final class Scraper
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function fetchContent(string $nation, string $competition, string $season): array
+    private function fetchContent(Target $target): array
     {
-        $availableSeasons = $this->scrapeAvailableSeasons($nation, $competition);
+        $availableSeasons = $this->scrapeAvailableSeasons($target->nation, $target->competition);
 
-        if ($season === $availableSeasons['current']) {
-            return $this->fetchCurrentSeasonContent($nation, $competition);
+        if ($target->season === $availableSeasons['current']) {
+            return $this->fetchCurrentSeasonContent($target->nation, $target->competition);
         } else if (
-            in_array($season, array_keys($availableSeasons['previous']['overview'])) &&
-            in_array($season, array_keys($availableSeasons['previous']['fixtures']))
+            in_array($target->season, array_keys($availableSeasons['previous']['overview'])) &&
+            in_array($target->season, array_keys($availableSeasons['previous']['fixtures']))
         ) {
             return $this->fetchPreviousSeasonContent(
-                $nation,
-                $competition,
-                $availableSeasons['previous']['overview'][$season],
-                $availableSeasons['previous']['fixtures'][$season]
+                $target->nation,
+                $target->competition,
+                $availableSeasons['previous']['overview'][$target->season],
+                $availableSeasons['previous']['fixtures'][$target->season]
             );
         }
 
-        throw new RuntimeException(sprintf('Unsupported season: %s', $season));
+        throw new RuntimeException(sprintf('Unsupported season: %s', $target->season));
     }
 
     /**

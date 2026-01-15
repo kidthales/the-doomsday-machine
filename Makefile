@@ -14,7 +14,8 @@ SYMFONY  := $(PHP) bin/console
 
 # Misc
 .DEFAULT_GOAL = help
-.PHONY        : help build print up start down logs bash test composer vendor sf cc own
+.PHONY        : help build print up start down logs bash test composer vendor sf cc own \
+                footy-stats-migrations-generate
 
 ## —— ☢️  The Doomsday Machine Makefile ☢️  ————————————————————————————————————
 help: ## Outputs this help screen

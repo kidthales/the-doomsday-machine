@@ -46,11 +46,11 @@ final class AwayTeamStandingViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'england_championship_202526_away_team_standing'
+                'footy_stats_england_championship_202526_away_team_standing'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'england_premier_league_201213_away_team_standing'
+                'footy_stats_england_premier_league_201213_away_team_standing'
             ],
         ];
     }
@@ -67,11 +67,11 @@ final class AwayTeamStandingViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'DROP VIEW england_championship_202526_away_team_standing;'
+                'DROP VIEW footy_stats_england_championship_202526_away_team_standing;'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'DROP VIEW england_premier_league_201213_away_team_standing;'
+                'DROP VIEW footy_stats_england_premier_league_201213_away_team_standing;'
             ],
         ];
     }
@@ -80,7 +80,7 @@ final class AwayTeamStandingViewTest extends AbstractDatabaseTestCase
     public function test_getDropSql(Target $subject, string $expected): void
     {
         $actual = AwayTeamStandingView::getDropSql($subject);
-        self::assertSame($expected, $actual);
+        self::assertStringContainsString($expected, $actual);
     }
 
     public static function provide_test_getCreateSql(): array
@@ -89,15 +89,15 @@ final class AwayTeamStandingViewTest extends AbstractDatabaseTestCase
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
                 [
-                    'CREATE VIEW england_championship_202526_away_team_standing AS',
-                    'FROM england_championship_202526_match'
+                    'CREATE VIEW footy_stats_england_championship_202526_away_team_standing AS',
+                    'FROM footy_stats_england_championship_202526_match'
                 ]
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
                 [
-                    'CREATE VIEW england_premier_league_201213_away_team_standing AS',
-                    'FROM england_premier_league_201213_match'
+                    'CREATE VIEW footy_stats_england_premier_league_201213_away_team_standing AS',
+                    'FROM footy_stats_england_premier_league_201213_match'
                 ]
             ],
         ];

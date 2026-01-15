@@ -19,33 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\FootyStats\Database;
+namespace App\FootyStats;
 
-use App\FootyStats\Target;
-use Doctrine\DBAL\Exception as DBALException;
-use function Symfony\Component\String\s;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractView extends AbstractTableOrView
+trait ScraperAwareTrait
 {
-    public static function getDropSql(Target $target): string
-    {
-        $sql = <<<'SQL'
-            DROP VIEW <view_name>;
-SQL;
+    protected Scraper $scraper;
 
-        return s($sql)->replace('<view_name>', static::getName($target))->toString();
-    }
-
-    /**
-     * @param Target $target
-     * @return bool
-     * @throws DBALException
-     */
-    public function exists(Target $target): bool
+    #[Required]
+    public function setScraper(Scraper $scraper): void
     {
-        return $this->checkTableOrView('view', $target);
+        $this->scraper = $scraper;
     }
 }
