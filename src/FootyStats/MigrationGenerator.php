@@ -86,7 +86,7 @@ PHP;
         $date = date('YmdHis');
         $className = "Version$date";
 
-        $path = $this->config->getMigrationDirectories()['DoctrineMigrations'] . '/' . $className . '.php';
+        $path = $this->config->getMigrationDirectories()['FootyStatsMigrations'] . '/' . $className . '.php';
 
         $content = s(self::MIGRATION_TEMPLATE)
             ->replace('<class_name>', $className)
