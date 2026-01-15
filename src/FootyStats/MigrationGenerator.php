@@ -21,11 +21,11 @@ declare(strict_types=1);
 
 namespace App\FootyStats;
 
+use Doctrine\Migrations\Configuration\Configuration;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Yaml\Yaml;
 use function Symfony\Component\String\s;
 
 /**
@@ -71,31 +71,28 @@ final class <class_name> extends AbstractMigration
 
 PHP;
 
-    private array $config;
-
     public function __construct(
-        #[Autowire(param: 'app.footy_stats.migrations_config_path')] string $configPath,
-        private Filesystem                                                  $filesystem,
+        #[Autowire(service: 'doctrine.migrations.configuration')] private Configuration $config,
+        private Filesystem                                                              $filesystem,
     )
     {
-        $this->config = Yaml::parseFile($configPath);
     }
 
     public function generate(array $up, array $down, string $description): string
     {
-        $up = array_map(fn ($sql) => s(self::ADD_SQL_TEMPLATE)->replace('<sql>', $sql)->toString(), $up);
-        $down = array_map(fn ($sql) => s(self::ADD_SQL_TEMPLATE)->replace('<sql>', $sql)->toString(), $down);
+        $up = array_map(fn($sql) => s(self::ADD_SQL_TEMPLATE)->replace('<sql>', $sql)->toString(), $up);
+        $down = array_map(fn($sql) => s(self::ADD_SQL_TEMPLATE)->replace('<sql>', $sql)->toString(), $down);
 
         $date = date('YmdHis');
         $className = "Version$date";
 
-        $path = $this->config['migrations_paths']['FootyStatsMigrations'] . '/' . $className . '.php';
+        $path = $this->config->getMigrationDirectories()['DoctrineMigrations'] . '/' . $className . '.php';
 
         $content = s(self::MIGRATION_TEMPLATE)
             ->replace('<class_name>', $className)
             ->replace('<description>', $description)
-            ->replace('<up>', implode(PHP_EOL.PHP_EOL, $up))
-            ->replace('<down>', implode(PHP_EOL.PHP_EOL, $down))
+            ->replace('<up>', implode(PHP_EOL . PHP_EOL, $up))
+            ->replace('<down>', implode(PHP_EOL . PHP_EOL, $down))
             ->toString();
 
         // @codeCoverageIgnoreStart

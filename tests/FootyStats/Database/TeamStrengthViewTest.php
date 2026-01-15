@@ -49,11 +49,11 @@ final class TeamStrengthViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'england_championship_202526_team_strength'
+                'footy_stats_england_championship_202526_team_strength'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'england_premier_league_201213_team_strength'
+                'footy_stats_england_premier_league_201213_team_strength'
             ],
         ];
     }
@@ -70,11 +70,11 @@ final class TeamStrengthViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'DROP VIEW england_championship_202526_team_strength;'
+                'DROP VIEW footy_stats_england_championship_202526_team_strength;'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'DROP VIEW england_premier_league_201213_team_strength;'
+                'DROP VIEW footy_stats_england_premier_league_201213_team_strength;'
             ],
         ];
     }
@@ -92,15 +92,15 @@ final class TeamStrengthViewTest extends AbstractDatabaseTestCase
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
                 [
-                    'CREATE VIEW england_championship_202526_team_strength AS',
-                    'FROM england_championship_202526_team_standing'
+                    'CREATE VIEW footy_stats_england_championship_202526_team_strength AS',
+                    'FROM footy_stats_england_championship_202526_team_standing'
                 ]
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
                 [
-                    'CREATE VIEW england_premier_league_201213_team_strength AS',
-                    'FROM england_premier_league_201213_team_standing'
+                    'CREATE VIEW footy_stats_england_premier_league_201213_team_strength AS',
+                    'FROM footy_stats_england_premier_league_201213_team_standing'
                 ]
             ],
         ];

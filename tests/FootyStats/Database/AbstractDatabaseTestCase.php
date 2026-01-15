@@ -17,7 +17,7 @@ abstract class AbstractDatabaseTestCase extends KernelTestCase
     {
         $kernel = self::bootKernel();
 
-        $this->connection = $kernel->getContainer()->get('doctrine.dbal.footy_stats_connection');
+        $this->connection = $kernel->getContainer()->get('doctrine.dbal.default_connection');
         $this->target = new Target('Test', 'Test', 'Test');
     }
 

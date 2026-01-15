@@ -14,9 +14,7 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ] || [ 
 
 	echo "Waiting for database to be ready..."
 	ATTEMPTS_LEFT_TO_REACH_DATABASE=60
-	until [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ] || \
-		DATABASE_ERROR=$(php bin/console dbal:run-sql -q "SELECT 1" 2>&1) && \
-		DATABASE_ERROR=$(php bin/console dbal:run-sql --connection footy_stats -q "SELECT 1" 2>&1); do
+	until [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ] || DATABASE_ERROR=$(php bin/console dbal:run-sql -q "SELECT 1" 2>&1); do
 		if [ $? -eq 255 ]; then
 			# If the Doctrine command exits with 255, an unrecoverable error occurred
 			ATTEMPTS_LEFT_TO_REACH_DATABASE=0
@@ -35,12 +33,8 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ] || [ 
 		echo "The database is now ready and reachable"
 	fi
 
-	if [ "$(find ./migrations/app -iname '*.php' -print -quit)" ]; then
+	if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
 		php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
-	fi
-
-	if [ "$(find ./migrations/footy_stats -iname '*.php' -print -quit)" ]; then
-		php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing --configuration config/migrations/doctrine_migrations_footy_stats.yaml
 	fi
 
 	echo 'PHP app ready!'

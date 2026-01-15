@@ -1,5 +1,4 @@
 parameters:
-    app.footy_stats.migrations_config_path: '%env(resolve:FOOTY_STATS_MIGRATIONS_CONFIG_PATH)%'
     app.footy_stats.scraper:
         endpoint: ajax_league.php
         current_season_ttl: '%env(int:FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
