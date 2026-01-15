@@ -46,7 +46,7 @@ PHP;
 
 declare(strict_types=1);
 
-namespace FootyStatsMigrations;
+namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -55,7 +55,7 @@ final class <class_name> extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '<description>';
+        return 'Footy Stats: <description>';
     }
 
     public function up(Schema $schema): void
@@ -86,7 +86,7 @@ PHP;
         $date = date('YmdHis');
         $className = "Version$date";
 
-        $path = $this->config->getMigrationDirectories()['FootyStatsMigrations'] . '/' . $className . '.php';
+        $path = $this->config->getMigrationDirectories()['DoctrineMigrations'] . '/' . $className . '.php';
 
         $content = s(self::MIGRATION_TEMPLATE)
             ->replace('<class_name>', $className)

@@ -36,7 +36,7 @@ final class MigrationGeneratorTest extends KernelTestCase
                 <<<'PHP'
     public function getDescription(): string
     {
-        return 'This is a test!';
+        return 'Footy Stats: This is a test!';
     }
 
     public function up(Schema $schema): void
@@ -59,7 +59,7 @@ PHP
                 <<<'PHP'
     public function getDescription(): string
     {
-        return 'This is another test!';
+        return 'Footy Stats: This is another test!';
     }
 
     public function up(Schema $schema): void
