@@ -12,23 +12,10 @@ PHP      := $(PHP_CONT) php
 COMPOSER := $(PHP_CONT) composer
 SYMFONY  := $(PHP) bin/console
 
-MIGRATIONS := $(SYMFONY) doctrine:migrations:
-FOOTY_STATS_MIGRATION_CONFIG = --configuration config/migrations/doctrine_migrations_footy_stats.yaml
-
 # Misc
 .DEFAULT_GOAL = help
 .PHONY        : help build print up start down logs bash test composer vendor sf cc own \
-                footy-stats-migrations-current \
-                footy-stats-migrations-dump-schema \
-                footy-stats-migrations-execute \
-                footy-stats-migrations-generate \
-                footy-stats-migrations-latest \
-                footy-stats-migrations-list \
-                footy-stats-migrations-migrate \
-                footy-stats-migrations-rollup \
-                footy-stats-migrations-status \
-                footy-stats-migrations-up-to-date \
-                footy-stats-migrations-version
+                footy-stats-migrations-generate
 
 ## —— ☢️  The Doomsday Machine Makefile ☢️  ————————————————————————————————————
 help: ## Outputs this help screen
@@ -82,48 +69,3 @@ cc: sf
 ## —— Troubleshooting 🔎  ———————————————————————————————————————————————————————
 own: ## On Linux host, set current user as owner of the project files that were created by the docker container
 	@$(CD_DOCKER_COMP) run --rm php chown -R $$(id -u):$$(id -g) .
-
-## —— Footy Stats ⚽ ————————————————————————————————————————————————————————————
-footy-stats-migrations-current: ## Outputs the current Footy Stats migration version, pass the parameter "c=" to include options, example: make footy-stats-migrations-current c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)current $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-dump-schema: ## Dump the Footy Stats database schema to a migration, pass the parameter "c=" to include options, example: make footy-stats-migrations-dump-schema c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)dump-schema $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-execute: ## Execute one or more Footy Stats migration versions up or down manually, pass the parameter "c=" to include options and arguments, example: make footy-stats-migrations-execute c='FQCN --down'
-	@$(eval c ?=)
-	@$(MIGRATIONS)execute $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-generate: ## Generate a Footy Stats migration class, pass the parameter "c=" to include options, example: make footy-stats-migrations-generate c=--help
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:migrations:generate $(c)
-
-footy-stats-migrations-latest: ## Outputs the latest Footy Stats migration version, pass the parameter "c=" to include options, example: make footy-stats-migrations-latest c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)latest $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-list: ## Display a list of all available Footy Stats migrations and their status, pass the parameter "c=" to include options, example: make footy-stats-migrations-list c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)list $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-migrate: ## Execute a Footy Stats migration to a specified version or the latest available version, pass the parameter "c=" to include options and arguments, example: make footy-stats-migrations-migrate c='FQCN --all-or-nothing'
-	@$(eval c ?=)
-	@$(MIGRATIONS)migrate $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-rollup: ## Rollup Footy Stats migrations by deleting all tracked versions and insert the one version that exists, pass the parameter "c=" to include options, example: make footy-stats-migrations-rollup c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)rollup $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-status: ## View the status of a set of Footy Stats migrations, pass the parameter "c=" to include options, example: make footy-stats-migrations-status c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)status $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-up-to-date: ## Check if Footy Stats schema is up-to-date, pass the parameter "c=" to include options, example: make footy-stats-migrations-up-to-date c=--help
-	@$(eval c ?=)
-	@$(MIGRATIONS)up-to-date $(FOOTY_STATS_MIGRATION_CONFIG) $(c)
-
-footy-stats-migrations-version: ## Manually add and delete Footy Stats migration versions from the version table, pass the parameter "c=" to include options and arguments, example: make footy-stats-migrations-version c='MIGRATION-FQCN --add'
-	@$(eval c ?=)
-	@$(MIGRATIONS)version $(FOOTY_STATS_MIGRATION_CONFIG) $(c)

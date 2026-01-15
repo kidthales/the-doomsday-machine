@@ -101,7 +101,7 @@ PHP;
         }
         // @codeCoverageIgnoreEnd
 
-        $this->filesystem->appendToFile($path, $content, true);
+        $this->filesystem->appendToFile($path, $content);
 
         return $path;
     }

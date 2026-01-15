@@ -21,15 +21,21 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Data;
 
-use App\Command\FootyStats\Trait\TargetOptionChoiceTrait;
+use App\Command\FootyStats\TargetOptionChoiceTrait;
 use App\FootyStats\Database\MatchTableAwareTrait;
 use App\FootyStats\ScraperAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -47,10 +53,24 @@ final class DiffCommand extends Command
         $this->configureTargetOptionChoice();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->io = new SymfonyStyle($input, $output);
+    }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws Throwable
+     * @throws DBALException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $this->io->title('Diff Footy Stats Data');
 
         $target = $this->promptTargetOptionChoice($input);
@@ -71,6 +91,24 @@ final class DiffCommand extends Command
             $teamNameIndex[$teamNames[1]] = $teamNames[0];
         }
 
+        $rawScrapedMatches = $this->scraper->scrapeMatches($target);
+        usort($rawScrapedMatches, fn (array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
+
+        $found = [];
+        $scrapedMatches = array_values(
+            array_filter($rawScrapedMatches, function (array $match) use (&$found) {
+                if (isset($found[$match['home_team_name']][$match['away_team_name']])) {
+                    return false;
+                }
+
+                if (!isset($found[$match['home_team_name']])) {
+                    $found[$match['home_team_name']] = [];
+                }
+
+                return $found[$match['home_team_name']][$match['away_team_name']] = true;
+            })
+        );
+
         $selectQueryBuilder = $this->matchTable
             ->createSelectQueryBuilder($target)
             ->select('*');
@@ -78,25 +116,28 @@ final class DiffCommand extends Command
         $inserts = [];
         $updates = [];
 
-        foreach ($this->scraper->scrapeMatches($target) as $scrapedMatch) {
+        foreach ($scrapedMatches as $scrapedMatch) {
             $selectQueryBuilder->resetWhere();
+
+            $homeTeamName = $teamNameIndex[$scrapedMatch['home_team_name']];
+            $awayTeamName = $teamNameIndex[$scrapedMatch['away_team_name']];
 
             $dbMatch = $selectQueryBuilder
                 ->where('home_team_name = :home_team_name')
                 ->andWhere('away_team_name = :away_team_name')
-                ->setParameter('home_team_name', $scrapedMatch['home_team_name'])
-                ->setParameter('away_team_name', $scrapedMatch['away_team_name'])
+                ->setParameter('home_team_name', $homeTeamName)
+                ->setParameter('away_team_name', $awayTeamName)
                 ->fetchAssociative();
 
+            $candidate = [
+                'home_team_name' => $homeTeamName,
+                'away_team_name' => $awayTeamName
+            ];
+
             if ($dbMatch === false) {
-                $inserts[] = $scrapedMatch;
+                $inserts[] = [...$scrapedMatch, ...$candidate];
                 continue;
             }
-
-            $candidate = [
-                'home_team_name' => $dbMatch['home_team_name'],
-                'away_team_name' => $dbMatch['away_team_name'],
-            ];
 
             foreach ($dbMatch as $key => $value) {
                 if (in_array($key, ['home_team_name', 'away_team_name'])) {
@@ -142,8 +183,6 @@ final class DiffCommand extends Command
 
         $this->io->info('Backup table: ' . $this->matchTable->backup($target));
 
-        $this->io->progressStart(count($inserts) + count($updates));
-
         $insertQueryBuilder = $this->matchTable
             ->createInsertQueryBuilder($target)
             ->values([
@@ -155,44 +194,55 @@ final class DiffCommand extends Command
                 'extra' => '?'
             ]);
 
-        foreach ($inserts as $insert) {
-            $insertQueryBuilder
-                ->setParameters([
-                    $insert['home_team_name'],
-                    $insert['away_team_name'],
-                    $insert['home_team_score'],
-                    $insert['away_team_score'],
-                    $insert['timestamp'],
-                    $insert['extra']
-                ])
-                ->executeStatement();
+        $this->matchTable->beginTransaction();
 
-            $this->io->progressAdvance();
-        }
+        try {
+            $this->io->progressStart(count($inserts) + count($updates));
 
-        foreach ($updates as $update) {
-            $updateQueryBuilder = $this->matchTable
-                ->createUpdateQueryBuilder($target)
-                ->where('home_team_name = :home_team_name')
-                ->andWhere('away_team_name = :away_team_name')
-                ->setParameter('home_team_name', $update['home_team_name'])
-                ->setParameter('away_team_name', $update['away_team_name']);
+            foreach ($inserts as $insert) {
+                $insertQueryBuilder
+                    ->setParameters([
+                        $insert['home_team_name'],
+                        $insert['away_team_name'],
+                        $insert['home_team_score'],
+                        $insert['away_team_score'],
+                        $insert['timestamp'],
+                        $insert['extra']
+                    ])
+                    ->executeStatement();
 
-            foreach ($update as $key => $value) {
-                if (in_array($key, ['home_team_name', 'away_team_name'])) {
-                    continue;
-                }
-
-                $updateQueryBuilder->set($key, ":$key");
-                $updateQueryBuilder->setParameter($key, $value);
+                $this->io->progressAdvance();
             }
 
-            $updateQueryBuilder->executeStatement();
+            foreach ($updates as $update) {
+                $updateQueryBuilder = $this->matchTable
+                    ->createUpdateQueryBuilder($target)
+                    ->where('home_team_name = :home_team_name')
+                    ->andWhere('away_team_name = :away_team_name')
+                    ->setParameter('home_team_name', $update['home_team_name'])
+                    ->setParameter('away_team_name', $update['away_team_name']);
 
-            $this->io->progressAdvance();
+                foreach ($update as $key => $value) {
+                    if (in_array($key, ['home_team_name', 'away_team_name'])) {
+                        continue;
+                    }
+
+                    $updateQueryBuilder->set($key, ":$key");
+                    $updateQueryBuilder->setParameter($key, $value);
+                }
+
+                $updateQueryBuilder->executeStatement();
+
+                $this->io->progressAdvance();
+            }
+        } catch (Throwable $e) {
+            $this->matchTable->rollback();
+            throw $e;
+        } finally {
+            $this->io->progressFinish();
         }
 
-        $this->io->progressFinish();
+        $this->matchTable->commit();
 
         $this->io->success(sprintf('Inserted %d rows. Updated %d rows', count($inserts), count($updates)));
 

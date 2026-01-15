@@ -74,9 +74,39 @@ SQL;
     {
         $tableName = static::getName($target);
         $backupTableName = $tableName . '_backup_' . time();
-        // TODO
+
+        $createBackupTableSql = s(static::getCreateSql($target))->replace($tableName, $backupTableName);
+
+        $this->connection->executeStatement($createBackupTableSql);
         $this->connection->executeStatement(sprintf('INSERT INTO %s SELECT * FROM %s;', $backupTableName, $tableName));
 
         return $backupTableName;
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    /**
+     * @return bool
+     * @throws DBALException
+     */
+    public function rollback(): bool
+    {
+        return $this->connection->rollback();
     }
 }

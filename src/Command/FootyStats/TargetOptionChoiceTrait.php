@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Trait;
+namespace App\Command\FootyStats;
 
 use App\FootyStats\Target;
 use RuntimeException;

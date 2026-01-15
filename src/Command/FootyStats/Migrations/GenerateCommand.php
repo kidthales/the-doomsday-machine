@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Command\FootyStats\Trait\TargetOptionChoiceTrait;
+use App\Command\FootyStats\TargetOptionChoiceTrait;
 use App\FootyStats\Database\AwayTeamStandingView;
 use App\FootyStats\Database\HomeTeamStandingView;
 use App\FootyStats\Database\MatchTable;
@@ -37,7 +37,6 @@ use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -94,9 +93,12 @@ final class GenerateCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addOption('blank', mode: InputOption::VALUE_NONE, description: 'Generate a blank migration class')
-            ->configureTargetOptionChoice();
+        $this->configureTargetOptionChoice();
+    }
+
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        $this->io = new SymfonyStyle($input, $output);
     }
 
     /**
@@ -111,14 +113,7 @@ final class GenerateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         $this->io->title('Generate Footy Stats Migration');
-
-        if ($input->getOption('blank')) {
-            $this->io->success('Migration written to ' . $this->migrationGenerator->generate([], [], ''));
-            return Command::SUCCESS;
-        }
 
         $target = $this->promptTargetOptionChoice($input);
         $this->io->info((string)$target);
