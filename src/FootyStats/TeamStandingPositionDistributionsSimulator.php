@@ -21,21 +21,22 @@ declare(strict_types=1);
 
 namespace App\FootyStats;
 
-use App\FootyStats\Database\TeamStandingView;
+use App\FootyStats\Database\TeamStandingViewAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use NumberFormatter;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class TeamStandingPositionDistributionsSimulator
+final class TeamStandingPositionDistributionsSimulator
 {
-    private NumberFormatter $ordinalNumberFormatter;
+    use TeamStandingViewAwareTrait;
+
+    private readonly NumberFormatter $ordinalNumberFormatter;
 
     public function __construct(
-        private TeamStandingView        $teamStandingView,
-        private MatchesSimulator        $matchesSimulator,
-        private TeamStandingsCalculator $teamStandingsCalculator
+        private readonly MatchesSimulator        $matchesSimulator,
+        private readonly TeamStandingsCalculator $teamStandingsCalculator
     )
     {
         $this->ordinalNumberFormatter = new NumberFormatter('en_US', NumberFormatter::ORDINAL);
