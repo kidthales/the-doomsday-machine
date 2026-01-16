@@ -25,6 +25,9 @@ use App\FootyStats\Database\MatchTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Random\Randomizer;
 
+/**
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
+ */
 final class MatchesSimulator
 {
     use MatchTableAwareTrait;

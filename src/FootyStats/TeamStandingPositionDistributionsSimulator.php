@@ -25,6 +25,9 @@ use App\FootyStats\Database\TeamStandingView;
 use Doctrine\DBAL\Exception as DBALException;
 use NumberFormatter;
 
+/**
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
+ */
 final readonly class TeamStandingPositionDistributionsSimulator
 {
     private NumberFormatter $ordinalNumberFormatter;
