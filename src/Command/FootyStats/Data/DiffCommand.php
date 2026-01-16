@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Data;
 
-use App\Command\FootyStats\TargetOptionChoiceTrait;
+use App\Command\FootyStats\TargetOptionsChoicesTrait;
 use App\FootyStats\Database\MatchTableAwareTrait;
 use App\FootyStats\ScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
@@ -46,11 +46,11 @@ use Throwable;
 )]
 final class DiffCommand extends Command
 {
-    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionChoiceTrait;
+    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionsChoicesTrait;
 
     protected function configure(): void
     {
-        $this->configureTargetOptionChoice();
+        $this->configureTargetOptions();
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
@@ -73,7 +73,7 @@ final class DiffCommand extends Command
     {
         $this->io->title('Diff Footy Stats Data');
 
-        $target = $this->promptTargetOptionChoice($input);
+        $target = $this->promptTargetChoices($input);
         $this->io->info((string)$target);
 
         if (!$this->matchTable->exists($target)) {

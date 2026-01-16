@@ -34,11 +34,11 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait TargetOptionChoiceTrait
+trait TargetOptionsChoicesTrait
 {
     protected SymfonyStyle $io;
 
-    protected function configureTargetOptionChoice(): self
+    protected function configureTargetOptions(): self
     {
         $this
             ->addOption('nation', mode: InputOption::VALUE_REQUIRED, description: 'Nation choice')
@@ -56,7 +56,7 @@ trait TargetOptionChoiceTrait
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    protected function promptTargetOptionChoice(InputInterface $input): Target
+    protected function promptTargetChoices(InputInterface $input): Target
     {
         $nations = $this->scraper->getNations();
         $nationChoice  = $input->getOption('nation');

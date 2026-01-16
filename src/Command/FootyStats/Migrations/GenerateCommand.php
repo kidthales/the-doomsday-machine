@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Command\FootyStats\TargetOptionChoiceTrait;
+use App\Command\FootyStats\TargetOptionsChoicesTrait;
 use App\FootyStats\Database\AwayTeamStandingView;
 use App\FootyStats\Database\HomeTeamStandingView;
 use App\FootyStats\Database\MatchTable;
@@ -54,7 +54,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionChoiceTrait;
+    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionsChoicesTrait;
 
     private MigrationGenerator $migrationGenerator;
     private TeamStandingView $teamStandingView;
@@ -93,7 +93,7 @@ final class GenerateCommand extends Command
 
     protected function configure(): void
     {
-        $this->configureTargetOptionChoice();
+        $this->configureTargetOptions();
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
@@ -115,7 +115,7 @@ final class GenerateCommand extends Command
     {
         $this->io->title('Generate Footy Stats Migration');
 
-        $target = $this->promptTargetOptionChoice($input);
+        $target = $this->promptTargetChoices($input);
         $this->io->info((string)$target);
 
         $up = [];
