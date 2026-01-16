@@ -180,7 +180,7 @@ final class DiffCommand extends Command
                 }
                 $definitionList[] = new TableSeparator();
             }
-            $this->io->definitionList($definitionList);
+            $this->io->definitionList(...$definitionList);
         }
 
         if (!$this->io->confirm('Proceed with the data changes?')) {
