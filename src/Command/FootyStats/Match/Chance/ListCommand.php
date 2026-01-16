@@ -25,7 +25,7 @@ use App\Command\DataOptionsTrait;
 use App\Command\FootyStats\TargetArgumentsTrait;
 use App\Console\Style\DataStyle;
 use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\MatchChancesCalculator;
+use App\FootyStats\MatchChancesCalculatorAwareTrait;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -33,7 +33,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 use Throwable;
 
 /**
@@ -45,17 +44,9 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchTableAwareTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, TargetArgumentsTrait;
 
     private DataStyle $io;
-
-    private MatchChancesCalculator $matchChancesCalculator;
-
-    #[Required]
-    public function setMatchChancesCalculator(MatchChancesCalculator $calculator): void
-    {
-        $this->matchChancesCalculator = $calculator;
-    }
 
     protected function configure(): void
     {

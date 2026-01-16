@@ -30,11 +30,11 @@ use Random\Randomizer;
  */
 final class MatchesSimulator
 {
-    use MatchTableAwareTrait;
+    use MatchChancesCalculatorAwareTrait, MatchTableAwareTrait;
 
     private readonly Randomizer $randomizer;
 
-    public function __construct(private readonly MatchChancesCalculator $matchChancesCalculator)
+    public function __construct()
     {
         $this->randomizer = new Randomizer();
     }
