@@ -24,17 +24,13 @@ namespace App\Command\FootyStats\Match\Xg;
 use App\Command\DataOptionsTrait;
 use App\Command\FootyStats\TargetArgumentsTrait;
 use App\Console\Style\DataStyle;
-use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\Database\MatchXgView;
-use App\FootyStats\MatchChancesCalculator;
-use LogicException;
+use App\FootyStats\Database\MatchXgViewAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 use Throwable;
 
 /**
@@ -46,17 +42,9 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchXgViewAwareTrait, TargetArgumentsTrait;
 
     private DataStyle $io;
-
-    private MatchXgView $matchXgView;
-
-    #[Required]
-    public function setMatchXgView(MatchXgView $matchXgView): void
-    {
-        $this->matchXgView = $matchXgView;
-    }
 
     protected function configure(): void
     {

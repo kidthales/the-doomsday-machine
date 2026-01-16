@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\FootyStats;
 
-use App\FootyStats\Database\MatchXgView;
+use App\FootyStats\Database\MatchXgViewAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 
 /**
@@ -29,13 +29,11 @@ use Doctrine\DBAL\Exception as DBALException;
  */
 final class MatchChancesCalculator
 {
+    use MatchXgViewAwareTrait;
+
     private const int MAX_TEAM_GOALS = 10;
 
     private array $factorials = [];
-
-    public function __construct(private readonly MatchXgView $matchXgView)
-    {
-    }
 
     /**
      * @param Target $target
