@@ -45,7 +45,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
 
     private DataStyle $io;
 
@@ -114,23 +114,7 @@ final class ListCommand extends Command
         }
 
         if ($input->getOption('pretty')) {
-            $teamStandings = array_map(
-                fn (array $teamStanding) => [
-                    '#' => $teamStanding['position'],
-                    'Team' => $teamStanding['team_name'],
-                    'MP' => $teamStanding['matches_played'],
-                    'W' => $teamStanding['wins'],
-                    'D' => $teamStanding['draws'],
-                    'L' => $teamStanding['losses'],
-                    'GF' => $teamStanding['goals_for'],
-                    'GA' => $teamStanding['goals_against'],
-                    'GD' => $teamStanding['goal_difference'],
-                    'Pts' => $teamStanding['points'],
-                    'Last 5' => substr($teamStanding['sequence'], -5),
-                    'PPG' => number_format(round($teamStanding['points_per_game'], 2), 2)
-                ],
-                $teamStandings
-            );
+            $teamStandings = self::prettifyTeamStandings($teamStandings);
         }
 
         $columns = array_keys($teamStandings[0]);
