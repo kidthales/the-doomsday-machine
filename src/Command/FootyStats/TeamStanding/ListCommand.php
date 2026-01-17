@@ -21,10 +21,11 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\TargetArgumentsTrait;
 use App\Console\Command\FootyStats\TeamStanding\PrettyTeamStandingsTrait;
+use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
@@ -45,7 +46,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
 
     private HomeTeamStandingView $homeTeamStandingView;
     private AwayTeamStandingView $awayTeamStandingView;
@@ -66,9 +67,9 @@ final class ListCommand extends Command
     {
         $this->configureTargetArguments()
             ->addOption('home', mode: InputOption::VALUE_NONE, description: 'Output home team standings')
-            ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings')
-            ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
-        $this->configureDataOptions();
+            ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings');
+        $this->configurePrettyOption()
+            ->configureDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -107,7 +108,7 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($input->getOption('pretty')) {
+        if ($this->getPrettyOption($input)) {
             $teamStandings = self::prettifyTeamStandings($teamStandings);
         }
 

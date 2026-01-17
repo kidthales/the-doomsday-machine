@@ -21,9 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match;
 
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -41,15 +42,15 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchTableAwareTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchTableAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
 
     protected function configure(): void
     {
         $this->configureTargetArguments()
             ->addOption('completed', mode: InputOption::VALUE_NONE, description: 'List completed matches')
-            ->addOption('pending', mode: InputOption::VALUE_NONE, description: 'List pending matches')
-            ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
-        $this->configureDataOptions();
+            ->addOption('pending', mode: InputOption::VALUE_NONE, description: 'List pending matches');
+        $this->configurePrettyOption()
+            ->configureDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -89,7 +90,7 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($input->getOption('pretty')) {
+        if ($this->getPrettyOption($input)) {
             $matches = array_map(
                 fn (array $match) => [
                     'Home' => $match['home_team_name'],

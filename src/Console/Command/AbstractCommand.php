@@ -19,20 +19,26 @@
 
 declare(strict_types=1);
 
-namespace App\Scraper;
+namespace App\Console\Command;
 
-use Symfony\Contracts\Service\Attribute\Required;
+use App\Console\Style\DataStyle;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait FootyStatsScraperAwareTrait
+abstract class AbstractCommand extends Command
 {
-    protected FootyStatsScraper $footyStatsScraper;
+    public const int SUCCESS = Command::SUCCESS;
+    public const int FAILURE = Command::FAILURE;
+    public const int INVALID = Command::INVALID;
 
-    #[Required]
-    public function setFootyStatsScraper(FootyStatsScraper $scraper): void
+    protected DataStyle $io;
+
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        $this->footyStatsScraper = $scraper;
+        $this->io = new DataStyle($input, $output);
     }
 }

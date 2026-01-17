@@ -22,9 +22,10 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Match\Chance;
 
 use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use LogicException;
 use RuntimeException;
@@ -43,14 +44,14 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
 
     protected function configure(): void
     {
         $this->configureTargetArguments()
-            ->addOption('scores', mode: InputOption::VALUE_NONE, description: 'Include scoreline chances')
-            ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
-        $this->configureDataOptions();
+            ->addOption('scores', mode: InputOption::VALUE_NONE, description: 'Include scoreline chances');
+        $this->configurePrettyOption()
+            ->configureDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -112,7 +113,7 @@ final class ListCommand extends Command
             ];
         }
 
-        if ($input->getOption('pretty')) {
+        if ($this->getPrettyOption($input)) {
             $matchChances = array_map(
                 function (array $matchChances) {
                     $prettyMatchChances = [];

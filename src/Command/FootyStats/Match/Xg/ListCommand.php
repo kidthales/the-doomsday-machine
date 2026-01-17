@@ -21,14 +21,14 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match\Xg;
 
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchXgViewAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
@@ -41,13 +41,13 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchXgViewAwareTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchXgViewAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
 
     protected function configure(): void
     {
         $this->configureTargetArguments()
-            ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
-        $this->configureDataOptions();
+            ->configurePrettyOption()
+            ->configureDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

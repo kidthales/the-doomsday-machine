@@ -22,10 +22,11 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\TeamStanding;
 
 use App\Calculator\FootyStats\TeamStandingsCalculator;
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\TargetArgumentsTrait;
 use App\Console\Command\FootyStats\TeamStanding\PrettyTeamStandingsTrait;
+use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Simulator\FootyStats\MatchesSimulator;
 use App\Simulator\FootyStats\TeamStandingPositionDistributionsSimulator;
@@ -47,7 +48,7 @@ use Throwable;
 )]
 final class PredictCommand extends Command
 {
-    use DataOptionsTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
 
     private const int NUM_RUNS = 10000;
 
@@ -80,9 +81,9 @@ final class PredictCommand extends Command
                 'distribution',
                 mode: InputOption::VALUE_NONE,
                 description: 'Output team standing position distributions'
-            )
-            ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
-        $this->configureDataOptions();
+            );
+        $this->configurePrettyOption()
+            ->configureDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -121,7 +122,7 @@ final class PredictCommand extends Command
                 throw new LogicException('Expected simulated team standings');
             }
 
-            if ($input->getOption('pretty')) {
+            if ($this->getPrettyOption($input)) {
                 $teamStandings = self::prettifyTeamStandings($teamStandings);
             }
 
@@ -170,7 +171,7 @@ final class PredictCommand extends Command
             throw new LogicException('Expected simulated team standing position distributions');
         }
 
-        if ($input->getOption('pretty')) {
+        if ($this->getPrettyOption($input)) {
             $teamStandingPositionDistributions = array_map(
                 function (array $distribution) {
                     $prettyDistribution = [];

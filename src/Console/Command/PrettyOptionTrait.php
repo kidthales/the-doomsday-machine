@@ -21,24 +21,25 @@ declare(strict_types=1);
 
 namespace App\Console\Command;
 
-use App\Console\Style\DataStyle;
-use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract class Command extends BaseCommand
+trait PrettyOptionTrait
 {
-    public const int SUCCESS = BaseCommand::SUCCESS;
-    public const int FAILURE = BaseCommand::FAILURE;
-    public const int INVALID = BaseCommand::INVALID;
-
-    protected DataStyle $io;
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
+    protected function configurePrettyOption(): self
     {
-        $this->io = new DataStyle($input, $output);
+        return $this->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with additional formatting');
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return bool
+     */
+    protected function getPrettyOption(InputInterface $input): bool
+    {
+        return $input->getOption('pretty');
     }
 }

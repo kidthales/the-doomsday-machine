@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Data;
 
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\FootyStats\TargetOptionsChoicesTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use App\Scraper\FootyStatsScraperAwareTrait;
@@ -79,19 +79,24 @@ final class DiffCommand extends Command
                     $target->competition,
                     $target->season
                 ),
-                '2) php bin/console doctrine:migrations:migrate --up',
-                'Then run this command again'
+                '2) php bin/console doctrine:migrations:migrate',
+                sprintf(
+                    '3) php bin/console app:footy-stats:data:diff --nation "%s" --competition "%s" --season "%s"',
+                    $target->nation,
+                    $target->competition,
+                    $target->season
+                )
             ]);
 
             return Command::FAILURE;
         }
 
         $teamNameIndex = [];
-        foreach ($this->scraper->scrapeTeamNames($target) as $teamNames) {
+        foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
             $teamNameIndex[$teamNames[1]] = $teamNames[0];
         }
 
-        $rawScrapedMatches = $this->scraper->scrapeMatches($target);
+        $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
         usort($rawScrapedMatches, fn (array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
 
         $found = [];

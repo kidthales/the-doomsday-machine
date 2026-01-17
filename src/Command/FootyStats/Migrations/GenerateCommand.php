@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Console\Command\Command;
+use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\FootyStats\TargetOptionsChoicesTrait;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingView;
@@ -31,8 +31,6 @@ use App\Database\FootyStats\MatchXgView;
 use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Migrations\FootyStatsMigrationGenerator;
-use App\Scraper\FootyStatsScraper;
-use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -53,7 +51,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait, FootyStatsScraperAwareTrait, TargetOptionsChoicesTrait;
+    use MatchTableAwareTrait, TargetOptionsChoicesTrait;
 
     private FootyStatsMigrationGenerator $migrationGenerator;
     private TeamStandingView $teamStandingView;
@@ -66,12 +64,6 @@ final class GenerateCommand extends Command
     public function setMigrationGenerator(FootyStatsMigrationGenerator $generator): void
     {
         $this->migrationGenerator = $generator;
-    }
-
-    #[Required]
-    public function setScraper(FootyStatsScraper $scraper): void
-    {
-        $this->scraper = $scraper;
     }
 
     #[Required]
