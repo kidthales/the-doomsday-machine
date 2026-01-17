@@ -21,17 +21,17 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Command\DataOptionsTrait;
-use App\Command\FootyStats\TargetArgumentsTrait;
-use App\Console\Style\DataStyle;
-use App\FootyStats\Database\TeamStandingViewAwareTrait;
-use App\FootyStats\MatchesSimulator;
-use App\FootyStats\TeamStandingPositionDistributionsSimulator;
-use App\FootyStats\TeamStandingsCalculator;
+use App\Calculator\FootyStats\TeamStandingsCalculator;
+use App\Console\Command\Command;
+use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\FootyStats\TeamStanding\PrettyTeamStandingsTrait;
+use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Simulator\FootyStats\MatchesSimulator;
+use App\Simulator\FootyStats\TeamStandingPositionDistributionsSimulator;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -50,8 +50,6 @@ final class PredictCommand extends Command
     use DataOptionsTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
 
     private const int NUM_RUNS = 10000;
-
-    private DataStyle $io;
 
     private TeamStandingsCalculator $teamStandingsCalculator;
     private MatchesSimulator $matchesSimulator;
@@ -85,11 +83,6 @@ final class PredictCommand extends Command
             )
             ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
         $this->configureDataOptions();
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new DataStyle($input, $output);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -21,15 +21,14 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match\Chance;
 
-use App\Command\DataOptionsTrait;
-use App\Command\FootyStats\TargetArgumentsTrait;
-use App\Console\Style\DataStyle;
-use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\MatchChancesCalculatorAwareTrait;
+use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
+use App\Console\Command\Command;
+use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Database\FootyStats\MatchTableAwareTrait;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -46,19 +45,12 @@ final class ListCommand extends Command
 {
     use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, TargetArgumentsTrait;
 
-    private DataStyle $io;
-
     protected function configure(): void
     {
         $this->configureTargetArguments()
             ->addOption('scores', mode: InputOption::VALUE_NONE, description: 'Include scoreline chances')
             ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
         $this->configureDataOptions();
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new DataStyle($input, $output);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

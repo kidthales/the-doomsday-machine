@@ -21,24 +21,23 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Command\FootyStats\TargetOptionsChoicesTrait;
-use App\FootyStats\Database\AwayTeamStandingView;
-use App\FootyStats\Database\HomeTeamStandingView;
-use App\FootyStats\Database\MatchTable;
-use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\Database\MatchXgView;
-use App\FootyStats\Database\TeamStandingView;
-use App\FootyStats\Database\TeamStrengthView;
-use App\FootyStats\MigrationGenerator;
-use App\FootyStats\Scraper;
-use App\FootyStats\ScraperAwareTrait;
+use App\Console\Command\Command;
+use App\Console\Command\FootyStats\TargetOptionsChoicesTrait;
+use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\MatchTable;
+use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Database\FootyStats\MatchXgView;
+use App\Database\FootyStats\TeamStandingView;
+use App\Database\FootyStats\TeamStrengthView;
+use App\Migrations\FootyStatsMigrationGenerator;
+use App\Scraper\FootyStatsScraper;
+use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -54,9 +53,9 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionsChoicesTrait;
+    use MatchTableAwareTrait, FootyStatsScraperAwareTrait, TargetOptionsChoicesTrait;
 
-    private MigrationGenerator $migrationGenerator;
+    private FootyStatsMigrationGenerator $migrationGenerator;
     private TeamStandingView $teamStandingView;
     private HomeTeamStandingView $homeTeamStandingView;
     private AwayTeamStandingView $awayTeamStandingView;
@@ -64,13 +63,13 @@ final class GenerateCommand extends Command
     private MatchXgView $matchXgView;
 
     #[Required]
-    public function setMigrationGenerator(MigrationGenerator $generator): void
+    public function setMigrationGenerator(FootyStatsMigrationGenerator $generator): void
     {
         $this->migrationGenerator = $generator;
     }
 
     #[Required]
-    public function setScraper(Scraper $scraper): void
+    public function setScraper(FootyStatsScraper $scraper): void
     {
         $this->scraper = $scraper;
     }
@@ -94,11 +93,6 @@ final class GenerateCommand extends Command
     protected function configure(): void
     {
         $this->configureTargetOptions();
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new SymfonyStyle($input, $output);
     }
 
     /**
