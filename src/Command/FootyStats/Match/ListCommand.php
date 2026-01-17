@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match;
 
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use RuntimeException;
@@ -42,14 +41,18 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchTableAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchTableAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->addOption('completed', mode: InputOption::VALUE_NONE, description: 'List completed matches')
             ->addOption('pending', mode: InputOption::VALUE_NONE, description: 'List pending matches');
-        $this->configurePrettyOption()
+
+        $this
+            ->configurePrettyOption()
             ->configureDataOptions();
     }
 

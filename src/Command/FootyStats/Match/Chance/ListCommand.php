@@ -22,9 +22,8 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Match\Chance;
 
 use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use LogicException;
@@ -44,12 +43,15 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->addOption('scores', mode: InputOption::VALUE_NONE, description: 'Include scoreline chances');
+
         $this->configurePrettyOption()
             ->configureDataOptions();
     }

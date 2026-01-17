@@ -21,8 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Data;
 
-use App\Console\Command\AbstractCommand as Command;
-use App\Console\Command\FootyStats\TargetOptionsChoicesTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
@@ -45,12 +44,7 @@ use Throwable;
 )]
 final class DiffCommand extends Command
 {
-    use MatchTableAwareTrait, FootyStatsScraperAwareTrait, TargetOptionsChoicesTrait;
-
-    protected function configure(): void
-    {
-        $this->configureTargetOptions();
-    }
+    use MatchTableAwareTrait, FootyStatsScraperAwareTrait;
 
     /**
      * @param InputInterface $input
@@ -67,7 +61,7 @@ final class DiffCommand extends Command
     {
         $this->io->title('Diff Footy Stats Data');
 
-        $target = $this->promptTargetChoices($input);
+        $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
 
         if (!$this->matchTable->exists($target)) {

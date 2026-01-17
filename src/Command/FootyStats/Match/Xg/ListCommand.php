@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match\Xg;
 
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchXgViewAwareTrait;
 use RuntimeException;
@@ -41,11 +40,13 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchXgViewAwareTrait, PrettyOptionTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, MatchXgViewAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->configurePrettyOption()
             ->configureDataOptions();
     }

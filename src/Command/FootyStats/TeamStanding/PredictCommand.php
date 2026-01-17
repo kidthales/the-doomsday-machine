@@ -22,10 +22,9 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\TeamStanding;
 
 use App\Calculator\FootyStats\TeamStandingsCalculator;
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
-use App\Console\Command\FootyStats\TeamStanding\PrettyTeamStandingsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Simulator\FootyStats\MatchesSimulator;
@@ -48,7 +47,7 @@ use Throwable;
 )]
 final class PredictCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TeamStandingViewAwareTrait;
 
     private const int NUM_RUNS = 10000;
 
@@ -76,13 +75,17 @@ final class PredictCommand extends Command
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->addOption(
                 'distribution',
                 mode: InputOption::VALUE_NONE,
                 description: 'Output team standing position distributions'
             );
-        $this->configurePrettyOption()
+
+        $this
+            ->configurePrettyOption()
             ->configureDataOptions();
     }
 

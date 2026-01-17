@@ -21,8 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Console\Command\AbstractCommand as Command;
-use App\Console\Command\FootyStats\TargetOptionsChoicesTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingView;
 use App\Database\FootyStats\MatchTable;
@@ -39,7 +38,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
@@ -51,7 +49,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait, TargetOptionsChoicesTrait;
+    use MatchTableAwareTrait;
 
     private FootyStatsMigrationGenerator $migrationGenerator;
     private TeamStandingView $teamStandingView;
@@ -82,11 +80,6 @@ final class GenerateCommand extends Command
         $this->matchXgView = $matchXgView;
     }
 
-    protected function configure(): void
-    {
-        $this->configureTargetOptions();
-    }
-
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -95,13 +88,12 @@ final class GenerateCommand extends Command
      * @throws DBALException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io->title('Generate Footy Stats Migration');
 
-        $target = $this->promptTargetChoices($input);
+        $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
 
         $up = [];

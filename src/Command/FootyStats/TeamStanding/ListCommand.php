@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
-use App\Console\Command\FootyStats\TeamStanding\PrettyTeamStandingsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingView;
@@ -46,7 +45,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TeamStandingViewAwareTrait;
 
     private HomeTeamStandingView $homeTeamStandingView;
     private AwayTeamStandingView $awayTeamStandingView;
@@ -65,10 +64,14 @@ final class ListCommand extends Command
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->addOption('home', mode: InputOption::VALUE_NONE, description: 'Output home team standings')
             ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings');
-        $this->configurePrettyOption()
+
+        $this
+            ->configurePrettyOption()
             ->configureDataOptions();
     }
 

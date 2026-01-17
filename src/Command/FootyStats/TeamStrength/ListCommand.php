@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStrength;
 
-use App\Console\Command\AbstractCommand as Command;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\TargetArgumentsTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStrengthView;
 use RuntimeException;
@@ -42,7 +41,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, TargetArgumentsTrait;
+    use DataOptionsTrait, PrettyOptionTrait;
 
     private TeamStrengthView $teamStrengthView;
 
@@ -54,7 +53,9 @@ final class ListCommand extends Command
 
     protected function configure(): void
     {
-        $this->configureTargetArguments()
+        parent::configure();
+
+        $this
             ->configurePrettyOption()
             ->configureDataOptions();
     }

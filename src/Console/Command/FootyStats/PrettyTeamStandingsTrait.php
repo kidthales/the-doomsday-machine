@@ -21,29 +21,29 @@ declare(strict_types=1);
 
 namespace App\Console\Command\FootyStats;
 
-use App\Entity\FootyStats\Target;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait TargetArgumentsTrait
+trait PrettyTeamStandingsTrait
 {
-    protected function configureTargetArguments(): self
+    protected static function prettifyTeamStandings(array $teamStandings): array
     {
-        return $this
-            ->addArgument('nation', InputArgument::REQUIRED, 'Nation name')
-            ->addArgument('competition', InputArgument::REQUIRED, 'Competition name')
-            ->addArgument('season', InputArgument::REQUIRED, 'Season identifier');
-    }
-
-    protected function getTargetArguments(InputInterface $input): Target
-    {
-        return new Target(
-            $input->getArgument('nation'),
-            $input->getArgument('competition'),
-            $input->getArgument('season')
+        return array_map(
+            fn (array $teamStanding) => [
+                '#' => $teamStanding['position'],
+                'Team' => $teamStanding['team_name'],
+                'MP' => $teamStanding['matches_played'],
+                'W' => $teamStanding['wins'],
+                'D' => $teamStanding['draws'],
+                'L' => $teamStanding['losses'],
+                'GF' => $teamStanding['goals_for'],
+                'GA' => $teamStanding['goals_against'],
+                'GD' => $teamStanding['goal_difference'],
+                'Pts' => $teamStanding['points'],
+                'Last 5' => substr($teamStanding['sequence'], -5),
+                'PPG' => number_format(round($teamStanding['points_per_game'], 2), 2)
+            ],
+            $teamStandings
         );
     }
 }
