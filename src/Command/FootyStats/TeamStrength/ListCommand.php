@@ -19,14 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\TeamStanding;
+namespace App\Command\FootyStats\TeamStrength;
 
 use App\Command\DataOptionsTrait;
 use App\Command\FootyStats\TargetArgumentsTrait;
 use App\Console\Style\DataStyle;
-use App\FootyStats\Database\AwayTeamStandingView;
-use App\FootyStats\Database\HomeTeamStandingView;
-use App\FootyStats\Database\TeamStandingViewAwareTrait;
+use App\FootyStats\Database\TeamStrengthView;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -40,35 +38,26 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:team-standing:list',
-    description: 'List team standings',
+    name: 'app:footy-stats:team-strength:list',
+    description: 'List team strengths',
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyTeamStandingsTrait, TargetArgumentsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait, TargetArgumentsTrait;
 
     private DataStyle $io;
 
-    private HomeTeamStandingView $homeTeamStandingView;
-    private AwayTeamStandingView $awayTeamStandingView;
+    private TeamStrengthView $teamStrengthView;
 
     #[Required]
-    public function setHomeTeamStandingView(HomeTeamStandingView $homeTeamStandingView): void
+    public function setTeamStrengthView(TeamStrengthView $teamStrengthView): void
     {
-        $this->homeTeamStandingView = $homeTeamStandingView;
-    }
-
-    #[Required]
-    public function setAwayTeamStandingView(AwayTeamStandingView $awayTeamStandingView): void
-    {
-        $this->awayTeamStandingView = $awayTeamStandingView;
+        $this->teamStrengthView = $teamStrengthView;
     }
 
     protected function configure(): void
     {
         $this->configureTargetArguments()
-            ->addOption('home', mode: InputOption::VALUE_NONE, description: 'Output home team standings')
-            ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings')
             ->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with formatting');
         $this->configureDataOptions();
     }
@@ -83,30 +72,16 @@ final class ListCommand extends Command
         $target = $this->getTargetArguments($input);
         $dataOutputOptions = $this->getDataOptions($input);
 
-        $isHome = $input->getOption('home');
-        $isAway = $input->getOption('away');
-
-        if ($isHome && $isAway) {
-            throw new RuntimeException("Only one of '--home' or '--away' may be specified");
-        }
-
         try {
-            if ($isHome) {
-                $selectQueryBuilder = $this->homeTeamStandingView->createSelectQueryBuilder($target);
-            } else if ($isAway) {
-                $selectQueryBuilder = $this->awayTeamStandingView->createSelectQueryBuilder($target);
-            } else {
-                $selectQueryBuilder = $this->teamStandingView->createSelectQueryBuilder($target);
-            }
-
-            $teamStandings = $selectQueryBuilder
+            $teamStrengths = $this->teamStrengthView
+                ->createSelectQueryBuilder($target)
                 ->select('*')
                 ->fetchAllAssociative();
         } catch (Throwable $e) {
-            throw new RuntimeException('Error reading team standings', previous: $e);
+            throw new RuntimeException('Error getting team strengths', previous: $e);
         }
 
-        if (empty($teamStandings)) {
+        if (empty($teamStrengths)) {
             if ($dataOutputOptions['json']) {
                 $this->io->writeln('[]');
             }
@@ -115,21 +90,28 @@ final class ListCommand extends Command
         }
 
         if ($input->getOption('pretty')) {
-            $teamStandings = self::prettifyTeamStandings($teamStandings);
+            $teamStrengths = array_map(
+                fn (array $teamStrength) => [
+                    'Team' => $teamStrength['team_name'],
+                    'Attack' => number_format(round($teamStrength['attack'], 2), 2),
+                    'Defense' => number_format(round($teamStrength['defense'], 2), 2)
+                ],
+                $teamStrengths
+            );
         }
 
-        $columns = array_keys($teamStandings[0]);
+        $columns = array_keys($teamStrengths[0]);
 
         try {
             if ($dataOutputOptions['json']) {
-                $this->io->json($teamStandings);
+                $this->io->json($teamStrengths);
             } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $teamStandings);
+                $this->io->csv($columns, $teamStrengths);
             } else {
-                $this->io->table($columns, $teamStandings);
+                $this->io->table($columns, $teamStrengths);
             }
         } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying team standings', previous: $e);
+            throw new RuntimeException('Error displaying team strengths', previous: $e);
         }
 
         return Command::SUCCESS;
