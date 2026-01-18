@@ -61,18 +61,16 @@ final class TeamStandingPositionDistributionsSimulator
             $target,
             $numRuns,
             function (array $simulatedMatches, int $run) use (&$teamStandingsPositionCounts, $initialTeamStandings, $callback) {
-                if (!empty($simulatedMatches)) {
-                    $teamStandings = $this->teamStandingsCalculator->calculate($simulatedMatches, $initialTeamStandings);
+                $teamStandings = $this->teamStandingsCalculator->calculate($simulatedMatches, $initialTeamStandings);
 
-                    foreach ($teamStandings as $teamStanding) {
-                        $teamName = $teamStanding['team_name'];
+                foreach ($teamStandings as $teamStanding) {
+                    $teamName = $teamStanding['team_name'];
 
-                        if (!isset($teamStandingsPositionCounts[$teamName])) {
-                            $teamStandingsPositionCounts[$teamName] = array_fill(0, count($teamStandings), 0);
-                        }
-
-                        ++$teamStandingsPositionCounts[$teamName][$teamStanding['position'] - 1];
+                    if (!isset($teamStandingsPositionCounts[$teamName])) {
+                        $teamStandingsPositionCounts[$teamName] = array_fill(0, count($teamStandings), 0);
                     }
+
+                    ++$teamStandingsPositionCounts[$teamName][$teamStanding['position'] - 1];
                 }
 
                 $callback($teamStandingsPositionCounts, $run, $this);
