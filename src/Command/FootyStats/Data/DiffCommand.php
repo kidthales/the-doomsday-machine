@@ -21,16 +21,14 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Data;
 
-use App\Command\FootyStats\TargetOptionChoiceTrait;
-use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\ScraperAwareTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -46,17 +44,7 @@ use Throwable;
 )]
 final class DiffCommand extends Command
 {
-    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionChoiceTrait;
-
-    protected function configure(): void
-    {
-        $this->configureTargetOptionChoice();
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new SymfonyStyle($input, $output);
-    }
+    use FootyStatsScraperAwareTrait, MatchTableAwareTrait;
 
     /**
      * @param InputInterface $input
@@ -73,32 +61,16 @@ final class DiffCommand extends Command
     {
         $this->io->title('Diff Footy Stats Data');
 
-        $target = $this->promptTargetOptionChoice($input);
+        $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
 
-        if (!$this->matchTable->exists($target)) {
-            $this->io->error([
-                'Match table not found. Please run:',
-                sprintf(
-                    '1) php bin/console app:footy-stats:migrations:generate --nation "%s" --competition "%s" --season "%s"',
-                    $target->nation,
-                    $target->competition,
-                    $target->season
-                ),
-                '2) php bin/console doctrine:migrations:migrate --up',
-                'Then run this command again'
-            ]);
-
-            return Command::FAILURE;
-        }
-
         $teamNameIndex = [];
-        foreach ($this->scraper->scrapeTeamNames($target) as $teamNames) {
+        foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
             $teamNameIndex[$teamNames[1]] = $teamNames[0];
         }
 
-        $rawScrapedMatches = $this->scraper->scrapeMatches($target);
-        usort($rawScrapedMatches, fn (array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
+        $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
+        usort($rawScrapedMatches, fn(array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
 
         $found = [];
         $scrapedMatches = array_values(

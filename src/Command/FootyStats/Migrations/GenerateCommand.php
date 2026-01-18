@@ -21,28 +21,30 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Migrations;
 
-use App\Command\FootyStats\TargetOptionChoiceTrait;
-use App\FootyStats\Database\AwayTeamStandingView;
-use App\FootyStats\Database\HomeTeamStandingView;
-use App\FootyStats\Database\MatchTable;
-use App\FootyStats\Database\MatchTableAwareTrait;
-use App\FootyStats\Database\MatchXgView;
-use App\FootyStats\Database\TeamStandingView;
-use App\FootyStats\Database\TeamStrengthView;
-use App\FootyStats\MigrationGenerator;
-use App\FootyStats\Scraper;
-use App\FootyStats\ScraperAwareTrait;
+use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
+use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
+use App\Database\FootyStats\MatchTable;
+use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Database\FootyStats\MatchXgView;
+use App\Database\FootyStats\MatchXgViewAwareTrait;
+use App\Database\FootyStats\TeamStandingView;
+use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Database\FootyStats\TeamStrengthView;
+use App\Database\FootyStats\TeamStrengthViewAwareTrait;
+use App\Migrations\FootyStatsMigrationGenerator;
+use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
@@ -54,51 +56,27 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait, ScraperAwareTrait, TargetOptionChoiceTrait;
+    use AwayTeamStandingViewAwareTrait,
+        HomeTeamStandingViewAwareTrait,
+        MatchTableAwareTrait,
+        MatchXgViewAwareTrait,
+        TeamStandingViewAwareTrait,
+        TeamStrengthViewAwareTrait;
 
-    private MigrationGenerator $migrationGenerator;
-    private TeamStandingView $teamStandingView;
-    private HomeTeamStandingView $homeTeamStandingView;
-    private AwayTeamStandingView $awayTeamStandingView;
-    private TeamStrengthView $teamStrengthView;
-    private MatchXgView $matchXgView;
+    private FootyStatsMigrationGenerator $migrationGenerator;
 
     #[Required]
-    public function setMigrationGenerator(MigrationGenerator $generator): void
+    public function setMigrationGenerator(FootyStatsMigrationGenerator $generator): void
     {
         $this->migrationGenerator = $generator;
     }
 
-    #[Required]
-    public function setScraper(Scraper $scraper): void
-    {
-        $this->scraper = $scraper;
-    }
-
-    #[Required]
-    public function setViews(
-        TeamStandingView $teamStandingView,
-        HomeTeamStandingView $homeTeamStandingView,
-        AwayTeamStandingView $awayTeamStandingView,
-        TeamStrengthView $teamStrengthView,
-        MatchXgView $matchXgView,
+    public function setTargetArgumentsProvider(
+        #[Autowire(service: 'app.provider.footy_stats.scraper_target_arguments_provider')]
+        TargetArgumentsProviderInterface $provider
     ): void
     {
-        $this->teamStandingView = $teamStandingView;
-        $this->homeTeamStandingView = $homeTeamStandingView;
-        $this->awayTeamStandingView = $awayTeamStandingView;
-        $this->teamStrengthView = $teamStrengthView;
-        $this->matchXgView = $matchXgView;
-    }
-
-    protected function configure(): void
-    {
-        $this->configureTargetOptionChoice();
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new SymfonyStyle($input, $output);
+        parent::setTargetArgumentsProvider($provider);
     }
 
     /**
@@ -109,13 +87,12 @@ final class GenerateCommand extends Command
      * @throws DBALException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io->title('Generate Footy Stats Migration');
 
-        $target = $this->promptTargetOptionChoice($input);
+        $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
 
         $up = [];

@@ -11,6 +11,16 @@ return static function (ContainerConfigurator $container): void {
         ->autowire()
         ->autoconfigure();
 
-    $services->load('App\\',  '../src/');
+    $services->load('App\\', '../src/');
+
+    // Concrete implementations for \App\Provider\FootyStats\TargetArgumentsProviderInterface
+    $services->set(
+        'app.provider.footy_stats.database_target_arguments_provider',
+        \App\Provider\FootyStats\DatabaseTargetArgumentsProvider::class
+    );
+    $services->set(
+        'app.provider.footy_stats.scraper_target_arguments_provider',
+        \App\Provider\FootyStats\ScraperTargetArgumentsProvider::class
+    );
 };
 
