@@ -15,3 +15,8 @@ parameters:
                 Bundesliga:
                     overview_path: germany/bundesliga
                     fixtures_path: germany/bundesliga/fixtures
+
+            Spain:
+                La Liga:
+                    overview_path: spain/la-liga
+                    fixtures_path: spain/la-liga/fixtures
