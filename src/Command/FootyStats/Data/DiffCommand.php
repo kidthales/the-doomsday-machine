@@ -23,6 +23,7 @@ namespace App\Command\FootyStats\Data;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -43,7 +44,7 @@ use Throwable;
 )]
 final class DiffCommand extends Command
 {
-    use MatchTableAwareTrait;
+    use FootyStatsScraperAwareTrait, MatchTableAwareTrait;
 
     /**
      * @param InputInterface $input
@@ -62,27 +63,6 @@ final class DiffCommand extends Command
 
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
-
-        if (!$this->matchTable->exists($target)) {
-            $this->io->error([
-                'Match table not found. Please run:',
-                sprintf(
-                    '1) php bin/console app:footy-stats:migrations:generate --nation "%s" --competition "%s" --season "%s"',
-                    $target->nation,
-                    $target->competition,
-                    $target->season
-                ),
-                '2) php bin/console doctrine:migrations:migrate',
-                sprintf(
-                    '3) php bin/console app:footy-stats:data:diff --nation "%s" --competition "%s" --season "%s"',
-                    $target->nation,
-                    $target->competition,
-                    $target->season
-                )
-            ]);
-
-            return Command::FAILURE;
-        }
 
         $teamNameIndex = [];
         foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
