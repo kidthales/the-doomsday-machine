@@ -11,7 +11,7 @@ return static function (ContainerConfigurator $container): void {
         ->autowire()
         ->autoconfigure();
 
-    $services->load('App\\',  '../src/');
+    $services->load('App\\', '../src/');
 
     // Concrete implementations for \App\Provider\FootyStats\TargetArgumentsProviderInterface
     $services->set(
