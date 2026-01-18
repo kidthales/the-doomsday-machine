@@ -20,3 +20,8 @@ parameters:
                 La Liga:
                     overview_path: spain/la-liga
                     fixtures_path: spain/la-liga/fixtures
+
+            Italy:
+                Serie A:
+                    overview_path: italy/serie-a
+                    fixtures_path: italy/serie-a/fixtures
