@@ -25,3 +25,8 @@ parameters:
                 Serie A:
                     overview_path: italy/serie-a
                     fixtures_path: italy/serie-a/fixtures
+
+            Portugal:
+                Liga NOS:
+                    overview_path: portugal/liga-nos
+                    fixtures_path: portugal/liga-nos/fixtures
