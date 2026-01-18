@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Calculator\FootyStats\TeamStandingsCalculator;
+use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
@@ -47,19 +47,16 @@ use Throwable;
 )]
 final class PredictCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TeamStandingViewAwareTrait;
+    use DataOptionsTrait,
+        PrettyOptionTrait,
+        PrettyTeamStandingsTrait,
+        TeamStandingsCalculatorAwareTrait,
+        TeamStandingViewAwareTrait;
 
     private const int NUM_RUNS = 10000;
 
-    private TeamStandingsCalculator $teamStandingsCalculator;
     private MatchesSimulator $matchesSimulator;
     private TeamStandingPositionDistributionsSimulator $teamStandingPositionDistributionsSimulator;
-
-    #[Required]
-    public function setTeamStandingsCalculator(TeamStandingsCalculator $calculator): void
-    {
-        $this->teamStandingsCalculator = $calculator;
-    }
 
     #[Required]
     public function setMatchesSimulator(MatchesSimulator $simulator): void
@@ -185,7 +182,7 @@ final class PredictCommand extends Command
                             continue;
                         }
 
-                        $prettyDistribution[$column] = number_format(round(100* $value, 2), 2) . '%';
+                        $prettyDistribution[$column] = number_format(round(100 * $value, 2), 2) . '%';
                     }
 
                     return $prettyDistribution;

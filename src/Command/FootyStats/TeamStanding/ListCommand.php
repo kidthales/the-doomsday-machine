@@ -25,7 +25,7 @@ use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
-use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\HomeTeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use RuntimeException;
@@ -45,21 +45,18 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, PrettyTeamStandingsTrait, TeamStandingViewAwareTrait;
+    use AwayTeamStandingViewAwareTrait,
+        DataOptionsTrait,
+        PrettyOptionTrait,
+        PrettyTeamStandingsTrait,
+        TeamStandingViewAwareTrait;
 
     private HomeTeamStandingView $homeTeamStandingView;
-    private AwayTeamStandingView $awayTeamStandingView;
 
     #[Required]
     public function setHomeTeamStandingView(HomeTeamStandingView $homeTeamStandingView): void
     {
         $this->homeTeamStandingView = $homeTeamStandingView;
-    }
-
-    #[Required]
-    public function setAwayTeamStandingView(AwayTeamStandingView $awayTeamStandingView): void
-    {
-        $this->awayTeamStandingView = $awayTeamStandingView;
     }
 
     protected function configure(): void

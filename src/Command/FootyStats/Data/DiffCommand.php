@@ -70,7 +70,7 @@ final class DiffCommand extends Command
         }
 
         $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
-        usort($rawScrapedMatches, fn (array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
+        usort($rawScrapedMatches, fn(array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
 
         $found = [];
         $scrapedMatches = array_values(

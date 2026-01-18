@@ -239,7 +239,7 @@ final class FootyStatsScraper
 
         $fixturesTeamNames = (new Crawler($content['fixtures']))
             ->filter('.leagueTable td.leagueTableTeamName a')
-            ->each(fn (Crawler $node) => [s($node->text())->trim()->toString(), $node->attr('href')]);
+            ->each(fn(Crawler $node) => [s($node->text())->trim()->toString(), $node->attr('href')]);
 
         if (count($overviewTeamNames) !== count($fixturesTeamNames)) {
             throw new RuntimeException(
@@ -251,8 +251,8 @@ final class FootyStatsScraper
             );
         }
 
-        usort($overviewTeamNames, fn (array $a, array $b) => strcmp($a[1], $b[1]));
-        usort($fixturesTeamNames, fn (array $a, array $b) => strcmp($a[1], $b[1]));
+        usort($overviewTeamNames, fn(array $a, array $b) => strcmp($a[1], $b[1]));
+        usort($fixturesTeamNames, fn(array $a, array $b) => strcmp($a[1], $b[1]));
 
         for ($i = 0; $i < count($overviewTeamNames); ++$i) {
             if ($overviewTeamNames[$i][1] !== $fixturesTeamNames[$i][1]) {
@@ -422,8 +422,8 @@ final class FootyStatsScraper
      * @throws TransportExceptionInterface
      */
     private function fetchPreviousSeasonContent(
-        string $nation,
-        string $competition,
+        string          $nation,
+        string          $competition,
         EndpointPayload $overviewPayload,
         EndpointPayload $fixturesPayload
     ): array

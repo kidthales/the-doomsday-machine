@@ -75,7 +75,7 @@ final class ListCommand extends Command
 
         if ($input->getOption('pretty')) {
             $matchXgAll = array_map(
-                fn (array $matchXg) => [
+                fn(array $matchXg) => [
                     'Home' => $matchXg['home_team_name'],
                     'Away' => $matchXg['away_team_name'],
                     'Home XG' => number_format(round($matchXg['home_team_xg'], 2), 2),

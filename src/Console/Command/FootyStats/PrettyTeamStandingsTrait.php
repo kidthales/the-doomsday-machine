@@ -29,7 +29,7 @@ trait PrettyTeamStandingsTrait
     protected static function prettifyTeamStandings(array $teamStandings): array
     {
         return array_map(
-            fn (array $teamStanding) => [
+            fn(array $teamStanding) => [
                 '#' => $teamStanding['position'],
                 'Team' => $teamStanding['team_name'],
                 'MP' => $teamStanding['matches_played'],

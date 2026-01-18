@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Simulator\FootyStats;
 
-use App\Calculator\FootyStats\TeamStandingsCalculator;
+use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Entity\FootyStats\Target;
 use Doctrine\DBAL\Exception as DBALException;
@@ -32,14 +32,11 @@ use NumberFormatter;
  */
 final class TeamStandingPositionDistributionsSimulator
 {
-    use TeamStandingViewAwareTrait;
+    use TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
 
     private readonly NumberFormatter $ordinalNumberFormatter;
 
-    public function __construct(
-        private readonly MatchesSimulator        $matchesSimulator,
-        private readonly TeamStandingsCalculator $teamStandingsCalculator
-    )
+    public function __construct(private readonly MatchesSimulator $matchesSimulator)
     {
         $this->ordinalNumberFormatter = new NumberFormatter('en_US', NumberFormatter::ORDINAL);
     }

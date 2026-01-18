@@ -23,12 +23,17 @@ namespace App\Command\FootyStats\Migrations;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
 use App\Database\FootyStats\MatchTable;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use App\Database\FootyStats\MatchXgView;
+use App\Database\FootyStats\MatchXgViewAwareTrait;
 use App\Database\FootyStats\TeamStandingView;
+use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStrengthView;
+use App\Database\FootyStats\TeamStrengthViewAwareTrait;
 use App\Migrations\FootyStatsMigrationGenerator;
 use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use Doctrine\DBAL\Exception as DBALException;
@@ -51,35 +56,19 @@ use Symfony\Contracts\Service\Attribute\Required;
 )]
 final class GenerateCommand extends Command
 {
-    use MatchTableAwareTrait;
+    use AwayTeamStandingViewAwareTrait,
+        HomeTeamStandingViewAwareTrait,
+        MatchTableAwareTrait,
+        MatchXgViewAwareTrait,
+        TeamStandingViewAwareTrait,
+        TeamStrengthViewAwareTrait;
 
     private FootyStatsMigrationGenerator $migrationGenerator;
-    private TeamStandingView $teamStandingView;
-    private HomeTeamStandingView $homeTeamStandingView;
-    private AwayTeamStandingView $awayTeamStandingView;
-    private TeamStrengthView $teamStrengthView;
-    private MatchXgView $matchXgView;
 
     #[Required]
     public function setMigrationGenerator(FootyStatsMigrationGenerator $generator): void
     {
         $this->migrationGenerator = $generator;
-    }
-
-    #[Required]
-    public function setViews(
-        TeamStandingView $teamStandingView,
-        HomeTeamStandingView $homeTeamStandingView,
-        AwayTeamStandingView $awayTeamStandingView,
-        TeamStrengthView $teamStrengthView,
-        MatchXgView $matchXgView,
-    ): void
-    {
-        $this->teamStandingView = $teamStandingView;
-        $this->homeTeamStandingView = $homeTeamStandingView;
-        $this->awayTeamStandingView = $awayTeamStandingView;
-        $this->teamStrengthView = $teamStrengthView;
-        $this->matchXgView = $matchXgView;
     }
 
     public function setTargetArgumentsProvider(

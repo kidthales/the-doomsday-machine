@@ -19,16 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\Provider\FootyStats;
+namespace App\Database\FootyStats;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-interface TargetArgumentsProviderInterface
+trait HomeTeamStandingViewAwareTrait
 {
-    public function getNations(): array;
+    protected HomeTeamStandingView $homeTeamStandingView;
 
-    public function getCompetitions(string $nation): array;
-
-    public function getSeasons(string $nation, string $competition): array;
+    #[Required]
+    public function setHomeTeamStandingView(HomeTeamStandingView $homeTeamStandingView): void
+    {
+        $this->homeTeamStandingView = $homeTeamStandingView;
+    }
 }

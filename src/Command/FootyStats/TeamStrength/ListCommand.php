@@ -24,12 +24,11 @@ namespace App\Command\FootyStats\TeamStrength;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
-use App\Database\FootyStats\TeamStrengthView;
+use App\Database\FootyStats\TeamStrengthViewAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 use Throwable;
 
 /**
@@ -41,15 +40,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait;
-
-    private TeamStrengthView $teamStrengthView;
-
-    #[Required]
-    public function setTeamStrengthView(TeamStrengthView $teamStrengthView): void
-    {
-        $this->teamStrengthView = $teamStrengthView;
-    }
+    use DataOptionsTrait, PrettyOptionTrait, TeamStrengthViewAwareTrait;
 
     protected function configure(): void
     {
@@ -84,7 +75,7 @@ final class ListCommand extends Command
 
         if ($this->getPrettyOption($input)) {
             $teamStrengths = array_map(
-                fn (array $teamStrength) => [
+                fn(array $teamStrength) => [
                     'Team' => $teamStrength['team_name'],
                     'Attack' => number_format(round($teamStrength['attack'], 2), 2),
                     'Defense' => number_format(round($teamStrength['defense'], 2), 2)

@@ -95,7 +95,7 @@ final class ListCommand extends Command
 
         if ($this->getPrettyOption($input)) {
             $matches = array_map(
-                fn (array $match) => [
+                fn(array $match) => [
                     'Home' => $match['home_team_name'],
                     'Away' => $match['away_team_name'],
                     'Home Score' => $match['home_team_score'],

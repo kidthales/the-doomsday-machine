@@ -19,16 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\Provider\FootyStats;
+namespace App\Calculator\FootyStats;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-interface TargetArgumentsProviderInterface
+trait TeamStandingsCalculatorAwareTrait
 {
-    public function getNations(): array;
+    protected TeamStandingsCalculator $teamStandingsCalculator;
 
-    public function getCompetitions(string $nation): array;
-
-    public function getSeasons(string $nation, string $competition): array;
+    #[Required]
+    public function setTeamStandingsCalculator(TeamStandingsCalculator $calculator): void
+    {
+        $this->teamStandingsCalculator = $calculator;
+    }
 }
