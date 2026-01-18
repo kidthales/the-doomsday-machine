@@ -48,6 +48,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
+ * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(

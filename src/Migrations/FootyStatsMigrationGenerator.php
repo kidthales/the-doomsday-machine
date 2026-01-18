@@ -29,6 +29,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use function Symfony\Component\String\s;
 
 /**
+ * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Autoconfigure(public: true)]
