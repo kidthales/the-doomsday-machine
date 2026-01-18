@@ -18,7 +18,8 @@ trait MatchTableSetUpTearDownTrait
     {
         try {
             $this->connection->executeStatement(MatchTable::getDropSql($this->target));
-        } catch (Throwable) {}
+        } catch (Throwable) {
+        }
 
         $this->connection->executeStatement(MatchTable::getCreateSql($this->target));
     }

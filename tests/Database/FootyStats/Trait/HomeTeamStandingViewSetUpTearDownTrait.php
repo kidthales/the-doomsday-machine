@@ -18,7 +18,8 @@ trait HomeTeamStandingViewSetUpTearDownTrait
     {
         try {
             $this->connection->executeStatement(HomeTeamStandingView::getDropSql($this->target));
-        } catch (Throwable) {}
+        } catch (Throwable) {
+        }
 
         $this->connection->executeStatement(HomeTeamStandingView::getCreateSql($this->target));
     }

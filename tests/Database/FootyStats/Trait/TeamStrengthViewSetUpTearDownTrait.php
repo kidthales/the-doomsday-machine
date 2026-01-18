@@ -18,7 +18,8 @@ trait TeamStrengthViewSetUpTearDownTrait
     {
         try {
             $this->connection->executeStatement(TeamStrengthView::getDropSql($this->target));
-        } catch (Throwable) {}
+        } catch (Throwable) {
+        }
 
         $this->connection->executeStatement(TeamStrengthView::getCreateSql($this->target));
     }

@@ -104,7 +104,8 @@ final class FootyStatsScraperTest extends KernelTestCase
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse('')
                 ],
                 new RuntimeException('Overview current season (2025/26) does not match fixtures current season ()')
@@ -123,7 +124,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -132,7 +134,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML)
+HTML
+                    )
                 ],
                 new RuntimeException('Overview previous seasons count (1) does not match fixtures previous seasons count (0)')
             ],
@@ -150,7 +153,8 @@ HTML)
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -160,7 +164,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML)
+HTML
+                    )
                 ],
                 new RuntimeException('Overview previous season (2024/25) does not match fixtures previous season (2008/09)')
             ],
@@ -180,7 +185,8 @@ HTML)
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -194,7 +200,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML)
+HTML
+                    )
                 ],
                 [
                     'current' => '2025/26',
@@ -238,7 +245,7 @@ HTML)
                 self::assertInstanceOf(get_class($expected), $e);
                 self::assertStringContainsString($expected->getMessage(), $e->getMessage());
             } else {
-               throw $e;
+                throw $e;
             }
             return;
         }
@@ -306,7 +313,8 @@ HTML)
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -318,7 +326,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                 ],
                 []
             ],
@@ -343,7 +352,8 @@ HTML),
         <tr><td></td><td></td><td><a href="/clubs/ipswich-town-fc-220">Ipswich Town FC</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -361,7 +371,8 @@ HTML),
         <tr><td class="leagueTableTeamName"><a href="/clubs/middlesbrough-fc-147"> Middlesbrough</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                 ],
                 new RuntimeException('Overview team name count (3) does not match fixtures team name count (2)')
             ],
@@ -386,7 +397,8 @@ HTML),
         <tr><td></td><td></td><td><a href="/clubs/ipswich-town-fc-220">Ipswich Town FC</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -405,7 +417,8 @@ HTML),
         <tr><td class="leagueTableTeamName"><a href="/clubs/ipswich-town-fc-1337"> Ipswich Town</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                 ],
                 new RuntimeException('Overview team name href (/clubs/ipswich-town-fc-220) does not match fixtures team name href (/clubs/ipswich-town-fc-1337)'),
             ],
@@ -430,7 +443,8 @@ HTML),
         <tr><td></td><td></td><td><a href="/clubs/ipswich-town-fc-220">Ipswich Town FC</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -449,7 +463,8 @@ HTML),
         <tr><td class="leagueTableTeamName"><a href="/clubs/ipswich-town-fc-220"> Ipswich Town</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                 ],
                 [
                     ['Coventry City FC', 'Coventry City'],
@@ -471,7 +486,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -483,7 +499,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <table>
     <tbody>
@@ -492,7 +509,8 @@ HTML),
         <tr><td></td><td></td><td><a href="/clubs/ipswich-town-fc-220">Ipswich Town FC</a></td></tr>
     </tbody>
 </table>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <table>
     <tbody class="leagueTable">
@@ -501,7 +519,8 @@ HTML),
         <tr><td class="leagueTableTeamName"><a href="/clubs/ipswich-town-fc-220"> Ipswich Town</a></td></tr>
     </tbody>
 </table>
-HTML)
+HTML
+                    )
                 ],
                 [
                     ['Coventry City FC', 'Coventry City'],
@@ -598,7 +617,8 @@ HTML)
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -610,7 +630,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                 ],
                 []
             ],
@@ -628,7 +649,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -692,7 +714,8 @@ HTML),
         </li>
     </ul>
 </div>
-HTML),
+HTML
+                    ),
                 ],
                 [
                     [
@@ -727,7 +750,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(<<<'HTML'
 <div id="teamSummary">
     <div class="season">
@@ -739,7 +763,8 @@ HTML),
         </div>
     </div>
 </div>
-HTML),
+HTML
+                    ),
                     new MockResponse(''),
                     new MockResponse(<<<'HTML'
 <div id="matches-list">
@@ -794,7 +819,8 @@ HTML),
         </li>
     </ul>
 </div>
-HTML)
+HTML
+                    )
                 ],
                 [
                     [

@@ -39,7 +39,8 @@ final class MatchXgViewTest extends AbstractDatabaseTestCase
 
         try {
             $this->connection->executeStatement(MatchXgView::getDropSql($this->target));
-        } catch (Throwable) {}
+        } catch (Throwable) {
+        }
 
         $this->connection->executeStatement(MatchXgView::getCreateSql($this->target));
     }
