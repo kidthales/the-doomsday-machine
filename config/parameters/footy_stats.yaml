@@ -30,3 +30,8 @@ parameters:
                 Liga NOS:
                     overview_path: portugal/liga-nos
                     fixtures_path: portugal/liga-nos/fixtures
+
+            France:
+                Ligue 1:
+                    overview_path: france/ligue-1
+                    fixtures_path: france/ligue-1/fixtures
