@@ -107,7 +107,7 @@ final class PredictCommand extends Command
                 $simulatedMatches = [];
 
                 $this->matchesSimulator->simulate($target, 1, function ($matches) use (&$simulatedMatches) {
-                    $simulatedMatches = $matches;
+                    $simulatedMatches[] = $matches;
                 });
             } catch (Throwable $e) {
                 throw new RuntimeException('Error simulating pending matches', previous: $e);
