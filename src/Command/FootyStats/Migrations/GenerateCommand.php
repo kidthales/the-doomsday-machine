@@ -30,11 +30,13 @@ use App\Database\FootyStats\MatchXgView;
 use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Migrations\FootyStatsMigrationGenerator;
+use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use Doctrine\DBAL\Exception as DBALException;
 use LogicException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -78,6 +80,14 @@ final class GenerateCommand extends Command
         $this->awayTeamStandingView = $awayTeamStandingView;
         $this->teamStrengthView = $teamStrengthView;
         $this->matchXgView = $matchXgView;
+    }
+
+    public function setTargetArgumentsProvider(
+        #[Autowire(service: 'app.provider.footy_stats.scraper_target_arguments_provider')]
+        TargetArgumentsProviderInterface $provider
+    ): void
+    {
+        parent::setTargetArgumentsProvider($provider);
     }
 
     /**

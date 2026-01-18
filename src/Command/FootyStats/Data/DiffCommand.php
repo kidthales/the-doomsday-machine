@@ -23,7 +23,6 @@ namespace App\Command\FootyStats\Data;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\MatchTableAwareTrait;
-use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -44,7 +43,7 @@ use Throwable;
 )]
 final class DiffCommand extends Command
 {
-    use MatchTableAwareTrait, FootyStatsScraperAwareTrait;
+    use MatchTableAwareTrait;
 
     /**
      * @param InputInterface $input

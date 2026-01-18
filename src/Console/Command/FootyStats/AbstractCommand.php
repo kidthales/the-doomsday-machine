@@ -23,15 +23,18 @@ namespace App\Console\Command\FootyStats;
 
 use App\Console\Command\AbstractCommand as Command;
 use App\Entity\FootyStats\Target;
+use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use App\Scraper\FootyStatsScraperAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -43,6 +46,17 @@ abstract class AbstractCommand extends Command
     public const int SUCCESS = Command::SUCCESS;
     public const int FAILURE = Command::FAILURE;
     public const int INVALID = Command::INVALID;
+
+    protected TargetArgumentsProviderInterface $targetArgumentsProvider;
+
+    #[Required]
+    public function setTargetArgumentsProvider(
+        #[Autowire(service: 'app.provider.footy_stats.database_target_arguments_provider')]
+        TargetArgumentsProviderInterface $provider
+    ): void
+    {
+        $this->targetArgumentsProvider = $provider;
+    }
 
     protected function configure(): void
     {
@@ -59,41 +73,39 @@ abstract class AbstractCommand extends Command
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $nation = $input->getArgument('nation');
-        $nations = $this->footyStatsScraper->getNations();
+        $nations = $this->targetArgumentsProvider->getNations();
 
         if (!$nation) {
             sort($nations);
             $nation = $this->io->choice('Choose Nation', $nations);
             $input->setArgument('nation', $nation);
         } else if (!in_array($nation, $nations)) {
-            throw new RuntimeException(sprintf('Invalid nation input: %s', $nation));
+            throw new RuntimeException(sprintf('Invalid nation argument: %s', $nation));
         }
 
         $competition = $input->getArgument('competition');
-        $competitions = $this->footyStatsScraper->getCompetitions($nation);
+        $competitions = $this->targetArgumentsProvider->getCompetitions($nation);
 
         if (!$competition) {
             sort($competitions);
             $competition = $this->io->choice('Choose Competition', $competitions);
             $input->setArgument('competition', $competition);
         } else if (!in_array($competition, $competitions)) {
-            throw new RuntimeException(sprintf('Invalid competition input: %s', $competition));
+            throw new RuntimeException(sprintf('Invalid competition argument: %s', $competition));
         }
 
         $season = $input->getArgument('season');
-        $availableSeasons = $this->footyStatsScraper->scrapeAvailableSeasons($nation, $competition);
-        $seasons = [$availableSeasons['current'], ...array_keys($availableSeasons['previous']['overview'])];
+        $seasons = $this->targetArgumentsProvider->getSeasons($nation, $competition);
 
         if (!$season) {
             sort($seasons);
-            $input->setArgument('season', $this->io->choice('Choose Season', $seasons, $availableSeasons['current']));
+            $input->setArgument('season', $this->io->choice('Choose Season', $seasons));
         } else if (!in_array($season, $seasons)) {
-            throw new RuntimeException(sprintf('Invalid season choice: %s', $season));
+            throw new RuntimeException(sprintf('Invalid season argument: %s', $season));
         }
     }
 
