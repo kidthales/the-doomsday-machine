@@ -22,8 +22,20 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Data;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
+use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
+use App\Database\FootyStats\MatchTable;
 use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Database\FootyStats\MatchXgView;
+use App\Database\FootyStats\MatchXgViewAwareTrait;
+use App\Database\FootyStats\TeamStandingView;
+use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Database\FootyStats\TeamStrengthView;
+use App\Database\FootyStats\TeamStrengthViewAwareTrait;
 use App\Scraper\FootyStatsScraperAwareTrait;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -33,6 +45,7 @@ use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 use Throwable;
 
 /**
@@ -40,29 +53,71 @@ use Throwable;
  */
 #[AsCommand(
     name: 'app:footy-stats:data:diff',
-    description: 'Insert or update Footy Stats table data'
+    description: 'Create or update Footy Stats table data'
 )]
 final class DiffCommand extends Command
 {
-    use FootyStatsScraperAwareTrait, MatchTableAwareTrait;
+    use AwayTeamStandingViewAwareTrait,
+        FootyStatsScraperAwareTrait,
+        HomeTeamStandingViewAwareTrait,
+        MatchTableAwareTrait,
+        MatchXgViewAwareTrait,
+        TeamStandingViewAwareTrait,
+        TeamStrengthViewAwareTrait;
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws Throwable
-     * @throws DBALException
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
-     */
+    private Connection $connection;
+
+    #[Required]
+    public function setConnection(Connection $connection): void
+    {
+        $this->connection = $connection;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io->title('Diff Footy Stats Data');
 
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
+
+        $creates = [];
+
+        if (!$this->matchTable->exists($target)) {
+            $creates[] = MatchTable::getCreateSql($target);
+        }
+
+        if (!$this->teamStandingView->exists($target)) {
+            $creates[] = TeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->homeTeamStandingView->exists($target)) {
+            $creates[] = HomeTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->awayTeamStandingView->exists($target)) {
+            $creates[] = AwayTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->teamStrengthView->exists($target)) {
+            $creates[] = TeamStrengthView::getCreateSql($target);
+        }
+
+        if (!$this->matchXgView->exists($target)) {
+            $creates[] = MatchXgView::getCreateSql($target);
+        }
+
+        if (!empty($creates)) {
+            $this->io->section('Create');
+            $this->io->writeln($creates);
+
+            if (!$this->io->confirm('Proceed with the schema changes?')) {
+                return Command::SUCCESS;
+            }
+
+            foreach ($creates as $create) {
+                $this->connection->executeStatement($create);
+            }
+        }
 
         $teamNameIndex = [];
         foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
