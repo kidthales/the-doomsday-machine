@@ -23,20 +23,21 @@ namespace App\Command\FootyStats\TeamStanding;
 
 use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Simulator\FootyStats\MatchesSimulator;
 use App\Simulator\FootyStats\TeamStandingPositionDistributionsSimulator;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use LogicException;
-use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\Service\Attribute\Required;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -48,6 +49,7 @@ use Throwable;
 final class PredictCommand extends Command
 {
     use DataOptionsTrait,
+        DisplayTableDataTrait,
         PrettyOptionTrait,
         PrettyTeamStandingsTrait,
         TeamStandingsCalculatorAwareTrait,
@@ -86,6 +88,13 @@ final class PredictCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
@@ -94,24 +103,16 @@ final class PredictCommand extends Command
         $isDistribution = $input->getOption('distribution');
 
         if (!$isDistribution) {
-            try {
-                $initialTeamStandings = $this->footyStatsTeamStandingView
-                    ->createSelectQueryBuilder($target)
-                    ->select('*')
-                    ->fetchAllAssociative();
-            } catch (Throwable $e) {
-                throw new RuntimeException('Error getting initial team standings', previous: $e);
-            }
+            $initialTeamStandings = $this->footyStatsTeamStandingView
+                ->createSelectQueryBuilder($target)
+                ->select('*')
+                ->fetchAllAssociative();
 
-            try {
-                $simulatedMatches = [];
+            $simulatedMatches = [];
 
-                $this->matchesSimulator->simulate($target, 1, function ($matches) use (&$simulatedMatches) {
-                    $simulatedMatches = $matches;
-                });
-            } catch (Throwable $e) {
-                throw new RuntimeException('Error simulating pending matches', previous: $e);
-            }
+            $this->matchesSimulator->simulate($target, 1, function ($matches) use (&$simulatedMatches) {
+                $simulatedMatches = $matches;
+            });
 
             $teamStandings = $this->teamStandingsCalculator->calculate(
                 $simulatedMatches,
@@ -126,19 +127,7 @@ final class PredictCommand extends Command
                 $teamStandings = self::prettifyFootyStatsTeamStandings($teamStandings);
             }
 
-            $columns = array_keys($teamStandings[0]);
-
-            try {
-                if ($dataOutputOptions['json']) {
-                    $this->io->json($teamStandings);
-                } else if ($dataOutputOptions['csv']) {
-                    $this->io->csv($columns, $teamStandings);
-                } else {
-                    $this->io->table($columns, $teamStandings);
-                }
-            } catch (Throwable $e) {
-                throw new RuntimeException('Error displaying simulated team standings', previous: $e);
-            }
+            $this->displayCommandTableData($teamStandings, $dataOutputOptions);
 
             return Command::SUCCESS;
         }
@@ -149,19 +138,15 @@ final class PredictCommand extends Command
             $this->io->progressStart(self::NUM_RUNS);
         }
 
-        try {
-            $teamStandingPositionDistributions = $this->teamStandingPositionDistributionsSimulator->simulate(
-                $target,
-                self::NUM_RUNS,
-                function () use ($showProgress) {
-                    if ($showProgress) {
-                        $this->io->progressAdvance();
-                    }
+        $teamStandingPositionDistributions = $this->teamStandingPositionDistributionsSimulator->simulate(
+            $target,
+            self::NUM_RUNS,
+            function () use ($showProgress) {
+                if ($showProgress) {
+                    $this->io->progressAdvance();
                 }
-            );
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error simulating team standing position distributions', previous: $e);
-        }
+            }
+        );
 
         if ($showProgress) {
             $this->io->progressFinish();
@@ -191,19 +176,7 @@ final class PredictCommand extends Command
             );
         }
 
-        $columns = array_keys($teamStandingPositionDistributions[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($teamStandingPositionDistributions);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $teamStandingPositionDistributions);
-            } else {
-                $this->io->table($columns, $teamStandingPositionDistributions);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying simulated team standing position distributions', previous: $e);
-        }
+        $this->displayCommandTableData($teamStandingPositionDistributions, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

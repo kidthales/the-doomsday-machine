@@ -23,16 +23,17 @@ namespace App\Command\FootyStats\Match\Chance;
 
 use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use LogicException;
-use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -43,7 +44,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, PrettyOptionTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, MatchChancesCalculatorAwareTrait, MatchTableAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
@@ -56,6 +57,13 @@ final class ListCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
@@ -63,16 +71,12 @@ final class ListCommand extends Command
 
         $isScores = $input->getOption('scores');
 
-        try {
-            $pendingMatches = $this->footyStatsMatchTable
-                ->createSelectQueryBuilder($target)
-                ->select('*')
-                ->where('home_team_score IS NULL')
-                ->orderBy('timestamp')
-                ->fetchAllAssociative();
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error getting pending matches', previous: $e);
-        }
+        $pendingMatches = $this->footyStatsMatchTable
+            ->createSelectQueryBuilder($target)
+            ->select('*')
+            ->where('home_team_score IS NULL')
+            ->orderBy('timestamp')
+            ->fetchAllAssociative();
 
         if (empty($pendingMatches)) {
             if ($dataOutputOptions['json']) {
@@ -82,11 +86,7 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        try {
-            $matchChancesIndex = $this->matchChancesCalculator->calculate($target);
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error calculating match chances', previous: $e);
-        }
+        $matchChancesIndex = $this->matchChancesCalculator->calculate($target);
 
         if (empty($matchChancesIndex)) {
             throw new LogicException('Expected match chances');
@@ -155,19 +155,7 @@ final class ListCommand extends Command
             );
         }
 
-        $columns = array_keys($matchChances[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($matchChances);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $matchChances);
-            } else {
-                $this->io->table($columns, $matchChances);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying match chances', previous: $e);
-        }
+        $this->displayCommandTableData($matchChances, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

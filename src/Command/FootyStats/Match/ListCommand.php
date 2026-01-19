@@ -22,15 +22,17 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Match;
 
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -41,7 +43,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchTableAwareTrait, PrettyOptionTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, MatchTableAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
@@ -56,6 +58,13 @@ final class ListCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
@@ -73,17 +82,13 @@ final class ListCommand extends Command
             ->select('*')
             ->orderBy('timestamp');
 
-        try {
-            if ($isCompleted) {
-                $selectQueryBuilder->where('home_team_score IS NOT NULL');
-            } else if ($isPending) {
-                $selectQueryBuilder->where('home_team_score IS NULL');
-            }
-
-            $matches = $selectQueryBuilder->fetchAllAssociative();
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error getting matches', previous: $e);
+        if ($isCompleted) {
+            $selectQueryBuilder->where('home_team_score IS NOT NULL');
+        } else if ($isPending) {
+            $selectQueryBuilder->where('home_team_score IS NULL');
         }
+
+        $matches = $selectQueryBuilder->fetchAllAssociative();
 
         if (empty($matches)) {
             if ($dataOutputOptions['json']) {
@@ -107,19 +112,7 @@ final class ListCommand extends Command
             );
         }
 
-        $columns = array_keys($matches[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($matches);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $matches);
-            } else {
-                $this->io->table($columns, $matches);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying matches', previous: $e);
-        }
+        $this->displayCommandTableData($matches, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

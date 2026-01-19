@@ -22,18 +22,20 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\TeamStanding;
 
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -46,6 +48,7 @@ final class ListCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,
         DataOptionsTrait,
+        DisplayTableDataTrait,
         HomeTeamStandingViewAwareTrait,
         PrettyOptionTrait,
         PrettyTeamStandingsTrait,
@@ -64,6 +67,13 @@ final class ListCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
@@ -76,21 +86,17 @@ final class ListCommand extends Command
             throw new RuntimeException("Only one of '--home' or '--away' may be specified");
         }
 
-        try {
-            if ($isHome) {
-                $selectQueryBuilder = $this->footyStatsHomeTeamStandingView->createSelectQueryBuilder($target);
-            } else if ($isAway) {
-                $selectQueryBuilder = $this->footyStatsAwayTeamStandingView->createSelectQueryBuilder($target);
-            } else {
-                $selectQueryBuilder = $this->footyStatsTeamStandingView->createSelectQueryBuilder($target);
-            }
-
-            $teamStandings = $selectQueryBuilder
-                ->select('*')
-                ->fetchAllAssociative();
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error reading team standings', previous: $e);
+        if ($isHome) {
+            $selectQueryBuilder = $this->footyStatsHomeTeamStandingView->createSelectQueryBuilder($target);
+        } else if ($isAway) {
+            $selectQueryBuilder = $this->footyStatsAwayTeamStandingView->createSelectQueryBuilder($target);
+        } else {
+            $selectQueryBuilder = $this->footyStatsTeamStandingView->createSelectQueryBuilder($target);
         }
+
+        $teamStandings = $selectQueryBuilder
+            ->select('*')
+            ->fetchAllAssociative();
 
         if (empty($teamStandings)) {
             if ($dataOutputOptions['json']) {
@@ -104,19 +110,7 @@ final class ListCommand extends Command
             $teamStandings = self::prettifyFootyStatsTeamStandings($teamStandings);
         }
 
-        $columns = array_keys($teamStandings[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($teamStandings);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $teamStandings);
-            } else {
-                $this->io->table($columns, $teamStandings);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying team standings', previous: $e);
-        }
+        $this->displayCommandTableData($teamStandings, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

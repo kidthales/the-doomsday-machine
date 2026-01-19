@@ -22,14 +22,15 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\TeamStrength;
 
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
-use RuntimeException;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -40,7 +41,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, PrettyOptionTrait, TeamStrengthViewAwareTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, PrettyOptionTrait, TeamStrengthViewAwareTrait;
 
     protected function configure(): void
     {
@@ -51,19 +52,22 @@ final class ListCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
         $dataOutputOptions = $this->getCommandDataOptions($input);
 
-        try {
-            $teamStrengths = $this->footyStatsTeamStrengthView
-                ->createSelectQueryBuilder($target)
-                ->select('*')
-                ->fetchAllAssociative();
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error getting team strengths', previous: $e);
-        }
+        $teamStrengths = $this->footyStatsTeamStrengthView
+            ->createSelectQueryBuilder($target)
+            ->select('*')
+            ->fetchAllAssociative();
 
         if (empty($teamStrengths)) {
             if ($dataOutputOptions['json']) {
@@ -84,19 +88,7 @@ final class ListCommand extends Command
             );
         }
 
-        $columns = array_keys($teamStrengths[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($teamStrengths);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $teamStrengths);
-            } else {
-                $this->io->table($columns, $teamStrengths);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying team strengths', previous: $e);
-        }
+        $this->displayCommandTableData($teamStrengths, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

@@ -37,11 +37,16 @@ use App\Database\FootyStats\TeamStrengthView;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
 use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use App\Scraper\FootyStatsScraperAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Throwable;
 
 /**
@@ -49,7 +54,7 @@ use Throwable;
  */
 #[AsCommand(
     name: 'app:footy-stats:database:diff',
-    description: 'Create or update Footy Stats table data'
+    description: 'Insert or update Footy Stats table data'
 )]
 final class DiffCommand extends Command
 {
@@ -70,9 +75,20 @@ final class DiffCommand extends Command
         parent::setTargetArgumentsProvider($provider);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws Throwable
+     * @throws DBALException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io->title('Diff Footy Stats Data');
+        $this->io->title('Diff Footy Stats Database');
 
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
@@ -274,7 +290,14 @@ final class DiffCommand extends Command
 
         $this->footyStatsMatchTable->commit();
 
-        $this->io->success(sprintf('Inserted %d rows. Updated %d rows', count($inserts), count($updates)));
+        $this->io->success(
+            sprintf(
+                'Created %d schemas. Inserted %d rows. Updated %d rows',
+                count($creates),
+                count($inserts),
+                count($updates)
+            )
+        );
 
         return Command::SUCCESS;
     }

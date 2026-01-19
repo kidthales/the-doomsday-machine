@@ -73,9 +73,13 @@ own: ## On Linux host, set current user as owner of the project files that were 
 	@$(CD_DOCKER_COMP) run --rm php chown -R $$(id -u):$$(id -g) .
 
 ## —— Footy Stats ⚽ ————————————————————————————————————————————————————————————
-footy-stats-database-diff: ## Create or update Footy Stats table data, pass the parameter "c=" to add options or arguments
+footy-stats-database-diff: ## Insert or update Footy Stats table data, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:database:diff $(c)
+
+footy-stats-database-sync: ## Sync current Footy Stats seasons, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:footy-stats:database:sync $(c)
 
 footy-stats-match-list: ## List matches, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)

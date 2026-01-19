@@ -22,14 +22,15 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Match\Xg;
 
 use App\Console\Command\DataOptionsTrait;
+use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchXgViewAwareTrait;
-use RuntimeException;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -40,7 +41,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, MatchXgViewAwareTrait, PrettyOptionTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, MatchXgViewAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
@@ -51,19 +52,22 @@ final class ListCommand extends Command
             ->configureCommandDataOptions();
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
         $dataOutputOptions = $this->getCommandDataOptions($input);
 
-        try {
-            $matchXgAll = $this->footyStatsMatchXgView
-                ->createSelectQueryBuilder($target)
-                ->select('*')
-                ->fetchAllAssociative();
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error getting all match expected goals', previous: $e);
-        }
+        $matchXgAll = $this->footyStatsMatchXgView
+            ->createSelectQueryBuilder($target)
+            ->select('*')
+            ->fetchAllAssociative();
 
         if (empty($matchXgAll)) {
             if ($dataOutputOptions['json']) {
@@ -87,19 +91,7 @@ final class ListCommand extends Command
             );
         }
 
-        $columns = array_keys($matchXgAll[0]);
-
-        try {
-            if ($dataOutputOptions['json']) {
-                $this->io->json($matchXgAll);
-            } else if ($dataOutputOptions['csv']) {
-                $this->io->csv($columns, $matchXgAll);
-            } else {
-                $this->io->table($columns, $matchXgAll);
-            }
-        } catch (Throwable $e) {
-            throw new RuntimeException('Error displaying all match expected goals', previous: $e);
-        }
+        $this->displayCommandTableData($matchXgAll, $dataOutputOptions);
 
         return Command::SUCCESS;
     }
