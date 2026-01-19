@@ -25,7 +25,6 @@ use App\Entity\FootyStats\EndpointPayload;
 use App\Entity\FootyStats\Target;
 use App\Filesystem\FileDepot;
 use RuntimeException;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -38,7 +37,6 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[Autoconfigure(public: true)]
 final class FootyStatsScraper
 {
     private static function makePath(string $nation, string $competition, string $season, string $context): string

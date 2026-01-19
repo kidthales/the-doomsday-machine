@@ -21,12 +21,9 @@ declare(strict_types=1);
 
 namespace App\Database\FootyStats;
 
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[Autoconfigure(public: true)]
 final class HomeTeamStandingView extends AbstractTeamStandingView
 {
     public const string BASE_NAME = 'home_team_standing';

@@ -22,13 +22,11 @@ declare(strict_types=1);
 namespace App\Database\FootyStats;
 
 use App\Entity\FootyStats\Target;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[Autoconfigure(public: true)]
 final class MatchTable extends AbstractTable
 {
     public const string BASE_NAME = 'match';
