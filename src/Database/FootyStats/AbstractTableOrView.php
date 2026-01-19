@@ -26,13 +26,17 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Query\QueryBuilder;
 use LogicException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Service\Attribute\Required;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractTableOrView
+abstract class AbstractTableOrView
 {
+    use ConnectionAwareTrait;
+
     /**
      * Define in concrete child class implementations.
      */
@@ -52,22 +56,18 @@ abstract readonly class AbstractTableOrView
         }
         // @codeCoverageIgnoreEnd
 
-        return sprintf('footy_stats_%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
+        return sprintf('%s_%s', $target->snake(), s(static::BASE_NAME)->snake()->toString());
     }
 
     abstract public static function getCreateSql(Target $target): string;
 
     abstract public static function getDropSql(Target $target): string;
 
-    public function __construct(protected Connection $connection)
-    {
-    }
-
     abstract public function exists(Target $target): bool;
 
     public function createSelectQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
     {
-        return $this->connection->createQueryBuilder()->from(static::getName($target), $alias);
+        return $this->footyStatsConnection->createQueryBuilder()->from(static::getName($target), $alias);
     }
 
     /**
@@ -78,7 +78,7 @@ abstract readonly class AbstractTableOrView
      */
     final protected function checkTableOrView(string $type, Target $target): bool
     {
-        return (bool)$this->connection
+        return (bool)$this->footyStatsConnection
             ->executeQuery('SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?', [$type, static::getName($target)])
             ->fetchOne();
     }

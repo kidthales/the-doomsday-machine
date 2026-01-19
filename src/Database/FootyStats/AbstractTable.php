@@ -29,7 +29,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractTable extends AbstractTableOrView
+abstract class AbstractTable extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string
     {
@@ -52,17 +52,17 @@ SQL;
 
     public function createInsertQueryBuilder(Target $target): QueryBuilder
     {
-        return $this->connection->createQueryBuilder()->insert(static::getName($target));
+        return $this->footyStatsConnection->createQueryBuilder()->insert(static::getName($target));
     }
 
     public function createUpdateQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
     {
-        return $this->connection->createQueryBuilder()->update(static::getName($target), $alias);
+        return $this->footyStatsConnection->createQueryBuilder()->update(static::getName($target), $alias);
     }
 
     public function createDeleteQueryBuilder(Target $target, ?string $alias = null): QueryBuilder
     {
-        return $this->connection->createQueryBuilder()->delete(static::getName($target), $alias);
+        return $this->footyStatsConnection->createQueryBuilder()->delete(static::getName($target), $alias);
     }
 
     /**
@@ -77,8 +77,8 @@ SQL;
 
         $createBackupTableSql = s(static::getCreateSql($target))->replace($tableName, $backupTableName);
 
-        $this->connection->executeStatement($createBackupTableSql);
-        $this->connection->executeStatement(sprintf('INSERT INTO %s SELECT * FROM %s;', $backupTableName, $tableName));
+        $this->footyStatsConnection->executeStatement($createBackupTableSql);
+        $this->footyStatsConnection->executeStatement(sprintf('INSERT INTO %s SELECT * FROM %s;', $backupTableName, $tableName));
 
         return $backupTableName;
     }
@@ -89,7 +89,7 @@ SQL;
      */
     public function beginTransaction(): bool
     {
-        return $this->connection->beginTransaction();
+        return $this->footyStatsConnection->beginTransaction();
     }
 
     /**
@@ -98,7 +98,7 @@ SQL;
      */
     public function commit(): bool
     {
-        return $this->connection->commit();
+        return $this->footyStatsConnection->commit();
     }
 
     /**
@@ -107,6 +107,6 @@ SQL;
      */
     public function rollback(): bool
     {
-        return $this->connection->rollback();
+        return $this->footyStatsConnection->rollback();
     }
 }

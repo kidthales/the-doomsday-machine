@@ -82,20 +82,20 @@ final class PredictCommand extends Command
             );
 
         $this
-            ->configurePrettyOption()
-            ->configureDataOptions();
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         $isDistribution = $input->getOption('distribution');
 
         if (!$isDistribution) {
             try {
-                $initialTeamStandings = $this->teamStandingView
+                $initialTeamStandings = $this->footyStatsTeamStandingView
                     ->createSelectQueryBuilder($target)
                     ->select('*')
                     ->fetchAllAssociative();
@@ -122,8 +122,8 @@ final class PredictCommand extends Command
                 throw new LogicException('Expected simulated team standings');
             }
 
-            if ($this->getPrettyOption($input)) {
-                $teamStandings = self::prettifyTeamStandings($teamStandings);
+            if ($this->getCommandPrettyOption($input)) {
+                $teamStandings = self::prettifyFootyStatsTeamStandings($teamStandings);
             }
 
             $columns = array_keys($teamStandings[0]);
@@ -171,7 +171,7 @@ final class PredictCommand extends Command
             throw new LogicException('Expected simulated team standing position distributions');
         }
 
-        if ($this->getPrettyOption($input)) {
+        if ($this->getCommandPrettyOption($input)) {
             $teamStandingPositionDistributions = array_map(
                 function (array $distribution) {
                     $prettyDistribution = [];

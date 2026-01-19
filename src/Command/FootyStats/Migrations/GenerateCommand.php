@@ -99,32 +99,32 @@ final class GenerateCommand extends Command
         $up = [];
         $down = [];
 
-        if (!$this->matchTable->exists($target)) {
+        if (!$this->footyStatsMatchTable->exists($target)) {
             $up[] = MatchTable::getCreateSql($target);
             array_unshift($down, MatchTable::getDropSql($target));
         }
 
-        if (!$this->teamStandingView->exists($target)) {
+        if (!$this->footyStatsTeamStandingView->exists($target)) {
             $up[] = TeamStandingView::getCreateSql($target);
             array_unshift($down, TeamStandingView::getDropSql($target));
         }
 
-        if (!$this->homeTeamStandingView->exists($target)) {
+        if (!$this->footyStatsHomeTeamStandingView->exists($target)) {
             $up[] = HomeTeamStandingView::getCreateSql($target);
             array_unshift($down, HomeTeamStandingView::getDropSql($target));
         }
 
-        if (!$this->awayTeamStandingView->exists($target)) {
+        if (!$this->footyStatsAwayTeamStandingView->exists($target)) {
             $up[] = AwayTeamStandingView::getCreateSql($target);
             array_unshift($down, AwayTeamStandingView::getDropSql($target));
         }
 
-        if (!$this->teamStrengthView->exists($target)) {
+        if (!$this->footyStatsTeamStrengthView->exists($target)) {
             $up[] = TeamStrengthView::getCreateSql($target);
             array_unshift($down, TeamStrengthView::getDropSql($target));
         }
 
-        if (!$this->matchXgView->exists($target)) {
+        if (!$this->footyStatsMatchXgView->exists($target)) {
             $up[] = MatchXgView::getCreateSql($target);
             array_unshift($down, MatchXgView::getDropSql($target));
         }

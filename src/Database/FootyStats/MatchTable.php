@@ -29,7 +29,7 @@ use function Symfony\Component\String\s;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Autoconfigure(public: true)]
-final readonly class MatchTable extends AbstractTable
+final class MatchTable extends AbstractTable
 {
     public const string BASE_NAME = 'match';
 

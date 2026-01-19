@@ -12,6 +12,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use function Symfony\Component\String\s;
 
+/**
+ * @deprecated
+ */
 #[CoversClass(FootyStatsMigrationGenerator::class)]
 final class FootyStatsMigrationGeneratorTest extends KernelTestCase
 {

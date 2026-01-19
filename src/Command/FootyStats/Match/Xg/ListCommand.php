@@ -47,17 +47,17 @@ final class ListCommand extends Command
         parent::configure();
 
         $this
-            ->configurePrettyOption()
-            ->configureDataOptions();
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         try {
-            $matchXgAll = $this->matchXgView
+            $matchXgAll = $this->footyStatsMatchXgView
                 ->createSelectQueryBuilder($target)
                 ->select('*')
                 ->fetchAllAssociative();

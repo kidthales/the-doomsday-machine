@@ -29,7 +29,7 @@ use function Symfony\Component\String\s;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Autoconfigure(public: true)]
-final readonly class MatchXgView extends AbstractView
+final class MatchXgView extends AbstractView
 {
     public const string BASE_NAME = 'match_xg';
 

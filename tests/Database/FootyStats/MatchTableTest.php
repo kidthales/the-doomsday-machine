@@ -43,11 +43,11 @@ final class MatchTableTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'footy_stats_england_championship_202526_match'
+                'england_championship_202526_match'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'footy_stats_england_premier_league_201213_match'
+                'england_premier_league_201213_match'
             ],
         ];
     }
@@ -64,11 +64,11 @@ final class MatchTableTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'DROP TABLE footy_stats_england_championship_202526_match;'
+                'DROP TABLE england_championship_202526_match;'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'DROP TABLE footy_stats_england_premier_league_201213_match;'
+                'DROP TABLE england_premier_league_201213_match;'
             ],
         ];
     }
@@ -85,11 +85,11 @@ final class MatchTableTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'CREATE TABLE footy_stats_england_championship_202526_match ('
+                'CREATE TABLE england_championship_202526_match ('
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'CREATE TABLE footy_stats_england_premier_league_201213_match ('
+                'CREATE TABLE england_premier_league_201213_match ('
             ],
         ];
     }

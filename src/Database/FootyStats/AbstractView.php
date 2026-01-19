@@ -28,7 +28,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractView extends AbstractTableOrView
+abstract class AbstractView extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string
     {

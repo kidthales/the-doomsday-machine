@@ -46,11 +46,11 @@ final class HomeTeamStandingViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'footy_stats_england_championship_202526_home_team_standing'
+                'england_championship_202526_home_team_standing'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'footy_stats_england_premier_league_201213_home_team_standing'
+                'england_premier_league_201213_home_team_standing'
             ],
         ];
     }
@@ -67,11 +67,11 @@ final class HomeTeamStandingViewTest extends AbstractDatabaseTestCase
         return [
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
-                'DROP VIEW footy_stats_england_championship_202526_home_team_standing;'
+                'DROP VIEW england_championship_202526_home_team_standing;'
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
-                'DROP VIEW footy_stats_england_premier_league_201213_home_team_standing;'
+                'DROP VIEW england_premier_league_201213_home_team_standing;'
             ],
         ];
     }
@@ -89,15 +89,15 @@ final class HomeTeamStandingViewTest extends AbstractDatabaseTestCase
             'England Championship 2025/26' => [
                 new Target('England', 'Championship', '2025/26'),
                 [
-                    'CREATE VIEW footy_stats_england_championship_202526_home_team_standing AS',
-                    'FROM footy_stats_england_championship_202526_match'
+                    'CREATE VIEW england_championship_202526_home_team_standing AS',
+                    'FROM england_championship_202526_match'
                 ]
             ],
             'England Premier League 2012/13' => [
                 new Target('England', 'Premier League', '2012/13'),
                 [
-                    'CREATE VIEW footy_stats_england_premier_league_201213_home_team_standing AS',
-                    'FROM footy_stats_england_premier_league_201213_match'
+                    'CREATE VIEW england_premier_league_201213_home_team_standing AS',
+                    'FROM england_premier_league_201213_match'
                 ]
             ],
         ];

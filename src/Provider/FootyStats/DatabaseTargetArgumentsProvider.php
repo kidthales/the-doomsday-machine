@@ -21,9 +21,9 @@ declare(strict_types=1);
 
 namespace App\Provider\FootyStats;
 
+use App\Database\FootyStats\ConnectionAwareTrait;
 use App\Entity\FootyStats\Target;
 use App\Scraper\FootyStatsScraperAwareTrait;
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use function Symfony\Component\String\s;
 
@@ -32,11 +32,7 @@ use function Symfony\Component\String\s;
  */
 final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderInterface
 {
-    use FootyStatsScraperAwareTrait;
-
-    public function __construct(private readonly Connection $connection)
-    {
-    }
+    use ConnectionAwareTrait, FootyStatsScraperAwareTrait;
 
     /**
      * @return array
@@ -46,7 +42,7 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
     {
         $target = new Target();
 
-        $selectQueryBuilder = $this->connection
+        $selectQueryBuilder = $this->footyStatsConnection
             ->createQueryBuilder()
             ->select('COUNT(*)')
             ->from('sqlite_master');
@@ -58,7 +54,7 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
 
             $count = $selectQueryBuilder
                 ->where('name LIKE :name')
-                ->setParameter('name', 'footy_stats_' . $target->snake() . '%_match')
+                ->setParameter('name', $target->snake() . '%_match')
                 ->andWhere("type = 'table'")
                 ->fetchOne();
 
@@ -81,7 +77,7 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
     {
         $target = new Target($nation);
 
-        $selectQueryBuilder = $this->connection
+        $selectQueryBuilder = $this->footyStatsConnection
             ->createQueryBuilder()
             ->select('COUNT(*)')
             ->from('sqlite_master');
@@ -93,7 +89,7 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
 
             $count = $selectQueryBuilder
                 ->where('name LIKE :name')
-                ->setParameter('name', 'footy_stats_' . $target->snake() . '%_match')
+                ->setParameter('name', $target->snake() . '%_match')
                 ->andWhere("type = 'table'")
                 ->fetchOne();
 
@@ -117,12 +113,12 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
     {
         $target = new Target($nation, $competition);
 
-        $tableNames = $this->connection
+        $tableNames = $this->footyStatsConnection
             ->createQueryBuilder()
             ->select('name')
             ->from('sqlite_master')
             ->where('name LIKE :name')
-            ->setParameter('name', 'footy_stats_' . $target->snake() . '%_match')
+            ->setParameter('name', $target->snake() . '%_match')
             ->andWhere("type = 'table'")
             ->fetchFirstColumn();
 
@@ -130,7 +126,7 @@ final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderIn
 
         foreach ($tableNames as $tableName) {
             $season = s($tableName)
-                ->replace('footy_stats_' . $target->snake(), '')
+                ->replace($target->snake(), '')
                 ->replace('match', '')
                 ->trim('_')
                 ->toString();

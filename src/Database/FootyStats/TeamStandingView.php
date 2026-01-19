@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Autoconfigure(public: true)]
-final readonly class TeamStandingView extends AbstractTeamStandingView
+final class TeamStandingView extends AbstractTeamStandingView
 {
     public const string BASE_NAME = 'team_standing';
 

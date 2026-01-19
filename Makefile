@@ -73,7 +73,7 @@ own: ## On Linux host, set current user as owner of the project files that were 
 	@$(CD_DOCKER_COMP) run --rm php chown -R $$(id -u):$$(id -g) .
 
 ## —— Footy Stats ⚽ ————————————————————————————————————————————————————————————
-footy-stats-data-diff: ## Insert or update Footy Stats table data, pass the parameter "c=" to add options or arguments
+footy-stats-data-diff: ## Create or update Footy Stats table data, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:data:diff $(c)
 
@@ -88,10 +88,6 @@ footy-stats-match-chance-list: ## List (pending) match chances, pass the paramet
 footy-stats-match-xg-list: ## List (pending) match expected goals, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:match:xg:list $(c)
-
-footy-stats-migrations-generate: ## Generate a Footy Stats migration class, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:migrations:generate $(c)
 
 footy-stats-team-standing-list: ## List team standings, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)

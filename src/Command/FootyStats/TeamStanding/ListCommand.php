@@ -26,14 +26,13 @@ use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
-use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 use Throwable;
 
 /**
@@ -47,17 +46,10 @@ final class ListCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,
         DataOptionsTrait,
+        HomeTeamStandingViewAwareTrait,
         PrettyOptionTrait,
         PrettyTeamStandingsTrait,
         TeamStandingViewAwareTrait;
-
-    private HomeTeamStandingView $homeTeamStandingView;
-
-    #[Required]
-    public function setHomeTeamStandingView(HomeTeamStandingView $homeTeamStandingView): void
-    {
-        $this->homeTeamStandingView = $homeTeamStandingView;
-    }
 
     protected function configure(): void
     {
@@ -68,14 +60,14 @@ final class ListCommand extends Command
             ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings');
 
         $this
-            ->configurePrettyOption()
-            ->configureDataOptions();
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         $isHome = $input->getOption('home');
         $isAway = $input->getOption('away');
@@ -86,11 +78,11 @@ final class ListCommand extends Command
 
         try {
             if ($isHome) {
-                $selectQueryBuilder = $this->homeTeamStandingView->createSelectQueryBuilder($target);
+                $selectQueryBuilder = $this->footyStatsHomeTeamStandingView->createSelectQueryBuilder($target);
             } else if ($isAway) {
-                $selectQueryBuilder = $this->awayTeamStandingView->createSelectQueryBuilder($target);
+                $selectQueryBuilder = $this->footyStatsAwayTeamStandingView->createSelectQueryBuilder($target);
             } else {
-                $selectQueryBuilder = $this->teamStandingView->createSelectQueryBuilder($target);
+                $selectQueryBuilder = $this->footyStatsTeamStandingView->createSelectQueryBuilder($target);
             }
 
             $teamStandings = $selectQueryBuilder
@@ -108,8 +100,8 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($this->getPrettyOption($input)) {
-            $teamStandings = self::prettifyTeamStandings($teamStandings);
+        if ($this->getCommandPrettyOption($input)) {
+            $teamStandings = self::prettifyFootyStatsTeamStandings($teamStandings);
         }
 
         $columns = array_keys($teamStandings[0]);

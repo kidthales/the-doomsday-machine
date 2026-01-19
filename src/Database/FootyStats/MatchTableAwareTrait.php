@@ -28,11 +28,11 @@ use Symfony\Contracts\Service\Attribute\Required;
  */
 trait MatchTableAwareTrait
 {
-    protected MatchTable $matchTable;
+    protected MatchTable $footyStatsMatchTable;
 
     #[Required]
-    public function setMatchTable(MatchTable $matchTable): void
+    public function setFootyStatsMatchTable(MatchTable $matchTable): void
     {
-        $this->matchTable = $matchTable;
+        $this->footyStatsMatchTable = $matchTable;
     }
 }

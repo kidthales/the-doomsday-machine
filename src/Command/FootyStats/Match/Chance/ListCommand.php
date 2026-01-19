@@ -52,19 +52,19 @@ final class ListCommand extends Command
         $this
             ->addOption('scores', mode: InputOption::VALUE_NONE, description: 'Include scoreline chances');
 
-        $this->configurePrettyOption()
-            ->configureDataOptions();
+        $this->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         $isScores = $input->getOption('scores');
 
         try {
-            $pendingMatches = $this->matchTable
+            $pendingMatches = $this->footyStatsMatchTable
                 ->createSelectQueryBuilder($target)
                 ->select('*')
                 ->where('home_team_score IS NULL')
@@ -115,7 +115,7 @@ final class ListCommand extends Command
             ];
         }
 
-        if ($this->getPrettyOption($input)) {
+        if ($this->getCommandPrettyOption($input)) {
             $matchChances = array_map(
                 function (array $matchChances) {
                     $prettyMatchChances = [];

@@ -29,7 +29,7 @@ use Symfony\Component\Console\Input\InputOption;
  */
 trait PrettyOptionTrait
 {
-    protected function configurePrettyOption(): self
+    protected function configureCommandPrettyOption(): self
     {
         return $this->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with additional formatting');
     }
@@ -38,7 +38,7 @@ trait PrettyOptionTrait
      * @param InputInterface $input
      * @return bool
      */
-    protected function getPrettyOption(InputInterface $input): bool
+    protected function getCommandPrettyOption(InputInterface $input): bool
     {
         return $input->getOption('pretty');
     }
