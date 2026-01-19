@@ -75,7 +75,7 @@ own: ## On Linux host, set current user as owner of the project files that were 
 ## —— Footy Stats ⚽ ————————————————————————————————————————————————————————————
 footy-stats-database-diff: ## Create or update Footy Stats table data, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:data:diff $(c)
+	@$(SYMFONY) app:footy-stats:database:diff $(c)
 
 footy-stats-match-list: ## List matches, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)

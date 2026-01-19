@@ -48,7 +48,7 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:data:diff',
+    name: 'app:footy-stats:database:diff',
     description: 'Create or update Footy Stats table data'
 )]
 final class DiffCommand extends Command
