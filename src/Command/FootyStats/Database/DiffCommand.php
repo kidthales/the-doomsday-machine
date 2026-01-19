@@ -88,7 +88,7 @@ final class DiffCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io->title('Diff Footy Stats Data');
+        $this->io->title('Diff Footy Stats Database');
 
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
@@ -290,7 +290,14 @@ final class DiffCommand extends Command
 
         $this->footyStatsMatchTable->commit();
 
-        $this->io->success(sprintf('Inserted %d rows. Updated %d rows', count($inserts), count($updates)));
+        $this->io->success(
+            sprintf(
+                'Created %d schemas. Inserted %d rows. Updated %d rows',
+                count($creates),
+                count($inserts),
+                count($updates)
+            )
+        );
 
         return Command::SUCCESS;
     }

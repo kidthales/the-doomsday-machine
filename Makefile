@@ -77,6 +77,10 @@ footy-stats-database-diff: ## Insert or update Footy Stats table data, pass the 
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:database:diff $(c)
 
+footy-stats-database-sync: ## Sync current Footy Stats seasons, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:footy-stats:database:sync $(c)
+
 footy-stats-match-list: ## List matches, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:match:list $(c)
