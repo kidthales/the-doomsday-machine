@@ -43,7 +43,7 @@ final class MatchChancesCalculator
      */
     public function calculate(Target $target): array
     {
-        $matchXgAll = $this->matchXgView
+        $matchXgAll = $this->footyStatsMatchXgView
             ->createSelectQueryBuilder($target)
             ->select('*')
             ->fetchAllAssociative();

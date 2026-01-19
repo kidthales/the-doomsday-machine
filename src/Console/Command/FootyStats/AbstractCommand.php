@@ -76,26 +76,35 @@ abstract class AbstractCommand extends Command
 
         if (!$nation) {
             $nations = $this->targetArgumentsProvider->getNations();
-            sort($nations);
-            $nation = $this->io->choice('Choose Nation', $nations);
-            $input->setArgument('nation', $nation);
+
+            if (!empty($nations)) {
+                sort($nations);
+                $nation = $this->io->choice('Choose Nation', $nations);
+                $input->setArgument('nation', $nation);
+            }
         }
 
         $competition = $input->getArgument('competition');
 
         if (!$competition) {
-            $competitions = $this->targetArgumentsProvider->getCompetitions($nation);
-            sort($competitions);
-            $competition = $this->io->choice('Choose Competition', $competitions);
-            $input->setArgument('competition', $competition);
+            $competitions = $this->targetArgumentsProvider->getCompetitions($nation ?? '');
+
+            if (!empty($competitions)) {
+                sort($competitions);
+                $competition = $this->io->choice('Choose Competition', $competitions);
+                $input->setArgument('competition', $competition);
+            }
         }
 
         $season = $input->getArgument('season');
 
         if (!$season) {
-            $seasons = $this->targetArgumentsProvider->getSeasons($nation, $competition);
-            sort($seasons);
-            $input->setArgument('season', $this->io->choice('Choose Season', $seasons));
+            $seasons = $this->targetArgumentsProvider->getSeasons($nation ?? '', $competition ?? '');
+
+            if (!empty($seasons)) {
+                sort($seasons);
+                $input->setArgument('season', $this->io->choice('Choose Season', $seasons, $seasons[count($seasons) - 1]));
+            }
         }
     }
 

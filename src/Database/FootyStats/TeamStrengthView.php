@@ -22,14 +22,12 @@ declare(strict_types=1);
 namespace App\Database\FootyStats;
 
 use App\Entity\FootyStats\Target;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[Autoconfigure(public: true)]
-final readonly class TeamStrengthView extends AbstractView
+final class TeamStrengthView extends AbstractView
 {
     public const string BASE_NAME = 'team_strength';
 

@@ -52,7 +52,7 @@ final class MatchesSimulator
     {
         $matchChances = $this->matchChancesCalculator->calculate($target);
 
-        $pendingMatches = $this->matchTable
+        $pendingMatches = $this->footyStatsMatchTable
             ->createSelectQueryBuilder($target)
             ->select('*')
             ->where('home_team_score IS NULL')

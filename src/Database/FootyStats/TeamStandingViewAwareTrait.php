@@ -28,11 +28,11 @@ use Symfony\Contracts\Service\Attribute\Required;
  */
 trait TeamStandingViewAwareTrait
 {
-    protected TeamStandingView $teamStandingView;
+    protected TeamStandingView $footyStatsTeamStandingView;
 
     #[Required]
-    public function setTeamStandingView(TeamStandingView $teamStandingView): void
+    public function setFootyStatsTeamStandingView(TeamStandingView $teamStandingView): void
     {
-        $this->teamStandingView = $teamStandingView;
+        $this->footyStatsTeamStandingView = $teamStandingView;
     }
 }

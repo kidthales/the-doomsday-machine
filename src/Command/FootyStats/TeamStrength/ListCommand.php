@@ -47,17 +47,17 @@ final class ListCommand extends Command
         parent::configure();
 
         $this
-            ->configurePrettyOption()
-            ->configureDataOptions();
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         try {
-            $teamStrengths = $this->teamStrengthView
+            $teamStrengths = $this->footyStatsTeamStrengthView
                 ->createSelectQueryBuilder($target)
                 ->select('*')
                 ->fetchAllAssociative();
@@ -73,7 +73,7 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($this->getPrettyOption($input)) {
+        if ($this->getCommandPrettyOption($input)) {
             $teamStrengths = array_map(
                 fn(array $teamStrength) => [
                     'Team' => $teamStrength['team_name'],

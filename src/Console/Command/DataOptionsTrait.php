@@ -30,7 +30,7 @@ use Symfony\Component\Console\Input\InputOption;
  */
 trait DataOptionsTrait
 {
-    protected function configureDataOptions(): self
+    protected function configureCommandDataOptions(): self
     {
         return $this
             ->addOption('json', mode: InputOption::VALUE_NONE, description: 'Output as JSON')
@@ -41,7 +41,7 @@ trait DataOptionsTrait
      * @param InputInterface $input
      * @return array{json: bool, csv: bool}
      */
-    protected function getDataOptions(InputInterface $input): array
+    protected function getCommandDataOptions(InputInterface $input): array
     {
         $isJson = $input->getOption('json');
         $isCsv = $input->getOption('csv');

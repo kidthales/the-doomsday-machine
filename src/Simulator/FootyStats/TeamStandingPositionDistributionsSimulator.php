@@ -50,7 +50,7 @@ final class TeamStandingPositionDistributionsSimulator
      */
     public function simulate(Target $target, int $numRuns, callable $callback): array
     {
-        $initialTeamStandings = $this->teamStandingView
+        $initialTeamStandings = $this->footyStatsTeamStandingView
             ->createSelectQueryBuilder($target)
             ->select('*')
             ->fetchAllAssociative();

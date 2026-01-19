@@ -21,18 +21,22 @@ declare(strict_types=1);
 
 namespace App\Database\FootyStats;
 
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait MatchXgViewAwareTrait
+trait ConnectionAwareTrait
 {
-    protected MatchXgView $footyStatsMatchXgView;
+    protected Connection $footyStatsConnection;
 
     #[Required]
-    public function setFootyStatsMatchXgView(MatchXgView $matchXgView): void
+    public function setFootyStatsConnection(
+        #[Autowire(service: 'doctrine.dbal.footy_stats_connection')] Connection $connection
+    ): void
     {
-        $this->footyStatsMatchXgView = $matchXgView;
+        $this->footyStatsConnection = $connection;
     }
 }

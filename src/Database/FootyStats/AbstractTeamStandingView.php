@@ -28,7 +28,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract readonly class AbstractTeamStandingView extends AbstractView
+abstract class AbstractTeamStandingView extends AbstractView
 {
     protected const ?string CREATE_SQL_TEMPLATE = null;
 

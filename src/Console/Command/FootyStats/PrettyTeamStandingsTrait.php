@@ -26,7 +26,7 @@ namespace App\Console\Command\FootyStats;
  */
 trait PrettyTeamStandingsTrait
 {
-    protected static function prettifyTeamStandings(array $teamStandings): array
+    protected static function prettifyFootyStatsTeamStandings(array $teamStandings): array
     {
         return array_map(
             fn(array $teamStanding) => [

@@ -52,14 +52,14 @@ final class ListCommand extends Command
             ->addOption('pending', mode: InputOption::VALUE_NONE, description: 'List pending matches');
 
         $this
-            ->configurePrettyOption()
-            ->configureDataOptions();
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $target = $this->getTargetArguments($input);
-        $dataOutputOptions = $this->getDataOptions($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
 
         $isCompleted = $input->getOption('completed');
         $isPending = $input->getOption('pending');
@@ -68,7 +68,7 @@ final class ListCommand extends Command
             throw new RuntimeException("Only one of '--completed' or '--pending' may be specified");
         }
 
-        $selectQueryBuilder = $this->matchTable
+        $selectQueryBuilder = $this->footyStatsMatchTable
             ->createSelectQueryBuilder($target)
             ->select('*')
             ->orderBy('timestamp');
@@ -93,7 +93,7 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($this->getPrettyOption($input)) {
+        if ($this->getCommandPrettyOption($input)) {
             $matches = array_map(
                 fn(array $match) => [
                     'Home' => $match['home_team_name'],

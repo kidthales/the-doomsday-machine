@@ -19,20 +19,29 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Data;
+namespace App\Command\FootyStats\Database;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Database\FootyStats\AwayTeamStandingView;
+use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
+use App\Database\FootyStats\ConnectionAwareTrait;
+use App\Database\FootyStats\HomeTeamStandingView;
+use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
+use App\Database\FootyStats\MatchTable;
 use App\Database\FootyStats\MatchTableAwareTrait;
+use App\Database\FootyStats\MatchXgView;
+use App\Database\FootyStats\MatchXgViewAwareTrait;
+use App\Database\FootyStats\TeamStandingView;
+use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Database\FootyStats\TeamStrengthView;
+use App\Database\FootyStats\TeamStrengthViewAwareTrait;
+use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use App\Scraper\FootyStatsScraperAwareTrait;
-use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Throwable;
 
 /**
@@ -40,29 +49,72 @@ use Throwable;
  */
 #[AsCommand(
     name: 'app:footy-stats:data:diff',
-    description: 'Insert or update Footy Stats table data'
+    description: 'Create or update Footy Stats table data'
 )]
 final class DiffCommand extends Command
 {
-    use FootyStatsScraperAwareTrait, MatchTableAwareTrait;
+    use AwayTeamStandingViewAwareTrait,
+        ConnectionAwareTrait,
+        FootyStatsScraperAwareTrait,
+        HomeTeamStandingViewAwareTrait,
+        MatchTableAwareTrait,
+        MatchXgViewAwareTrait,
+        TeamStandingViewAwareTrait,
+        TeamStrengthViewAwareTrait;
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws Throwable
-     * @throws DBALException
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
-     */
+    public function setTargetArgumentsProvider(
+        #[Autowire(service: 'app.provider.footy_stats.scraper_target_arguments_provider')]
+        TargetArgumentsProviderInterface $provider
+    ): void
+    {
+        parent::setTargetArgumentsProvider($provider);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io->title('Diff Footy Stats Data');
 
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
+
+        $creates = [];
+
+        if (!$this->footyStatsMatchTable->exists($target)) {
+            $creates[] = MatchTable::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsTeamStandingView->exists($target)) {
+            $creates[] = TeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsHomeTeamStandingView->exists($target)) {
+            $creates[] = HomeTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsAwayTeamStandingView->exists($target)) {
+            $creates[] = AwayTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsTeamStrengthView->exists($target)) {
+            $creates[] = TeamStrengthView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsMatchXgView->exists($target)) {
+            $creates[] = MatchXgView::getCreateSql($target);
+        }
+
+        if (!empty($creates)) {
+            $this->io->section('Create');
+            $this->io->writeln($creates);
+
+            if (!$this->io->confirm('Proceed with the schema changes?')) {
+                return Command::SUCCESS;
+            }
+
+            foreach ($creates as $create) {
+                $this->footyStatsConnection->executeStatement($create);
+            }
+        }
 
         $teamNameIndex = [];
         foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
@@ -87,7 +139,7 @@ final class DiffCommand extends Command
             })
         );
 
-        $selectQueryBuilder = $this->matchTable
+        $selectQueryBuilder = $this->footyStatsMatchTable
             ->createSelectQueryBuilder($target)
             ->select('*');
 
@@ -159,9 +211,9 @@ final class DiffCommand extends Command
             return Command::SUCCESS;
         }
 
-        $this->io->info('Backup table: ' . $this->matchTable->backup($target));
+        $this->io->info('Backup table: ' . $this->footyStatsMatchTable->backup($target));
 
-        $insertQueryBuilder = $this->matchTable
+        $insertQueryBuilder = $this->footyStatsMatchTable
             ->createInsertQueryBuilder($target)
             ->values([
                 'home_team_name' => '?',
@@ -172,7 +224,7 @@ final class DiffCommand extends Command
                 'extra' => '?'
             ]);
 
-        $this->matchTable->beginTransaction();
+        $this->footyStatsMatchTable->beginTransaction();
 
         try {
             $this->io->progressStart(count($inserts) + count($updates));
@@ -193,7 +245,7 @@ final class DiffCommand extends Command
             }
 
             foreach ($updates as $update) {
-                $updateQueryBuilder = $this->matchTable
+                $updateQueryBuilder = $this->footyStatsMatchTable
                     ->createUpdateQueryBuilder($target)
                     ->where('home_team_name = :home_team_name')
                     ->andWhere('away_team_name = :away_team_name')
@@ -214,13 +266,13 @@ final class DiffCommand extends Command
                 $this->io->progressAdvance();
             }
         } catch (Throwable $e) {
-            $this->matchTable->rollback();
+            $this->footyStatsMatchTable->rollback();
             throw $e;
         } finally {
             $this->io->progressFinish();
         }
 
-        $this->matchTable->commit();
+        $this->footyStatsMatchTable->commit();
 
         $this->io->success(sprintf('Inserted %d rows. Updated %d rows', count($inserts), count($updates)));
 
