@@ -37,7 +37,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract class AbstractCommand extends Command
+abstract class AbstractTargetCommand extends Command
 {
     public const int SUCCESS = Command::SUCCESS;
     public const int FAILURE = Command::FAILURE;

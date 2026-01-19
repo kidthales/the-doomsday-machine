@@ -23,7 +23,7 @@ namespace App\Command\FootyStats\Match\Chance;
 
 use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
 use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
 use LogicException;

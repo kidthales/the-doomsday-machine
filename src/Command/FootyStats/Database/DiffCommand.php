@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Database;
 
-use App\Console\Command\FootyStats\AbstractCommand as Command;
+use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\ConnectionAwareTrait;
