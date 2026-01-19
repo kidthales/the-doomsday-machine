@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Data;
+namespace App\Command\FootyStats\Database;
 
 use App\Console\Command\FootyStats\AbstractCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
