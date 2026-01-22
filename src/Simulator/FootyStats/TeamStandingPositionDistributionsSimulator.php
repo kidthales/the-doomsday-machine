@@ -24,21 +24,18 @@ namespace App\Simulator\FootyStats;
 use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Entity\FootyStats\Target;
+use App\Formatter\OrdinalNumberFormatterAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
-use NumberFormatter;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 final class TeamStandingPositionDistributionsSimulator
 {
-    use TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
-
-    private readonly NumberFormatter $ordinalNumberFormatter;
+    use OrdinalNumberFormatterAwareTrait, TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
 
     public function __construct(private readonly MatchesSimulator $matchesSimulator)
     {
-        $this->ordinalNumberFormatter = new NumberFormatter('en_US', NumberFormatter::ORDINAL);
     }
 
     /**
