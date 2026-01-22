@@ -28,6 +28,7 @@ use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Formatter\OrdinalNumberFormatterAwareTrait;
 use App\Simulator\FootyStats\MatchesSimulator;
 use App\Simulator\FootyStats\TeamStandingPositionDistributionsSimulator;
 use Doctrine\DBAL\Exception as DBALException;
@@ -37,6 +38,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
@@ -50,6 +52,7 @@ final class PredictCommand extends Command
 {
     use DataOptionsTrait,
         DisplayTableDataTrait,
+        OrdinalNumberFormatterAwareTrait,
         PrettyOptionTrait,
         PrettyTeamStandingsTrait,
         TeamStandingsCalculatorAwareTrait,
@@ -59,6 +62,8 @@ final class PredictCommand extends Command
 
     private MatchesSimulator $matchesSimulator;
     private TeamStandingPositionDistributionsSimulator $teamStandingPositionDistributionsSimulator;
+
+    private array $rulesConfig;
 
     #[Required]
     public function setMatchesSimulator(MatchesSimulator $simulator): void
@@ -72,6 +77,12 @@ final class PredictCommand extends Command
         $this->teamStandingPositionDistributionsSimulator = $simulator;
     }
 
+    #[Required]
+    public function setRulesConfig(#[Autowire(param: 'app.footy_stats.rules')] array $rulesConfig): void
+    {
+        $this->rulesConfig = $rulesConfig;
+    }
+
     protected function configure(): void
     {
         parent::configure();
@@ -81,6 +92,11 @@ final class PredictCommand extends Command
                 'distribution',
                 mode: InputOption::VALUE_NONE,
                 description: 'Output team standing position distributions'
+            )
+            ->addOption(
+                'relegation',
+                mode: InputOption::VALUE_NONE,
+                description: 'Only output relegation predictions'
             );
 
         $this
@@ -101,6 +117,9 @@ final class PredictCommand extends Command
         $dataOutputOptions = $this->getCommandDataOptions($input);
 
         $isDistribution = $input->getOption('distribution');
+        $isRelegation = $input->getOption('relegation');
+
+        $rules = $this->rulesConfig['nation_competitions'][$target->nation][$target->competition] ?? [];
 
         if (!$isDistribution) {
             $initialTeamStandings = $this->footyStatsTeamStandingView
@@ -118,6 +137,14 @@ final class PredictCommand extends Command
                 $simulatedMatches,
                 $initialTeamStandings
             );
+
+            if ($isRelegation) {
+                $relegationPositions = $rules['relegation_positions'] ?? [];
+
+                $teamStandings = array_values(
+                    array_filter($teamStandings, fn (array $t) => in_array($t['position'], $relegationPositions))
+                );
+            }
 
             if (empty($teamStandings)) {
                 throw new LogicException('Expected simulated team standings');
@@ -152,6 +179,20 @@ final class PredictCommand extends Command
             $this->io->progressFinish();
         }
 
+        if ($isRelegation) {
+            $teamStandingPositionDistributions = array_map(
+                fn (array $d) => [
+                    'team_name' => $d['team_name'],
+                    'relegation_chance' => array_reduce(
+                        $rules['relegation_positions'],
+                        fn (float $c, float $p) => $c + $d[$this->ordinalNumberFormatter->format($p)],
+                        0
+                    )
+                ],
+                $teamStandingPositionDistributions
+            );
+        }
+
         if (empty($teamStandingPositionDistributions)) {
             throw new LogicException('Expected simulated team standing position distributions');
         }
@@ -165,6 +206,10 @@ final class PredictCommand extends Command
                         if ($column === 'team_name') {
                             $prettyDistribution['Team'] = $value;
                             continue;
+                        }
+
+                        if ($column === 'relegation_chance') {
+                            $column = 'Relegation Chance';
                         }
 
                         $prettyDistribution[$column] = number_format(round(100 * $value, 2), 2) . '%';

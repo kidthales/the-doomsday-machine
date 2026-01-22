@@ -22,5 +22,8 @@ return static function (ContainerConfigurator $container): void {
         'app.provider.footy_stats.scraper_target_arguments_provider',
         \App\Provider\FootyStats\ScraperTargetArgumentsProvider::class
     );
+
+    $services->set('app.formatter.ordinal_number_formatter', \NumberFormatter::class)
+        ->args(['en-US', \NumberFormatter::ORDINAL]);
 };
 
