@@ -77,6 +77,7 @@ final class FootyStatsScraper
      * @var array{
      *      endpoint: string,
      *      current_season_ttl: int,
+     *      overview_fixtures_request_interval: int,
      *      nation_competitions: array<string, array<string, array{
      *          overview_path: string,
      *          fixtures_path: string
@@ -393,6 +394,7 @@ final class FootyStatsScraper
             $config = $this->config['nation_competitions'][$nation][$competition];
 
             $overviewContent = $this->requestCurrentSeasonContent($config['overview_path']);
+            sleep($this->config['overview_fixtures_request_interval']);
             $fixturesContent = $this->requestCurrentSeasonContent($config['fixtures_path']);
 
             $this->fileDepot->appendToFile($overviewPath, $overviewContent);
@@ -433,6 +435,7 @@ final class FootyStatsScraper
             $this->fileDepot->remove([$overviewPath, $fixturesPath]);
 
             $overviewContent = $this->requestPreviousSeasonContent($overviewPayload);
+            sleep($this->config['overview_fixtures_request_interval']);
             $fixturesContent = $this->requestPreviousSeasonContent($fixturesPayload);
 
             $this->fileDepot->appendToFile($overviewPath, $overviewContent);
