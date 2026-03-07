@@ -28,7 +28,6 @@ jobs:
         with:
           pull: true
           load: true
-          source: docker
           files: |
             docker/bake.hcl
           set: |
