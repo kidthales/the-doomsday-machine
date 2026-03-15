@@ -36,7 +36,7 @@ final class DeductionTable extends AbstractTable
         $sql = <<<'SQL'
             CREATE TABLE <table_name> (
                 team_name TEXT NOT NULL,
-                points SMALLINT DEFAULT NULL,
+                points SMALLINT DEFAULT 0,
                 extra TEXT DEFAULT NULL,
                 PRIMARY KEY (team_name)
             );

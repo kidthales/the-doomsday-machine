@@ -25,6 +25,8 @@ use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\ConnectionAwareTrait;
+use App\Database\FootyStats\DeductionTable;
+use App\Database\FootyStats\DeductionTableAwareTrait;
 use App\Database\FootyStats\HomeTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
 use App\Database\FootyStats\MatchTable;
@@ -60,6 +62,7 @@ final class DiffCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,
         ConnectionAwareTrait,
+        DeductionTableAwareTrait,
         FootyStatsScraperAwareTrait,
         HomeTeamStandingViewAwareTrait,
         MatchTableAwareTrait,
@@ -97,6 +100,10 @@ final class DiffCommand extends Command
 
         if (!$this->footyStatsMatchTable->exists($target)) {
             $creates[] = MatchTable::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsDeductionTable->exists($target)) {
+            $creates[] = DeductionTable::getCreateSql($target);
         }
 
         if (!$this->footyStatsTeamStandingView->exists($target)) {
