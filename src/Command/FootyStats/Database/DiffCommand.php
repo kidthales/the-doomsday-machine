@@ -25,6 +25,8 @@ use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Database\FootyStats\AwayTeamStandingView;
 use App\Database\FootyStats\AwayTeamStandingViewAwareTrait;
 use App\Database\FootyStats\ConnectionAwareTrait;
+use App\Database\FootyStats\DeductionTable;
+use App\Database\FootyStats\DeductionTableAwareTrait;
 use App\Database\FootyStats\HomeTeamStandingView;
 use App\Database\FootyStats\HomeTeamStandingViewAwareTrait;
 use App\Database\FootyStats\MatchTable;
@@ -35,6 +37,7 @@ use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
+use App\Entity\FootyStats\Target;
 use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
@@ -60,6 +63,7 @@ final class DiffCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,
         ConnectionAwareTrait,
+        DeductionTableAwareTrait,
         FootyStatsScraperAwareTrait,
         HomeTeamStandingViewAwareTrait,
         MatchTableAwareTrait,
@@ -93,67 +97,189 @@ final class DiffCommand extends Command
         $target = $this->getTargetArguments($input);
         $this->io->info((string)$target);
 
-        $creates = [];
+        $createTableSql = $this->getCreateTableSql($target);
+        $createViewSql = $this->getCreateViewSql($target);
+        $createSql = [...$createTableSql, ...$createViewSql];
 
-        if (!$this->footyStatsMatchTable->exists($target)) {
-            $creates[] = MatchTable::getCreateSql($target);
-        }
-
-        if (!$this->footyStatsTeamStandingView->exists($target)) {
-            $creates[] = TeamStandingView::getCreateSql($target);
-        }
-
-        if (!$this->footyStatsHomeTeamStandingView->exists($target)) {
-            $creates[] = HomeTeamStandingView::getCreateSql($target);
-        }
-
-        if (!$this->footyStatsAwayTeamStandingView->exists($target)) {
-            $creates[] = AwayTeamStandingView::getCreateSql($target);
-        }
-
-        if (!$this->footyStatsTeamStrengthView->exists($target)) {
-            $creates[] = TeamStrengthView::getCreateSql($target);
-        }
-
-        if (!$this->footyStatsMatchXgView->exists($target)) {
-            $creates[] = MatchXgView::getCreateSql($target);
-        }
-
-        if (!empty($creates)) {
+        if (!empty($createSql)) {
             $this->io->section('Create');
-            $this->io->writeln($creates);
+            $this->io->writeln($createSql);
 
             if (!$this->io->confirm('Proceed with the schema changes?')) {
                 return Command::SUCCESS;
             }
 
-            foreach ($creates as $create) {
-                $this->footyStatsConnection->executeStatement($create);
+            foreach ($createSql as $sql) {
+                $this->footyStatsConnection->executeStatement($sql);
             }
         }
 
+        $teamNameIndex = $this->getTeamNameIndex($target);
+        $this->insertTeamsIntoDeductionTable($target, $teamNameIndex);
+        list ($inserts, $updates) = $this->getMatchTableChanges($target, $teamNameIndex);
+
+        if (empty($inserts) && empty($updates)) {
+            $this->io->success('No data changes detected');
+            return Command::SUCCESS;
+        }
+
+        if (!empty($inserts)) {
+            $this->io->section('Insert');
+            $this->io->table(array_keys($inserts[0]), $inserts);
+        }
+
+        if (!empty($updates)) {
+            $this->io->section('Update');
+
+            $definitionList = [];
+            foreach ($updates as $update) {
+                foreach ($update as $key => $value) {
+                    $definitionList[] = [$key => $value];
+                }
+                $definitionList[] = new TableSeparator();
+            }
+            $this->io->definitionList(...$definitionList);
+        }
+
+        if (!$this->io->confirm('Proceed with the data changes?')) {
+            return Command::SUCCESS;
+        }
+
+        $this->io->info('Backup table: ' . $this->footyStatsMatchTable->backup($target));
+
+        $this->doMatchTableChanges($target, $inserts, $updates);
+
+        $this->io->success(
+            sprintf(
+                'Created %d tables. Created %d views. Inserted %d rows. Updated %d rows',
+                count($createTableSql),
+                count($createViewSql),
+                count($inserts),
+                count($updates)
+            )
+        );
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * @param Target $target
+     * @return array
+     * @throws DBALException
+     */
+    private function getCreateTableSql(Target $target): array
+    {
+        $sql = [];
+
+        if (!$this->footyStatsMatchTable->exists($target)) {
+            $sql[] = MatchTable::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsDeductionTable->exists($target)) {
+            $sql[] = DeductionTable::getCreateSql($target);
+        }
+
+        return $sql;
+    }
+
+    /**
+     * @param Target $target
+     * @return array
+     * @throws DBALException
+     */
+    private function getCreateViewSql(Target $target): array
+    {
+        $sql = [];
+
+        if (!$this->footyStatsTeamStandingView->exists($target)) {
+            $sql[] = TeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsHomeTeamStandingView->exists($target)) {
+            $sql[] = HomeTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsAwayTeamStandingView->exists($target)) {
+            $sql[] = AwayTeamStandingView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsTeamStrengthView->exists($target)) {
+            $sql[] = TeamStrengthView::getCreateSql($target);
+        }
+
+        if (!$this->footyStatsMatchXgView->exists($target)) {
+            $sql[] = MatchXgView::getCreateSql($target);
+        }
+
+        return $sql;
+    }
+
+    /**
+     * @param Target $target
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    private function getTeamNameIndex(Target $target): array
+    {
         $teamNameIndex = [];
+
         foreach ($this->footyStatsScraper->scrapeTeamNames($target) as $teamNames) {
             $teamNameIndex[$teamNames[1]] = $teamNames[0];
         }
 
-        $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
-        usort($rawScrapedMatches, fn(array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
+        return $teamNameIndex;
+    }
 
-        $found = [];
-        $scrapedMatches = array_values(
-            array_filter($rawScrapedMatches, function (array $match) use (&$found) {
-                if (isset($found[$match['home_team_name']][$match['away_team_name']])) {
-                    return false;
-                }
+    /**
+     * @param Target $target
+     * @param string[] $teamNames
+     * @return void
+     * @throws DBALException
+     */
+    private function insertTeamsIntoDeductionTable(Target $target, array $teamNames): void
+    {
+        $selectQueryBuilder = $this->footyStatsDeductionTable
+            ->createSelectQueryBuilder($target)
+            ->select('1');
 
-                if (!isset($found[$match['home_team_name']])) {
-                    $found[$match['home_team_name']] = [];
-                }
+        $insertQueryBuilder = $this->footyStatsDeductionTable
+            ->createInsertQueryBuilder($target)
+            ->values([
+                'team_name' => '?',
+                'points' => '?',
+                'extra' => '?'
+            ]);
 
-                return $found[$match['home_team_name']][$match['away_team_name']] = true;
-            })
-        );
+        foreach ($teamNames as $teamName) {
+            $selectQueryBuilder
+                ->resetWhere()
+                ->where('team_name = :team_name')
+                ->setParameter('team_name', $teamName);
+
+            if (!$selectQueryBuilder->fetchOne()) {
+                $insertQueryBuilder
+                    ->setParameters([$teamName, 0, null])
+                    ->executeStatement();
+            }
+        }
+    }
+
+    /**
+     * @param Target $target
+     * @param array $teamNameIndex
+     * @return array[]
+     * @throws ClientExceptionInterface
+     * @throws DBALException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    private function getMatchTableChanges(Target $target, array $teamNameIndex): array
+    {
+        $scrapedMatches = $this->getScrapedMatches($target);
 
         $selectQueryBuilder = $this->footyStatsMatchTable
             ->createSelectQueryBuilder($target)
@@ -200,35 +326,19 @@ final class DiffCommand extends Command
             }
         }
 
-        if (empty($inserts) && empty($updates)) {
-            $this->io->success('No data changes detected');
-            return Command::SUCCESS;
-        }
+        return [$inserts, $updates];
+    }
 
-        if (!empty($inserts)) {
-            $this->io->section('Insert');
-            $this->io->table(array_keys($inserts[0]), $inserts);
-        }
-
-        if (!empty($updates)) {
-            $this->io->section('Update');
-
-            $definitionList = [];
-            foreach ($updates as $update) {
-                foreach ($update as $key => $value) {
-                    $definitionList[] = [$key => $value];
-                }
-                $definitionList[] = new TableSeparator();
-            }
-            $this->io->definitionList(...$definitionList);
-        }
-
-        if (!$this->io->confirm('Proceed with the data changes?')) {
-            return Command::SUCCESS;
-        }
-
-        $this->io->info('Backup table: ' . $this->footyStatsMatchTable->backup($target));
-
+    /**
+     * @param Target $target
+     * @param array $inserts
+     * @param array $updates
+     * @return void
+     * @throws DBALException
+     * @throws Throwable
+     */
+    private function doMatchTableChanges(Target $target, array $inserts, array $updates): void
+    {
         $insertQueryBuilder = $this->footyStatsMatchTable
             ->createInsertQueryBuilder($target)
             ->values([
@@ -289,16 +399,37 @@ final class DiffCommand extends Command
         }
 
         $this->footyStatsMatchTable->commit();
+    }
 
-        $this->io->success(
-            sprintf(
-                'Created %d schemas. Inserted %d rows. Updated %d rows',
-                count($creates),
-                count($inserts),
-                count($updates)
-            )
+    /**
+     * @param Target $target
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    private function getScrapedMatches(Target $target): array
+    {
+        // Sort by timestamp, descending. Then filter out duplicates, first found, first kept.
+        // This should ensure we only get the latest matches in cases of match postponement
+
+        $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
+        usort($rawScrapedMatches, fn(array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
+
+        $found = [];
+        return array_values(
+            array_filter($rawScrapedMatches, function (array $match) use (&$found) {
+                if (isset($found[$match['home_team_name']][$match['away_team_name']])) {
+                    return false;
+                }
+
+                if (!isset($found[$match['home_team_name']])) {
+                    $found[$match['home_team_name']] = [];
+                }
+
+                return $found[$match['home_team_name']][$match['away_team_name']] = true;
+            })
         );
-
-        return Command::SUCCESS;
     }
 }

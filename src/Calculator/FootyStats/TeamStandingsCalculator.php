@@ -35,7 +35,7 @@ final readonly class TeamStandingsCalculator
         $this->randomizer = new Randomizer();
     }
 
-    public function calculate(array $matches, array $initialTeamStandings = []): array
+    public function calculate(array $matches, array $initialTeamStandings, array $deductions): array
     {
         $teamStandingsIndex = [];
 
@@ -132,7 +132,7 @@ final readonly class TeamStandingsCalculator
                 'goals_against' => $teamStanding['goals_against'],
                 'goals_against_per_game' => $teamStanding['goals_against'] / $teamStanding['matches_played'],
                 'goal_difference' => $teamStanding['goals_for'] - $teamStanding['goals_against'],
-                'points' => $teamStanding['points'],
+                'points' => $teamStanding['points'] - $deductions[$teamName],
                 'points_per_game' => $teamStanding['points'] / $teamStanding['matches_played'],
                 'sequence' => $teamStanding['sequence']
             ];
