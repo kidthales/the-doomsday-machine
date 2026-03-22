@@ -105,3 +105,6 @@ footy-stats-team-strength-list: ## List team strengths, pass the parameter "c=" 
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:team-strength:list $(c)
 
+footy-stats-deduction-list: ## List point deductions, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:footy-stats:deduction:list $(c)
