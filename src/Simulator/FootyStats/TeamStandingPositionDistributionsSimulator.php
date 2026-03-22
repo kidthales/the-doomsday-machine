@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Simulator\FootyStats;
 
 use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
+use App\Database\FootyStats\DeductionTableAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Entity\FootyStats\Target;
 use App\Formatter\OrdinalNumberFormatterAwareTrait;
@@ -32,7 +33,7 @@ use Doctrine\DBAL\Exception as DBALException;
  */
 final class TeamStandingPositionDistributionsSimulator
 {
-    use OrdinalNumberFormatterAwareTrait, TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
+    use DeductionTableAwareTrait, OrdinalNumberFormatterAwareTrait, TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
 
     public function __construct(private readonly MatchesSimulator $matchesSimulator)
     {
@@ -52,13 +53,18 @@ final class TeamStandingPositionDistributionsSimulator
             ->select('*')
             ->fetchAllAssociative();
 
+        $deductions = $this->footyStatsDeductionTable
+            ->createSelectQueryBuilder($target)
+            ->select('team_name', 'points')
+            ->fetchAllKeyValue();
+
         $teamStandingsPositionCounts = [];
 
         $this->matchesSimulator->simulate(
             $target,
             $numRuns,
-            function (array $simulatedMatches, int $run) use (&$teamStandingsPositionCounts, $initialTeamStandings, $callback) {
-                $teamStandings = $this->teamStandingsCalculator->calculate($simulatedMatches, $initialTeamStandings);
+            function (array $simulatedMatches, int $run) use (&$teamStandingsPositionCounts, $initialTeamStandings, $deductions, $callback) {
+                $teamStandings = $this->teamStandingsCalculator->calculate($simulatedMatches, $initialTeamStandings, $deductions);
 
                 foreach ($teamStandings as $teamStanding) {
                     $teamName = $teamStanding['team_name'];

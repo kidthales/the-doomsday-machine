@@ -27,6 +27,7 @@ use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
+use App\Database\FootyStats\DeductionTableAwareTrait;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Formatter\OrdinalNumberFormatterAwareTrait;
 use App\Simulator\FootyStats\MatchesSimulator;
@@ -51,6 +52,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 final class PredictCommand extends Command
 {
     use DataOptionsTrait,
+        DeductionTableAwareTrait,
         DisplayTableDataTrait,
         OrdinalNumberFormatterAwareTrait,
         PrettyOptionTrait,
@@ -133,9 +135,15 @@ final class PredictCommand extends Command
                 $simulatedMatches = $matches;
             });
 
+            $deductions = $this->footyStatsDeductionTable
+                ->createSelectQueryBuilder($target)
+                ->select('team_name', 'points')
+                ->fetchAllKeyValue();
+
             $teamStandings = $this->teamStandingsCalculator->calculate(
                 $simulatedMatches,
-                $initialTeamStandings
+                $initialTeamStandings,
+                $deductions
             );
 
             if ($isRelegation) {
