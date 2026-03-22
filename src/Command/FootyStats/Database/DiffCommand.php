@@ -115,7 +115,7 @@ final class DiffCommand extends Command
         }
 
         $teamNameIndex = $this->getTeamNameIndex($target);
-        $deductionTableInsertCount = $this->insertTeamsIntoDeductionTable($target, $teamNameIndex);
+        $this->insertTeamsIntoDeductionTable($target, $teamNameIndex);
         list ($inserts, $updates) = $this->getMatchTableChanges($target, $teamNameIndex);
 
         if (empty($inserts) && empty($updates)) {
@@ -154,7 +154,7 @@ final class DiffCommand extends Command
                 'Created %d tables. Created %d views. Inserted %d rows. Updated %d rows',
                 count($createTableSql),
                 count($createViewSql),
-                count($inserts) + $deductionTableInsertCount,
+                count($inserts),
                 count($updates)
             )
         );
@@ -236,10 +236,10 @@ final class DiffCommand extends Command
     /**
      * @param Target $target
      * @param string[] $teamNames
-     * @return int
+     * @return void
      * @throws DBALException
      */
-    private function insertTeamsIntoDeductionTable(Target $target, array $teamNames): int
+    private function insertTeamsIntoDeductionTable(Target $target, array $teamNames): void
     {
         $selectQueryBuilder = $this->footyStatsDeductionTable
             ->createSelectQueryBuilder($target)
@@ -253,8 +253,6 @@ final class DiffCommand extends Command
                 'extra' => '?'
             ]);
 
-        $count = 0;
-
         foreach ($teamNames as $teamName) {
             $selectQueryBuilder
                 ->resetWhere()
@@ -262,14 +260,11 @@ final class DiffCommand extends Command
                 ->setParameter('team_name', $teamName);
 
             if (!$selectQueryBuilder->fetchOne()) {
-                ++$count;
                 $insertQueryBuilder
                     ->setParameters([$teamName, 0, null])
                     ->executeStatement();
             }
         }
-
-        return $count;
     }
 
     /**
@@ -331,7 +326,7 @@ final class DiffCommand extends Command
             }
         }
 
-        return ['inserts' => $inserts, 'updates' => $updates];
+        return [$inserts, $updates];
     }
 
     /**
