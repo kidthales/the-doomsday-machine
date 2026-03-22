@@ -342,6 +342,9 @@ final class DiffCommand extends Command
      */
     private function getScrapedMatches(Target $target): array
     {
+        // Sort by timestamp, descending. Then filter out duplicates, first found, first kept.
+        // This should ensure we only get the latest matches in cases of match postponement
+
         $rawScrapedMatches = $this->footyStatsScraper->scrapeMatches($target);
         usort($rawScrapedMatches, fn(array $a, array $b) => $b['timestamp'] <=> $a['timestamp']);
 
