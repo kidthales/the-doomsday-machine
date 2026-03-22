@@ -70,7 +70,7 @@ abstract class AbstractTargetCommand extends Command
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      */
-    final protected function interact(InputInterface $input, OutputInterface $output): void
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $nation = $input->getArgument('nation');
 
