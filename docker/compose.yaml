@@ -36,6 +36,19 @@ services:
       - host.docker.internal:host-gateway
     tty: true
 
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    hostname: ollama
+    volumes:
+      - ../data/.ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+    tty: true
+
 volumes:
   caddy_data:
   caddy_config:

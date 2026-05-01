@@ -5,19 +5,22 @@ CD_DOCKER_COMP  = cd docker && docker compose
 CD_DOCKER_DOCK  = cd docker && docker
 
 # Docker containers
-PHP_CONT := $(CD_DOCKER_COMP) exec php
+PHP_CONT    := $(CD_DOCKER_COMP) exec php
+OLLAMA_CONT := $(CD_DOCKER_COMP) exec -it ollama
 
 # Executables
 PHP      := $(PHP_CONT) php
 COMPOSER := $(PHP_CONT) composer
 SYMFONY  := $(PHP) bin/console
+OLLAMA   := $(OLLAMA_CONT) ollama
 
 # Misc
 .DEFAULT_GOAL = help
 .PHONY        : help build print up start down logs bash test composer vendor sf cc own \
                 footy-stats-data-diff footy-stats-match-list footy-stats-match-chance-list footy-stats-match-xg-list \
                 footy-stats-migrations-generate footy-stats-team-standing-list footy-stats-team-standing-predict \
-                footy-stats-team-strength-list
+                footy-stats-team-strength-list \
+                ollama
 
 ## —— ☢️  The Doomsday Machine Makefile ☢️  ————————————————————————————————————
 help: ## Outputs this help screen
@@ -112,3 +115,8 @@ footy-stats-deduction-list: ## List point deductions, pass the parameter "c=" to
 footy-stats-deduction-update: ## Update point deductions, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:footy-stats:deduction:update $(c)
+
+## —— Ollama 🦙  ————————————————————————————————————————————————————————————————
+ollama: ## Run ollama, pass the parameter "c=" to run a given command
+	@$(eval c ?=)
+	@$(OLLAMA) $(c)
