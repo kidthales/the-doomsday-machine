@@ -26,8 +26,8 @@ final class TestCommand extends Command
 
         $result = $this->agent->call($messages);
 
-        $output->write($result->getContent());
-        $output->writeln('');
+        $output->writeln('<info>' . $result->getContent(). '</info>');
+        $output->writeln('<comment>' . json_encode($result->getMetadata()->jsonSerialize(), JSON_PRETTY_PRINT) . '</comment>');
 
         return Command::SUCCESS;
     }
