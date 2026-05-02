@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Database;
 
 use App\Console\Command\AbstractCommand as Command;
-use App\Scraper\FootyStatsScraperAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -41,7 +41,7 @@ use Throwable;
 )]
 final class SyncCommand extends Command
 {
-    use FootyStatsScraperAwareTrait;
+    use ScraperAwareTrait;
 
     protected function configure(): void
     {

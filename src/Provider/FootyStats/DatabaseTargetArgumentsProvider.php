@@ -22,8 +22,8 @@ declare(strict_types=1);
 namespace App\Provider\FootyStats;
 
 use App\Database\FootyStats\ConnectionAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
 use App\Entity\FootyStats\Target;
-use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use function Symfony\Component\String\s;
 
@@ -32,7 +32,7 @@ use function Symfony\Component\String\s;
  */
 final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderInterface
 {
-    use ConnectionAwareTrait, FootyStatsScraperAwareTrait;
+    use ConnectionAwareTrait, ScraperAwareTrait;
 
     /**
      * @return array

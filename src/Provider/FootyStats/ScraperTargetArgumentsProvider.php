@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Provider\FootyStats;
 
-use App\Scraper\FootyStatsScraperAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -32,7 +32,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 final class ScraperTargetArgumentsProvider implements TargetArgumentsProviderInterface
 {
-    use FootyStatsScraperAwareTrait;
+    use ScraperAwareTrait;
 
     public function getNations(): array
     {

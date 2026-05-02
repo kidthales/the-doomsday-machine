@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Scraper;
+namespace App\Domain\JabroniBetz\FootyStats;
 
 use App\Entity\FootyStats\EndpointPayload;
 use App\Entity\FootyStats\Target;
@@ -37,7 +37,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class FootyStatsScraper
+final class Scraper
 {
     private static function makePath(string $nation, string $competition, string $season, string $context): string
     {

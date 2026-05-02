@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Scraper;
+namespace App\Tests\Domain\JabroniBetz\FootyStats;
 
+use App\Domain\JabroniBetz\FootyStats\Scraper;
 use App\Entity\FootyStats\EndpointPayload;
 use App\Entity\FootyStats\Target;
-use App\Scraper\FootyStatsScraper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -21,9 +21,9 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Throwable;
 
-#[CoversClass(FootyStatsScraper::class)]
+#[CoversClass(Scraper::class)]
 #[UsesClass(Target::class)]
-final class FootyStatsScraperTest extends KernelTestCase
+final class ScraperTest extends KernelTestCase
 {
     public function tearDown(): void
     {
@@ -35,8 +35,8 @@ final class FootyStatsScraperTest extends KernelTestCase
     {
         self::bootKernel();
 
-        /** @var FootyStatsScraper $scraper */
-        $scraper = self::getContainer()->get(FootyStatsScraper::class);
+        /** @var Scraper $scraper */
+        $scraper = self::getContainer()->get(Scraper::class);
 
         $actual = $scraper->getNations();
 
@@ -57,8 +57,8 @@ final class FootyStatsScraperTest extends KernelTestCase
     {
         self::bootKernel();
 
-        /** @var FootyStatsScraper $scraper */
-        $scraper = self::getContainer()->get(FootyStatsScraper::class);
+        /** @var Scraper $scraper */
+        $scraper = self::getContainer()->get(Scraper::class);
 
         $actual = $scraper->getCompetitions($subject);
 
@@ -235,8 +235,8 @@ HTML
         self::bootKernel();
         self::getContainer()->set('footy_stats.client', new MockHttpClient($mockResponses));
 
-        /** @var FootyStatsScraper $scraper */
-        $scraper = self::getContainer()->get(FootyStatsScraper::class);
+        /** @var Scraper $scraper */
+        $scraper = self::getContainer()->get(Scraper::class);
 
         try {
             $actual = $scraper->scrapeAvailableSeasons(...$subject);
@@ -547,8 +547,8 @@ HTML
         self::bootKernel();
         self::getContainer()->set('footy_stats.client', new MockHttpClient($mockResponses));
 
-        /** @var FootyStatsScraper $scraper */
-        $scraper = self::getContainer()->get(FootyStatsScraper::class);
+        /** @var Scraper $scraper */
+        $scraper = self::getContainer()->get(Scraper::class);
 
         try {
             $actual = $scraper->scrapeTeamNames($subject);
@@ -860,8 +860,8 @@ HTML
         self::bootKernel();
         self::getContainer()->set('footy_stats.client', new MockHttpClient($mockResponses));
 
-        /** @var FootyStatsScraper $scraper */
-        $scraper = self::getContainer()->get(FootyStatsScraper::class);
+        /** @var Scraper $scraper */
+        $scraper = self::getContainer()->get(Scraper::class);
 
         try {
             $actual = $scraper->scrapeMatches($subject);

@@ -37,9 +37,9 @@ use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
 use App\Entity\FootyStats\Target;
 use App\Provider\FootyStats\TargetArgumentsProviderInterface;
-use App\Scraper\FootyStatsScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -64,7 +64,7 @@ final class DiffCommand extends Command
     use AwayTeamStandingViewAwareTrait,
         ConnectionAwareTrait,
         DeductionTableAwareTrait,
-        FootyStatsScraperAwareTrait,
+        ScraperAwareTrait,
         HomeTeamStandingViewAwareTrait,
         MatchTableAwareTrait,
         MatchXgViewAwareTrait,
