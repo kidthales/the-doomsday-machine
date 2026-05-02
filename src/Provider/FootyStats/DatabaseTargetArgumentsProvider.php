@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Provider\FootyStats;
 
 use App\Database\FootyStats\ConnectionAwareTrait;
-use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
 use App\Entity\FootyStats\Target;
 use Doctrine\DBAL\Exception as DBALException;
 use function Symfony\Component\String\s;

@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\JabroniBetz\FootyStats;
+namespace App\Domain\JabroniBetz\FootyStats\Scraper;
 
 use Symfony\Contracts\Service\Attribute\Required;
 

@@ -19,9 +19,8 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\JabroniBetz\FootyStats;
+namespace App\Domain\JabroniBetz\FootyStats\Scraper;
 
-use App\Entity\FootyStats\EndpointPayload;
 use App\Entity\FootyStats\Target;
 use App\Filesystem\FileDepot;
 use RuntimeException;

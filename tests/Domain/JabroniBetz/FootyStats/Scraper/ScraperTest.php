@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Domain\JabroniBetz\FootyStats;
+namespace App\Tests\Domain\JabroniBetz\FootyStats\Scraper;
 
-use App\Domain\JabroniBetz\FootyStats\Scraper;
-use App\Entity\FootyStats\EndpointPayload;
+use App\Domain\JabroniBetz\FootyStats\Scraper\EndpointPayload;
+use App\Domain\JabroniBetz\FootyStats\Scraper\Scraper;
 use App\Entity\FootyStats\Target;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

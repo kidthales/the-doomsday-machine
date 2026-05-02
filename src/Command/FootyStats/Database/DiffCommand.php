@@ -37,7 +37,7 @@ use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
-use App\Domain\JabroniBetz\FootyStats\ScraperAwareTrait;
+use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
 use App\Entity\FootyStats\Target;
 use App\Provider\FootyStats\TargetArgumentsProviderInterface;
 use Doctrine\DBAL\Exception as DBALException;
