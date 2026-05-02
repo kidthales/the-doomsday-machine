@@ -1,3 +1,5 @@
+# Deprecated
+
 FROM qwen3.6:35b-a3b-q4_K_M
 
 SYSTEM """

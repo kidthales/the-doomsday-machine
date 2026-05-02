@@ -43,7 +43,7 @@ services:
     hostname: ollama
     volumes:
       - ../data/ollama:/root/.ollama
-      - ../ollama:/ollama:ro
+      - ../llm/ollama:/ollama:ro
     tty: true
 
   open-webui:
