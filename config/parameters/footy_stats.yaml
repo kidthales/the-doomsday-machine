@@ -1,7 +1,7 @@
 parameters:
     app.footy_stats.scraper:
         endpoint: ajax_league.php
-        current_season_ttl: '%env(int:FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
+        current_season_ttl: '%env(int:JABRONIBETZ_FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
         overview_fixtures_request_interval: 1
         nation_competitions:
             England:

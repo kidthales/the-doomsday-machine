@@ -25,7 +25,7 @@ use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
-use App\Database\FootyStats\MatchXgViewAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\MatchXgViewAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use Symfony\Component\Console\Attribute\AsCommand;

@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Target;
 
-use App\Database\FootyStats\ConnectionAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\ConnectionAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use function Symfony\Component\String\s;

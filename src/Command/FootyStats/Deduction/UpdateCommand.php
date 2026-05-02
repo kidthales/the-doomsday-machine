@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Deduction;
 
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
-use App\Database\FootyStats\DeductionTableAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;

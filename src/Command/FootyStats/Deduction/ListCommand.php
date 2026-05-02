@@ -23,7 +23,7 @@ namespace App\Command\FootyStats\Deduction;
 
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
-use App\Database\FootyStats\DeductionTableAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;

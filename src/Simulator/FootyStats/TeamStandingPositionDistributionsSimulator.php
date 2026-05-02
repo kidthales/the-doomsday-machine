@@ -22,8 +22,8 @@ declare(strict_types=1);
 namespace App\Simulator\FootyStats;
 
 use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
-use App\Database\FootyStats\DeductionTableAwareTrait;
-use App\Database\FootyStats\TeamStandingViewAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Formatter\OrdinalNumberFormatterAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
