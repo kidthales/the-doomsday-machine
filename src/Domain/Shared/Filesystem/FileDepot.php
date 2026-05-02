@@ -37,7 +37,7 @@ final readonly class FileDepot
      * @param Filesystem $filesystem
      */
     public function __construct(
-        #[Autowire(param: 'app.shared.filesystem.file_depot.path')] private string $fileDepotPath,
+        #[Autowire(param: 'app.shared.filesystem.file_depot_path')] private string $fileDepotPath,
         private Filesystem                                                         $filesystem
     )
     {
