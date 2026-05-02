@@ -1,0 +1,66 @@
+parameters:
+    app.jabronibetz.footy_stats.scraper:
+        endpoint: ajax_league.php
+        current_season_ttl: '%env(int:JABRONIBETZ_FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
+        overview_fixtures_request_interval: 1
+        nation_competitions:
+            England:
+                Premier League:
+                    overview_path: england/premier-league
+                    fixtures_path: england/premier-league/fixtures
+                Championship:
+                    overview_path: england/championship
+                    fixtures_path: england/championship/fixtures
+
+            Germany:
+                Bundesliga:
+                    overview_path: germany/bundesliga
+                    fixtures_path: germany/bundesliga/fixtures
+
+            Spain:
+                La Liga:
+                    overview_path: spain/la-liga
+                    fixtures_path: spain/la-liga/fixtures
+
+            Italy:
+                Serie A:
+                    overview_path: italy/serie-a
+                    fixtures_path: italy/serie-a/fixtures
+
+            Portugal:
+                Liga NOS:
+                    overview_path: portugal/liga-nos
+                    fixtures_path: portugal/liga-nos/fixtures
+
+            France:
+                Ligue 1:
+                    overview_path: france/ligue-1
+                    fixtures_path: france/ligue-1/fixtures
+
+    app.jabronibetz.footy_stats.rules:
+        nation_competitions:
+            England:
+                Premier League:
+                    relegation_positions: [ 18, 19, 20 ]
+                Championship:
+                    relegation_positions: [ 22, 23, 24 ]
+
+            Germany:
+                Bundesliga:
+                    relegation_positions: [ 17, 18 ]
+
+            Spain:
+                La Liga:
+                    relegation_positions: [ 18, 19, 20 ]
+
+            Italy:
+                Serie A:
+                    relegation_positions: [ 18, 19, 20 ]
+
+            Portugal:
+                Liga NOS:
+                    relegation_positions: [ 17, 18 ]
+
+            France:
+                Ligue 1:
+                    relegation_positions: [ 17, 18 ]

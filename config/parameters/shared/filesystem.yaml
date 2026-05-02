@@ -1,0 +1,2 @@
+parameters:
+    app.shared.filesystem.file_depot_path: '%env(resolve:SHARED_FILESYSTEM_FILE_DEPOT_PATH)%'
