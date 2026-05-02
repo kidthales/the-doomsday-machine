@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Filesystem;
+namespace App\Tests\Domain\Shared\Filesystem;
 
-use App\Filesystem\FileDepot;
+use App\Domain\Shared\Filesystem\FileDepot;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;

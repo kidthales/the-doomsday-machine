@@ -1,5 +1,5 @@
 parameters:
-    app.footy_stats.scraper:
+    app.jabronibetz.footy_stats.scraper:
         endpoint: ajax_league.php
         current_season_ttl: '%env(int:JABRONIBETZ_FOOTY_STATS_SCRAPER_CURRENT_SEASON_TTL)%'
         overview_fixtures_request_interval: 1
@@ -37,7 +37,7 @@ parameters:
                     overview_path: france/ligue-1
                     fixtures_path: france/ligue-1/fixtures
 
-    app.footy_stats.rules:
+    app.jabronibetz.footy_stats.rules:
         nation_competitions:
             England:
                 Premier League:

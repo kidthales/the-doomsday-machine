@@ -23,7 +23,7 @@ return static function (ContainerConfigurator $container): void {
         \App\Domain\Jabronibetz\FootyStats\Target\ScraperTargetValuesProvider::class
     );
 
-    $services->set('app.formatter.ordinal_number_formatter', \NumberFormatter::class)
+    $services->set('app.shared.formatter.ordinal_number_formatter', \NumberFormatter::class)
         ->args(['en-US', \NumberFormatter::ORDINAL]);
 };
 

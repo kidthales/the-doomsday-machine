@@ -31,7 +31,7 @@ use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Simulator\MatchesSimulator;
 use App\Domain\Jabronibetz\FootyStats\Simulator\TeamStandingPositionDistributionsSimulator;
-use App\Formatter\OrdinalNumberFormatterAwareTrait;
+use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use LogicException;
@@ -80,7 +80,7 @@ final class PredictCommand extends Command
     }
 
     #[Required]
-    public function setRulesConfig(#[Autowire(param: 'app.footy_stats.rules')] array $rulesConfig): void
+    public function setRulesConfig(#[Autowire(param: 'app.jabronibetz.footy_stats.rules')] array $rulesConfig): void
     {
         $this->rulesConfig = $rulesConfig;
     }

@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Formatter;
+namespace App\Domain\Shared\Formatter;
 
 use NumberFormatter;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -34,7 +34,7 @@ trait OrdinalNumberFormatterAwareTrait
 
     #[Required]
     public function setOrdinalNumberFormatter(
-        #[Autowire(service: 'app.formatter.ordinal_number_formatter')] NumberFormatter $numberFormatter
+        #[Autowire(service: 'app.shared.formatter.ordinal_number_formatter')] NumberFormatter $numberFormatter
     ): void
     {
         $this->ordinalNumberFormatter = $numberFormatter;

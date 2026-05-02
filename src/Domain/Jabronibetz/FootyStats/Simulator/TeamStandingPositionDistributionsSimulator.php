@@ -25,7 +25,7 @@ use App\Domain\Jabronibetz\FootyStats\Calculator\TeamStandingsCalculatorAwareTra
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
-use App\Formatter\OrdinalNumberFormatterAwareTrait;
+use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 
 /**

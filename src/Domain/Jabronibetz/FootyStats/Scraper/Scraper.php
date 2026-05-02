@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
-use App\Filesystem\FileDepot;
+use App\Domain\Shared\Filesystem\FileDepot;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DomCrawler\Crawler;
@@ -41,7 +41,7 @@ final class Scraper
     private static function makePath(string $nation, string $competition, string $season, string $context): string
     {
         return sprintf(
-            'footy_stats/scraper/%s_%s_%s_%s.html',
+            'jabronibetz/footy_stats/scraper/%s_%s_%s_%s.html',
             s($nation)->snake()->toString(),
             s($competition)->snake()->toString(),
             s($season)->snake()->toString(),
@@ -102,9 +102,9 @@ final class Scraper
      * @param HttpClientInterface $footyStatsClient
      */
     public function __construct(
-        #[Autowire(param: 'app.footy_stats.scraper')] array $config,
-        private readonly FileDepot                          $fileDepot,
-        private readonly HttpClientInterface                $footyStatsClient
+        #[Autowire(param: 'app.jabronibetz.footy_stats.scraper')] array $config,
+        private readonly FileDepot                                      $fileDepot,
+        private readonly HttpClientInterface                            $footyStatsClient
     )
     {
         $this->config = $config;

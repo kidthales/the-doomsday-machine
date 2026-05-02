@@ -28,7 +28,7 @@ final class ScraperTest extends KernelTestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        (new Filesystem())->remove('/app/data/test/file_depot/footy_stats');
+        (new Filesystem())->remove('/app/data/test/file_depot/jabronibetz/footy_stats');
     }
 
     public function test_getNations(): void

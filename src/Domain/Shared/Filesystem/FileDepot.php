@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Filesystem;
+namespace App\Domain\Shared\Filesystem;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
@@ -37,8 +37,8 @@ final readonly class FileDepot
      * @param Filesystem $filesystem
      */
     public function __construct(
-        #[Autowire(param: 'app.file_depot.path')] private string $fileDepotPath,
-        private Filesystem                                       $filesystem
+        #[Autowire(param: 'app.shared.filesystem.file_depot.path')] private string $fileDepotPath,
+        private Filesystem                                                         $filesystem
     )
     {
     }
