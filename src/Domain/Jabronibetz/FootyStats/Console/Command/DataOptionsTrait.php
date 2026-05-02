@@ -19,27 +19,37 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait PrettyOptionTrait
+trait DataOptionsTrait
 {
-    protected function configureCommandPrettyOption(): self
+    protected function configureCommandDataOptions(): self
     {
-        return $this->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with additional formatting');
+        return $this
+            ->addOption('json', mode: InputOption::VALUE_NONE, description: 'Output as JSON')
+            ->addOption('csv', mode: InputOption::VALUE_NONE, description: 'Output as CSV');
     }
 
     /**
      * @param InputInterface $input
-     * @return bool
+     * @return array{json: bool, csv: bool}
      */
-    protected function getCommandPrettyOption(InputInterface $input): bool
+    protected function getCommandDataOptions(InputInterface $input): array
     {
-        return $input->getOption('pretty');
+        $isJson = $input->getOption('json');
+        $isCsv = $input->getOption('csv');
+
+        if ($isJson && $isCsv) {
+            throw new RuntimeException("Only one of '--json' or '--csv' may be specified");
+        }
+
+        return ['json' => $isJson, 'csv' => $isCsv];
     }
 }

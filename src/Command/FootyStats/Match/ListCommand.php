@@ -21,10 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Match;
 
-use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\DisplayTableDataTrait;
-use App\Console\Command\PrettyOptionTrait;
-use App\Domain\Jabronibetz\FootyStats\Command\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\MatchTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;

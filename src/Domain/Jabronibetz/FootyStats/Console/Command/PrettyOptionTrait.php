@@ -19,26 +19,27 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
-use App\Console\Style\DataStyle;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract class AbstractCommand extends Command
+trait PrettyOptionTrait
 {
-    public const int SUCCESS = Command::SUCCESS;
-    public const int FAILURE = Command::FAILURE;
-    public const int INVALID = Command::INVALID;
-
-    protected DataStyle $io;
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
+    protected function configureCommandPrettyOption(): self
     {
-        $this->io = new DataStyle($input, $output);
+        return $this->addOption('pretty', mode: InputOption::VALUE_NONE, description: 'Output with additional formatting');
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return bool
+     */
+    protected function getCommandPrettyOption(InputInterface $input): bool
+    {
+        return $input->getOption('pretty');
     }
 }

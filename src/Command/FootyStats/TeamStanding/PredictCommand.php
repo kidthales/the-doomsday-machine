@@ -21,12 +21,12 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Console\Command\DataOptionsTrait;
-use App\Console\Command\DisplayTableDataTrait;
-use App\Console\Command\PrettyOptionTrait;
 use App\Domain\Jabronibetz\FootyStats\Calculator\TeamStandingsCalculatorAwareTrait;
-use App\Domain\Jabronibetz\FootyStats\Command\AbstractTargetCommand as Command;
-use App\Domain\Jabronibetz\FootyStats\Command\PrettyTeamStandingsTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyTeamStandingsTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Simulator\MatchesSimulator;

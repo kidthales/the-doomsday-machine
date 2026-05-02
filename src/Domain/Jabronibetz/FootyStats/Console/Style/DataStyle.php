@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Style;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Style;
 
 use JsonException;
 use Symfony\Component\Console\Style\SymfonyStyle;

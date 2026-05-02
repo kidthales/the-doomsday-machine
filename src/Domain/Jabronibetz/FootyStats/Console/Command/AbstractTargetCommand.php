@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\FootyStats\Command;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
-use App\Console\Command\AbstractCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface;
 use RuntimeException;

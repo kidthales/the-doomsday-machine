@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
 use JsonException;
 

@@ -19,37 +19,26 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command;
+namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
-use RuntimeException;
+use App\Domain\Jabronibetz\FootyStats\Console\Style\DataStyle;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait DataOptionsTrait
+abstract class AbstractCommand extends Command
 {
-    protected function configureCommandDataOptions(): self
+    public const int SUCCESS = Command::SUCCESS;
+    public const int FAILURE = Command::FAILURE;
+    public const int INVALID = Command::INVALID;
+
+    protected DataStyle $io;
+
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        return $this
-            ->addOption('json', mode: InputOption::VALUE_NONE, description: 'Output as JSON')
-            ->addOption('csv', mode: InputOption::VALUE_NONE, description: 'Output as CSV');
-    }
-
-    /**
-     * @param InputInterface $input
-     * @return array{json: bool, csv: bool}
-     */
-    protected function getCommandDataOptions(InputInterface $input): array
-    {
-        $isJson = $input->getOption('json');
-        $isCsv = $input->getOption('csv');
-
-        if ($isJson && $isCsv) {
-            throw new RuntimeException("Only one of '--json' or '--csv' may be specified");
-        }
-
-        return ['json' => $isJson, 'csv' => $isCsv];
+        $this->io = new DataStyle($input, $output);
     }
 }

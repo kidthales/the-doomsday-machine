@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Database;
 
-use App\Console\Command\AbstractCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
