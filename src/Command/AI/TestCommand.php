@@ -5,6 +5,7 @@ namespace App\Command\AI;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Platform\Result\Stream\Delta\ThinkingDelta;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,10 +25,19 @@ final class TestCommand extends Command
             Message::ofUser('The "Riddle of Steel". Do you know it, boy?')
         );
 
-        $result = $this->agent->call($messages);
+        /*$result = $this->agent->call($messages);
 
         $output->writeln('<info>' . $result->getContent(). '</info>');
-        $output->writeln('<comment>' . json_encode($result->getMetadata()->jsonSerialize(), JSON_PRETTY_PRINT) . '</comment>');
+        $output->writeln('<comment>' . json_encode($result->getMetadata()->jsonSerialize(), JSON_PRETTY_PRINT) . '</comment>');*/
+
+        $result = $this->agent->call($messages, ['stream' => true, /*'think' => true*/]);
+        foreach ($result->getContent() as $word) {
+            if ($word instanceof ThinkingDelta) {
+                echo $word->getThinking();
+            } else {
+                echo $word;
+            }
+        }
 
         return Command::SUCCESS;
     }

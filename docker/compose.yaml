@@ -6,7 +6,8 @@ services:
     restart: unless-stopped
     hostname: php
     environment:
-      OLLAMA_ENDPOINT: ${OLLAMA_ENDPOINT:-http://ollama:11434}
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
       PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT:-128M}
       SERVER_NAME: localhost, php:80

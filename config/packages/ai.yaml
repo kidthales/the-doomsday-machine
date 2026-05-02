@@ -6,7 +6,7 @@ ai:
     agent:
         default:
             platform: ai.platform.ollama
-            model: balanced-qwen2.5
+            model: balanced-qwen3.6
 
     store:
         # Store configuration
