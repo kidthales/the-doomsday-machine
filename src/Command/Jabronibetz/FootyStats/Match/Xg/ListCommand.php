@@ -1,0 +1,98 @@
+<?php
+/*
+ * The Doomsday Machine
+ * Copyright (C) 2026  Tristan Bonsor
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+declare(strict_types=1);
+
+namespace App\Command\Jabronibetz\FootyStats\Match\Xg;
+
+use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
+use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\MatchXgViewAwareTrait;
+use Doctrine\DBAL\Exception as DBALException;
+use JsonException;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
+ */
+#[AsCommand(
+    name: 'app:jabronibetz:footy-stats:match:xg:list',
+    description: 'List (pending) match expected goals',
+)]
+final class ListCommand extends Command
+{
+    use DataOptionsTrait, DisplayTableDataTrait, MatchXgViewAwareTrait, PrettyOptionTrait;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this
+            ->configureCommandPrettyOption()
+            ->configureCommandDataOptions();
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws DBALException
+     * @throws JsonException
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $target = $this->getTargetArguments($input);
+        $dataOutputOptions = $this->getCommandDataOptions($input);
+
+        $matchXgAll = $this->footyStatsMatchXgView
+            ->createSelectQueryBuilder($target)
+            ->select('*')
+            ->fetchAllAssociative();
+
+        if (empty($matchXgAll)) {
+            if ($dataOutputOptions['json']) {
+                $this->io->writeln('[]');
+            }
+
+            return Command::SUCCESS;
+        }
+
+        if ($input->getOption('pretty')) {
+            $matchXgAll = array_map(
+                fn(array $matchXg) => [
+                    'Home' => $matchXg['home_team_name'],
+                    'Away' => $matchXg['away_team_name'],
+                    'Home XG' => number_format(round($matchXg['home_team_xg'], 2), 2),
+                    'Away XG' => number_format(round($matchXg['away_team_xg'], 2), 2),
+                    'Timestamp' => date('Y-m-d H:i:s T', $matchXg['timestamp']),
+                    'Extra' => $matchXg['extra']
+                ],
+                $matchXgAll
+            );
+        }
+
+        $this->displayCommandTableData($matchXgAll, $dataOutputOptions);
+
+        return Command::SUCCESS;
+    }
+}

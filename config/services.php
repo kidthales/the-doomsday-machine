@@ -13,17 +13,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->load('App\\', '../src/');
 
-    // Concrete implementations for \App\Provider\FootyStats\TargetArgumentsProviderInterface
-    $services->set(
-        'app.provider.footy_stats.database_target_arguments_provider',
-        \App\Provider\FootyStats\DatabaseTargetArgumentsProvider::class
-    );
-    $services->set(
-        'app.provider.footy_stats.scraper_target_arguments_provider',
-        \App\Provider\FootyStats\ScraperTargetArgumentsProvider::class
-    );
-
-    $services->set('app.formatter.ordinal_number_formatter', \NumberFormatter::class)
+    $services->set('app.shared.formatter.ordinal_number_formatter', \NumberFormatter::class)
         ->args(['en-US', \NumberFormatter::ORDINAL]);
 };
 

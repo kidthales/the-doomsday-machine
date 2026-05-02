@@ -5,8 +5,8 @@ doctrine:
                 url: '%env(resolve:DATABASE_URL)%'
                 profiling_collect_backtrace: '%kernel.debug%'
                 use_savepoints: true
-            footy_stats:
-                url: '%env(resolve:FOOTY_STATS_DATABASE_URL)%'
+            jabronibetz_footy_stats:
+                url: '%env(resolve:JABRONIBETZ_FOOTY_STATS_DATABASE_URL)%'
         default_connection: default
 
     orm:
