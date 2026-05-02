@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Command;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>

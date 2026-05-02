@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\Deduction;
 
-use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use RuntimeException;

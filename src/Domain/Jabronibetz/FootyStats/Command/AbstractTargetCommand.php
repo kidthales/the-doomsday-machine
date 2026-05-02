@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Command\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Command;
 
 use App\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;

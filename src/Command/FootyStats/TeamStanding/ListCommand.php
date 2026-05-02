@@ -23,9 +23,9 @@ namespace App\Command\FootyStats\TeamStanding;
 
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\DisplayTableDataTrait;
-use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
-use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
+use App\Domain\Jabronibetz\FootyStats\Command\AbstractTargetCommand as Command;
+use App\Domain\Jabronibetz\FootyStats\Command\PrettyTeamStandingsTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\AwayTeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\HomeTeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;

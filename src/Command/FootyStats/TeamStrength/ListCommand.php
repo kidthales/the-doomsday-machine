@@ -23,8 +23,8 @@ namespace App\Command\FootyStats\TeamStrength;
 
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\DisplayTableDataTrait;
-use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\PrettyOptionTrait;
+use App\Domain\Jabronibetz\FootyStats\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStrengthViewAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
