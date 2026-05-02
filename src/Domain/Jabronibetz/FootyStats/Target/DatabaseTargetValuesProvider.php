@@ -24,11 +24,13 @@ namespace App\Domain\Jabronibetz\FootyStats\Target;
 use App\Domain\Jabronibetz\FootyStats\Database\ConnectionAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[AsAlias('app.jabronibetz.footy_stats.target.database_target_values_provider')]
 final class DatabaseTargetValuesProvider implements TargetValuesProviderInterface
 {
     use ConnectionAwareTrait, ScraperAwareTrait;

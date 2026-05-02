@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Target;
 
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -30,6 +31,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[AsAlias('app.jabronibetz.footy_stats.target.scraper_target_values_provider')]
 final class ScraperTargetValuesProvider implements TargetValuesProviderInterface
 {
     use ScraperAwareTrait;
