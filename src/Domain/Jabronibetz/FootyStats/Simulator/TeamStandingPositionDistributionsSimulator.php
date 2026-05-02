@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Simulator\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Simulator;
 
-use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Calculator\TeamStandingsCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;

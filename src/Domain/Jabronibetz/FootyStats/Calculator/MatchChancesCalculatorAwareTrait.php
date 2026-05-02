@@ -19,20 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\Calculator\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Calculator;
 
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait TeamStandingsCalculatorAwareTrait
+trait MatchChancesCalculatorAwareTrait
 {
-    protected TeamStandingsCalculator $teamStandingsCalculator;
+    protected MatchChancesCalculator $matchChancesCalculator;
 
     #[Required]
-    public function setTeamStandingsCalculator(TeamStandingsCalculator $calculator): void
+    public function setMatchChancesCalculator(MatchChancesCalculator $calculator): void
     {
-        $this->teamStandingsCalculator = $calculator;
+        $this->matchChancesCalculator = $calculator;
     }
 }

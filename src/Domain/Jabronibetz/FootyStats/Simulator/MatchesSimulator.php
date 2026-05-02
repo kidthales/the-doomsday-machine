@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Simulator\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Simulator;
 
-use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Calculator\MatchChancesCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\MatchTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use Doctrine\DBAL\Exception as DBALException;

@@ -21,17 +21,17 @@ declare(strict_types=1);
 
 namespace App\Command\FootyStats\TeamStanding;
 
-use App\Calculator\FootyStats\TeamStandingsCalculatorAwareTrait;
 use App\Console\Command\DataOptionsTrait;
 use App\Console\Command\DisplayTableDataTrait;
 use App\Console\Command\FootyStats\AbstractTargetCommand as Command;
 use App\Console\Command\FootyStats\PrettyTeamStandingsTrait;
 use App\Console\Command\PrettyOptionTrait;
+use App\Domain\Jabronibetz\FootyStats\Calculator\TeamStandingsCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Simulator\MatchesSimulator;
+use App\Domain\Jabronibetz\FootyStats\Simulator\TeamStandingPositionDistributionsSimulator;
 use App\Formatter\OrdinalNumberFormatterAwareTrait;
-use App\Simulator\FootyStats\MatchesSimulator;
-use App\Simulator\FootyStats\TeamStandingPositionDistributionsSimulator;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use LogicException;

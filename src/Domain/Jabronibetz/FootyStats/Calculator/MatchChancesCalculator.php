@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Calculator\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Calculator;
 
 use App\Domain\Jabronibetz\FootyStats\Database\MatchXgViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
