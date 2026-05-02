@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Command\FootyStats\Database;
 
 use App\Console\Command\AbstractCommand as Command;
-use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\ArrayInput;

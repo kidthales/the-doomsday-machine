@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Database\FootyStats;
 
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use function Symfony\Component\String\s;
 
 /**

@@ -23,7 +23,7 @@ namespace App\Simulator\FootyStats;
 
 use App\Calculator\FootyStats\MatchChancesCalculatorAwareTrait;
 use App\Database\FootyStats\MatchTableAwareTrait;
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use Doctrine\DBAL\Exception as DBALException;
 use Random\Randomizer;
 

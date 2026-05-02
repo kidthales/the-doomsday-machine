@@ -19,18 +19,17 @@
 
 declare(strict_types=1);
 
-namespace App\Provider\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Target;
 
 use App\Database\FootyStats\ConnectionAwareTrait;
-use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class DatabaseTargetArgumentsProvider implements TargetArgumentsProviderInterface
+final class DatabaseTargetValuesProvider implements TargetValuesProviderInterface
 {
     use ConnectionAwareTrait, ScraperAwareTrait;
 

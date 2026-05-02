@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Calculator\FootyStats;
 
 use App\Database\FootyStats\MatchXgViewAwareTrait;
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use Doctrine\DBAL\Exception as DBALException;
 
 /**

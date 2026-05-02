@@ -21,13 +21,10 @@ declare(strict_types=1);
 
 namespace App\Database\FootyStats;
 
-use App\Entity\FootyStats\Target;
-use Doctrine\DBAL\Connection;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Query\QueryBuilder;
 use LogicException;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Contracts\Service\Attribute\Required;
 use function Symfony\Component\String\s;
 
 /**

@@ -19,20 +19,16 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\JabroniBetz\FootyStats\Scraper;
-
-use Symfony\Contracts\Service\Attribute\Required;
+namespace App\Domain\Jabronibetz\FootyStats\Target;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait ScraperAwareTrait
+interface TargetValuesProviderInterface
 {
-    protected Scraper $footyStatsScraper;
+    public function getNations(): array;
 
-    #[Required]
-    public function setFootyStatsScraper(Scraper $scraper): void
-    {
-        $this->footyStatsScraper = $scraper;
-    }
+    public function getCompetitions(string $nation): array;
+
+    public function getSeasons(string $nation, string $competition): array;
 }

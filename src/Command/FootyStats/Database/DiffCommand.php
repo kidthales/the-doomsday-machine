@@ -37,9 +37,9 @@ use App\Database\FootyStats\TeamStandingView;
 use App\Database\FootyStats\TeamStandingViewAwareTrait;
 use App\Database\FootyStats\TeamStrengthView;
 use App\Database\FootyStats\TeamStrengthViewAwareTrait;
-use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
-use App\Entity\FootyStats\Target;
-use App\Provider\FootyStats\TargetArgumentsProviderInterface;
+use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -72,8 +72,8 @@ final class DiffCommand extends Command
         TeamStrengthViewAwareTrait;
 
     public function setTargetArgumentsProvider(
-        #[Autowire(service: 'app.provider.footy_stats.scraper_target_arguments_provider')]
-        TargetArgumentsProviderInterface $provider
+        #[Autowire(service: 'app.jabronibetz.footy_stats.target.scraper_target_values_provider')]
+        TargetValuesProviderInterface $provider
     ): void
     {
         parent::setTargetArgumentsProvider($provider);

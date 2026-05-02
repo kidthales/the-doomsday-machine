@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Database\FootyStats;
 
 use App\Database\FootyStats\MatchXgView;
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Tests\Database\FootyStats\Trait\AwayTeamStandingViewSetUpTearDownTrait;
 use App\Tests\Database\FootyStats\Trait\HomeTeamStandingViewSetUpTearDownTrait;
 use App\Tests\Database\FootyStats\Trait\MatchTableSetUpTearDownTrait;

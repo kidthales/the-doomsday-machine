@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\JabroniBetz\FootyStats\Scraper;
+namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
 use Symfony\Component\DomCrawler\Crawler;
 

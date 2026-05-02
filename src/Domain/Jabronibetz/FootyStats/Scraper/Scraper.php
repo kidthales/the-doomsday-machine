@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\JabroniBetz\FootyStats\Scraper;
+namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Filesystem\FileDepot;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

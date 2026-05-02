@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Target;
 
 use Stringable;
 use function Symfony\Component\String\s;

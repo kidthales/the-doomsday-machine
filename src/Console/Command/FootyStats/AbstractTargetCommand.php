@@ -22,8 +22,8 @@ declare(strict_types=1);
 namespace App\Console\Command\FootyStats;
 
 use App\Console\Command\AbstractCommand as Command;
-use App\Entity\FootyStats\Target;
-use App\Provider\FootyStats\TargetArgumentsProviderInterface;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,12 +43,12 @@ abstract class AbstractTargetCommand extends Command
     public const int FAILURE = Command::FAILURE;
     public const int INVALID = Command::INVALID;
 
-    protected TargetArgumentsProviderInterface $targetArgumentsProvider;
+    protected TargetValuesProviderInterface $targetArgumentsProvider;
 
     #[Required]
     public function setTargetArgumentsProvider(
-        #[Autowire(service: 'app.provider.footy_stats.database_target_arguments_provider')]
-        TargetArgumentsProviderInterface $provider
+        #[Autowire(service: 'app.jabronibetz.footy_stats.target.database_target_values_provider')]
+        TargetValuesProviderInterface $provider
     ): void
     {
         $this->targetArgumentsProvider = $provider;

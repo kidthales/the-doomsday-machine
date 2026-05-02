@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Database\FootyStats;
 
 use App\Database\FootyStats\TeamStandingView;
-use App\Entity\FootyStats\Target;
+use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Tests\Database\FootyStats\Trait\MatchTableSetUpTearDownTrait;
 use App\Tests\Database\FootyStats\Trait\TeamStandingViewSetUpTearDownTrait;
 use Doctrine\DBAL\Exception as DBALException;

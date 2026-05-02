@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Provider\FootyStats;
+namespace App\Domain\Jabronibetz\FootyStats\Target;
 
-use App\Domain\JabroniBetz\FootyStats\Scraper\ScraperAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -30,7 +30,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class ScraperTargetArgumentsProvider implements TargetArgumentsProviderInterface
+final class ScraperTargetValuesProvider implements TargetValuesProviderInterface
 {
     use ScraperAwareTrait;
 

@@ -13,14 +13,14 @@ return static function (ContainerConfigurator $container): void {
 
     $services->load('App\\', '../src/');
 
-    // Concrete implementations for \App\Provider\FootyStats\TargetArgumentsProviderInterface
+    // Concrete implementations for \App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface
     $services->set(
-        'app.provider.footy_stats.database_target_arguments_provider',
-        \App\Provider\FootyStats\DatabaseTargetArgumentsProvider::class
+        'app.jabronibetz.footy_stats.target.database_target_values_provider',
+        \App\Domain\Jabronibetz\FootyStats\Target\DatabaseTargetValuesProvider::class
     );
     $services->set(
-        'app.provider.footy_stats.scraper_target_arguments_provider',
-        \App\Provider\FootyStats\ScraperTargetArgumentsProvider::class
+        'app.jabronibetz.footy_stats.target.scraper_target_values_provider',
+        \App\Domain\Jabronibetz\FootyStats\Target\ScraperTargetValuesProvider::class
     );
 
     $services->set('app.formatter.ordinal_number_formatter', \NumberFormatter::class)
