@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Database;
+namespace App\Command\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
@@ -36,7 +36,7 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:database:sync',
+    name: 'app:jabronibetz:footy-stats:database:sync',
     description: 'Sync current Footy Stats seasons'
 )]
 final class SyncCommand extends Command
@@ -97,7 +97,7 @@ final class SyncCommand extends Command
 
         foreach ($seasons as $season) {
             $diffInput = new ArrayInput([
-                'command' => 'app:footy-stats:database:diff',
+                'command' => 'app:jabronibetz:footy-stats:database:diff',
                 'nation' => $nation,
                 'competition' => $competition,
                 'season' => $season,

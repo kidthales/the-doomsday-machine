@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Deduction;
+namespace App\Command\Jabronibetz\FootyStats\Deduction;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
@@ -37,7 +37,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:deduction:update',
+    name: 'app:jabronibetz:footy-stats:deduction:update',
     description: 'Update point deductions for a given team',
 )]
 final class UpdateCommand extends Command

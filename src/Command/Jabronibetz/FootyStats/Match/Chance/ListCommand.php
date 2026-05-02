@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Match\Chance;
+namespace App\Command\Jabronibetz\FootyStats\Match\Chance;
 
 use App\Domain\Jabronibetz\FootyStats\Calculator\MatchChancesCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
@@ -39,7 +39,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:match:chance:list',
+    name: 'app:jabronibetz:footy-stats:match:chance:list',
     description: 'List (pending) match chances',
 )]
 final class ListCommand extends Command

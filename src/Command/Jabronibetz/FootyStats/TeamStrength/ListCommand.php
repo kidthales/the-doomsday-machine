@@ -19,13 +19,13 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Match\Xg;
+namespace App\Command\Jabronibetz\FootyStats\TeamStrength;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
-use App\Domain\Jabronibetz\FootyStats\Database\MatchXgViewAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\TeamStrengthViewAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,12 +36,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:match:xg:list',
-    description: 'List (pending) match expected goals',
+    name: 'app:jabronibetz:footy-stats:team-strength:list',
+    description: 'List team strengths',
 )]
 final class ListCommand extends Command
 {
-    use DataOptionsTrait, DisplayTableDataTrait, MatchXgViewAwareTrait, PrettyOptionTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, PrettyOptionTrait, TeamStrengthViewAwareTrait;
 
     protected function configure(): void
     {
@@ -64,12 +64,12 @@ final class ListCommand extends Command
         $target = $this->getTargetArguments($input);
         $dataOutputOptions = $this->getCommandDataOptions($input);
 
-        $matchXgAll = $this->footyStatsMatchXgView
+        $teamStrengths = $this->footyStatsTeamStrengthView
             ->createSelectQueryBuilder($target)
             ->select('*')
             ->fetchAllAssociative();
 
-        if (empty($matchXgAll)) {
+        if (empty($teamStrengths)) {
             if ($dataOutputOptions['json']) {
                 $this->io->writeln('[]');
             }
@@ -77,21 +77,18 @@ final class ListCommand extends Command
             return Command::SUCCESS;
         }
 
-        if ($input->getOption('pretty')) {
-            $matchXgAll = array_map(
-                fn(array $matchXg) => [
-                    'Home' => $matchXg['home_team_name'],
-                    'Away' => $matchXg['away_team_name'],
-                    'Home XG' => number_format(round($matchXg['home_team_xg'], 2), 2),
-                    'Away XG' => number_format(round($matchXg['away_team_xg'], 2), 2),
-                    'Timestamp' => date('Y-m-d H:i:s T', $matchXg['timestamp']),
-                    'Extra' => $matchXg['extra']
+        if ($this->getCommandPrettyOption($input)) {
+            $teamStrengths = array_map(
+                fn(array $teamStrength) => [
+                    'Team' => $teamStrength['team_name'],
+                    'Attack' => number_format(round($teamStrength['attack'], 2), 2),
+                    'Defense' => number_format(round($teamStrength['defense'], 2), 2)
                 ],
-                $matchXgAll
+                $teamStrengths
             );
         }
 
-        $this->displayCommandTableData($matchXgAll, $dataOutputOptions);
+        $this->displayCommandTableData($teamStrengths, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

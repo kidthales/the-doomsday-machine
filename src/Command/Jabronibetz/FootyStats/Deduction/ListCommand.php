@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Deduction;
+namespace App\Command\Jabronibetz\FootyStats\Deduction;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
@@ -33,7 +33,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:deduction:list',
+    name: 'app:jabronibetz:footy-stats:deduction:list',
     description: 'List point deductions',
 )]
 final class ListCommand extends Command

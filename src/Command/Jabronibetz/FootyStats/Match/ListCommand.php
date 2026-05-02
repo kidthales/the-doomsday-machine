@@ -19,16 +19,13 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\TeamStanding;
+namespace App\Command\Jabronibetz\FootyStats\Match;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
-use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyTeamStandingsTrait;
-use App\Domain\Jabronibetz\FootyStats\Database\AwayTeamStandingViewAwareTrait;
-use App\Domain\Jabronibetz\FootyStats\Database\HomeTeamStandingViewAwareTrait;
-use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
+use App\Domain\Jabronibetz\FootyStats\Database\MatchTableAwareTrait;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use RuntimeException;
@@ -41,26 +38,20 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:team-standing:list',
-    description: 'List team standings',
+    name: 'app:jabronibetz:footy-stats:match:list',
+    description: 'List matches',
 )]
 final class ListCommand extends Command
 {
-    use AwayTeamStandingViewAwareTrait,
-        DataOptionsTrait,
-        DisplayTableDataTrait,
-        HomeTeamStandingViewAwareTrait,
-        PrettyOptionTrait,
-        PrettyTeamStandingsTrait,
-        TeamStandingViewAwareTrait;
+    use DataOptionsTrait, DisplayTableDataTrait, MatchTableAwareTrait, PrettyOptionTrait;
 
     protected function configure(): void
     {
         parent::configure();
 
         $this
-            ->addOption('home', mode: InputOption::VALUE_NONE, description: 'Output home team standings')
-            ->addOption('away', mode: InputOption::VALUE_NONE, description: 'Output away team standings');
+            ->addOption('completed', mode: InputOption::VALUE_NONE, description: 'List completed matches')
+            ->addOption('pending', mode: InputOption::VALUE_NONE, description: 'List pending matches');
 
         $this
             ->configureCommandPrettyOption()
@@ -79,26 +70,27 @@ final class ListCommand extends Command
         $target = $this->getTargetArguments($input);
         $dataOutputOptions = $this->getCommandDataOptions($input);
 
-        $isHome = $input->getOption('home');
-        $isAway = $input->getOption('away');
+        $isCompleted = $input->getOption('completed');
+        $isPending = $input->getOption('pending');
 
-        if ($isHome && $isAway) {
-            throw new RuntimeException("Only one of '--home' or '--away' may be specified");
+        if ($isCompleted && $isPending) {
+            throw new RuntimeException("Only one of '--completed' or '--pending' may be specified");
         }
 
-        if ($isHome) {
-            $selectQueryBuilder = $this->footyStatsHomeTeamStandingView->createSelectQueryBuilder($target);
-        } else if ($isAway) {
-            $selectQueryBuilder = $this->footyStatsAwayTeamStandingView->createSelectQueryBuilder($target);
-        } else {
-            $selectQueryBuilder = $this->footyStatsTeamStandingView->createSelectQueryBuilder($target);
-        }
-
-        $teamStandings = $selectQueryBuilder
+        $selectQueryBuilder = $this->footyStatsMatchTable
+            ->createSelectQueryBuilder($target)
             ->select('*')
-            ->fetchAllAssociative();
+            ->orderBy('timestamp');
 
-        if (empty($teamStandings)) {
+        if ($isCompleted) {
+            $selectQueryBuilder->where('home_team_score IS NOT NULL');
+        } else if ($isPending) {
+            $selectQueryBuilder->where('home_team_score IS NULL');
+        }
+
+        $matches = $selectQueryBuilder->fetchAllAssociative();
+
+        if (empty($matches)) {
             if ($dataOutputOptions['json']) {
                 $this->io->writeln('[]');
             }
@@ -107,10 +99,20 @@ final class ListCommand extends Command
         }
 
         if ($this->getCommandPrettyOption($input)) {
-            $teamStandings = self::prettifyFootyStatsTeamStandings($teamStandings);
+            $matches = array_map(
+                fn(array $match) => [
+                    'Home' => $match['home_team_name'],
+                    'Away' => $match['away_team_name'],
+                    'Home Score' => $match['home_team_score'],
+                    'Away Score' => $match['away_team_score'],
+                    'Timestamp' => date('Y-m-d H:i:s T', $match['timestamp']),
+                    'Extra' => $match['extra']
+                ],
+                $matches
+            );
         }
 
-        $this->displayCommandTableData($teamStandings, $dataOutputOptions);
+        $this->displayCommandTableData($matches, $dataOutputOptions);
 
         return Command::SUCCESS;
     }

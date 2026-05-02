@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\Database;
+namespace App\Command\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Database\AwayTeamStandingView;
@@ -56,7 +56,7 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:database:diff',
+    name: 'app:jabronibetz:footy-stats:database:diff',
     description: 'Insert or update Footy Stats table data'
 )]
 final class DiffCommand extends Command

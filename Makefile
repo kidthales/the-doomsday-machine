@@ -16,11 +16,18 @@ OLLAMA   := $(OLLAMA_CONT) ollama
 
 # Misc
 .DEFAULT_GOAL = help
-.PHONY        : help build print up start down logs bash test composer vendor sf cc own \
-                footy-stats-data-diff footy-stats-match-list footy-stats-match-chance-list footy-stats-match-xg-list \
-                footy-stats-migrations-generate footy-stats-team-standing-list footy-stats-team-standing-predict \
-                footy-stats-team-strength-list \
-                ollama
+.PHONY        : help \
+                build print up start down logs bash \
+                test cov \
+                composer vendor \
+                sf cc \
+                own \
+                ollama \
+                footy-stats-database-diff footy-stats-database-sync \
+                footy-stats-deduction-list footy-stats-deduction-update \
+                footy-stats-match-chance-list footy-stats-match-list footy-stats-match-xg-list \
+                footy-stats-team-standing-list footy-stats-team-standing-predict \
+                footy-stats-team-strength-list
 
 ## —— ☢️  The Doomsday Machine Makefile ☢️  ————————————————————————————————————
 help: ## Outputs this help screen
@@ -47,6 +54,7 @@ logs: ## Show live logs
 bash: ## Connect to the php service via bash
 	@$(PHP_CONT) bash
 
+## —— Testing 🧪 ————————————————————————————————————————————————————————————————
 test: ## Start tests with phpunit, pass the parameter "c=" to add options to phpunit
 	@$(eval c ?=)
 	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test php bin/phpunit $(c)
@@ -75,48 +83,48 @@ cc: sf
 own: ## On Linux host, set current user as owner of the project files that were created by the docker container
 	@$(CD_DOCKER_COMP) run --rm php chown -R $$(id -u):$$(id -g) .
 
-## —— Footy Stats ⚽ ————————————————————————————————————————————————————————————
-footy-stats-database-diff: ## Insert or update Footy Stats table data, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:database:diff $(c)
-
-footy-stats-database-sync: ## Sync current Footy Stats seasons, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:database:sync $(c)
-
-footy-stats-match-list: ## List matches, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:match:list $(c)
-
-footy-stats-match-chance-list: ## List (pending) match chances, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:match:chance:list $(c)
-
-footy-stats-match-xg-list: ## List (pending) match expected goals, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:match:xg:list $(c)
-
-footy-stats-team-standing-list: ## List team standings, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:team-standing:list $(c)
-
-footy-stats-team-standing-predict: ## Predict team standings, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:team-standing:predict $(c)
-
-footy-stats-team-strength-list: ## List team strengths, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:team-strength:list $(c)
-
-footy-stats-deduction-list: ## List point deductions, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:deduction:list $(c)
-
-footy-stats-deduction-update: ## Update point deductions, pass the parameter "c=" to add options or arguments
-	@$(eval c ?=)
-	@$(SYMFONY) app:footy-stats:deduction:update $(c)
-
 ## —— Ollama 🦙  ————————————————————————————————————————————————————————————————
 ollama: ## Run ollama, pass the parameter "c=" to run a given command
 	@$(eval c ?=)
 	@$(OLLAMA) $(c)
+
+## —— Jabronibetz: Footy Stats ⚽ ———————————————————————————————————————————————
+footy-stats-database-diff: ## Insert or update Footy Stats table data, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:database:diff $(c)
+
+footy-stats-database-sync: ## Sync current Footy Stats seasons, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:database:sync $(c)
+
+footy-stats-deduction-list: ## List point deductions, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:deduction:list $(c)
+
+footy-stats-deduction-update: ## Update point deductions, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:deduction:update $(c)
+
+footy-stats-match-chance-list: ## List (pending) match chances, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:match:chance:list $(c)
+
+footy-stats-match-list: ## List matches, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:match:list $(c)
+
+footy-stats-match-xg-list: ## List (pending) match expected goals, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:match:xg:list $(c)
+
+footy-stats-team-standing-list: ## List team standings, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:team-standing:list $(c)
+
+footy-stats-team-standing-predict: ## Predict team standings, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:team-standing:predict $(c)
+
+footy-stats-team-strength-list: ## List team strengths, pass the parameter "c=" to add options or arguments
+	@$(eval c ?=)
+	@$(SYMFONY) app:jabronibetz:footy-stats:team-strength:list $(c)

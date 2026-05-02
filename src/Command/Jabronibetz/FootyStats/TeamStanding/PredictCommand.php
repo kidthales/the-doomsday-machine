@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\FootyStats\TeamStanding;
+namespace App\Command\Jabronibetz\FootyStats\TeamStanding;
 
 use App\Domain\Jabronibetz\FootyStats\Calculator\TeamStandingsCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
@@ -46,7 +46,7 @@ use Symfony\Contracts\Service\Attribute\Required;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:footy-stats:team-standing:predict',
+    name: 'app:jabronibetz:footy-stats:team-standing:predict',
     description: 'Predict team standings',
 )]
 final class PredictCommand extends Command
