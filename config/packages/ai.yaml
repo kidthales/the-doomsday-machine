@@ -1,12 +1,44 @@
 ai:
     platform:
         ollama:
-            endpoint: '%env(OLLAMA_ENDPOINT)%'
+            http_client: ollama.client
 
     agent:
-        default:
+        balanced_qwen2.5:
+            platform: ai.platform.ollama
+            model: balanced-qwen2.5
+            tools: false
+
+        balanced_qwen3.6:
             platform: ai.platform.ollama
             model: balanced-qwen3.6
+            tools: false
+
+        creative_qwen2.5:
+            platform: ai.platform.ollama
+            model: creative-qwen2.5
+            tools: false
+
+        creative_qwen3.6:
+            platform: ai.platform.ollama
+            model: creative-qwen3.6
+            tools: false
+
+        doomsday_coder:
+            platform: ai.platform.ollama
+            model: precision-qwen3.6
+            prompt:
+                file: '%kernel.project_dir%/llm/prompts/doomsday_coder.md'
+
+        precision_qwen2.5:
+            platform: ai.platform.ollama
+            model: precision-qwen2.5
+            tools: false
+
+        precision_qwen3.6:
+            platform: ai.platform.ollama
+            model: precision-qwen3.6
+            tools: false
 
     store:
         # Store configuration
