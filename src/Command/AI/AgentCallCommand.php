@@ -28,14 +28,14 @@ declare(strict_types=1);
 
 namespace App\Command\AI;
 
+use App\Domain\Shared\AI\PlatformResultProcessor;
 use InvalidArgumentException;
-use RuntimeException;
+use Iterator;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
 use Symfony\AI\Platform\Result\Stream\Delta\ThinkingDelta;
-use Symfony\AI\Platform\Result\StreamResult;
 use Symfony\AI\Platform\Result\TextResult;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -48,8 +48,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\TaggedLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
@@ -65,7 +68,11 @@ final class AgentCallCommand extends Command
     /**
      * @param ServiceLocator<AgentInterface> $agents
      */
-    public function __construct(#[TaggedLocator('ai.agent', 'name')] private readonly ServiceLocator $agents)
+    public function __construct(
+        #[TaggedLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
+        private readonly PlatformResultProcessor                             $platformResultProcessor,
+        #[Autowire(param: 'kernel.project_dir')] private readonly string     $projectDir
+    )
     {
         parent::__construct();
     }
@@ -155,7 +162,7 @@ final class AgentCallCommand extends Command
         $io->info('Type your message and press Enter. Type "exit" or "quit" to end the conversation.');
         $io->newLine();
 
-        $messages = new MessageBag();
+        $messages = $agentName === 'doomsday_coder' ? $this->getDoomsdayCoderProjectMessages() : new MessageBag();
         $systemPromptDisplayed = false;
 
         while (true) {
@@ -172,61 +179,50 @@ final class AgentCallCommand extends Command
 
             $messages->add(Message::ofUser($userInput));
 
-            try {
-                $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
+            $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
 
-                if (!$systemPromptDisplayed && null !== ($systemMessage = $messages->getSystemMessage())) {
-                    $io->section('System Prompt');
-                    $io->block($systemMessage->getContent(), null, 'fg=gray', ' ', true);
-                    $systemPromptDisplayed = true;
-                }
+            if (!$systemPromptDisplayed && null !== ($systemMessage = $messages->getSystemMessage())) {
+                $io->section('System Prompt');
+                $io->block($systemMessage->getContent(), null, 'fg=gray', ' ', true);
+                $systemPromptDisplayed = true;
+            }
 
-                if ($result instanceof TextResult) {
-                    $io->write('<fg=yellow>Assistant</>:');
-                    $io->writeln('');
+            $isThinking = false;
+            $textBuffer = '';
+            $this->platformResultProcessor->process(
+                $result,
+                function (TextResult $result) use ($io, $messages) {
+                    $io->writeln('<fg=yellow>Assistant</>:');
                     $io->writeln($result->getContent());
                     $io->newLine();
 
                     $messages->add(Message::ofAssistant($result->getContent()));
-                } else if ($result instanceof StreamResult) {
-                    $io->write('<fg=yellow>Assistant</>:');
-                    $io->writeln('');
-                    $isThinking = false;
-                    $content = '';
-                    foreach ($result->getContent() as $word) {
-                        if ($word instanceof TextDelta) {
-                            if ($isThinking) {
-                                $isThinking = false;
-                                $output->writeln('');
-                                $output->writeln('</thinking></>');
-                            }
-                            $output->write($word->getText());
-                            $content .= $word->getText();
-                        } else if ($word instanceof ThinkingDelta) {
-                            if (!$isThinking) {
-                                $isThinking = true;
-                                $output->writeln('<fg=magenta><thinking>');
-                            }
-                            $output->write($word->getThinking());
-                        } else {
-                            throw new RuntimeException('Unexpected response content delta type from agent');
-                        }
+                },
+                function () use ($io) {
+                    $io->writeln('<fg=yellow>Assistant</>:');
+                },
+                function (TextDelta $delta) use ($io, &$isThinking, &$textBuffer) {
+                    if ($isThinking) {
+                        $isThinking = false;
+                        $io->write('</>');
+                        $io->newLine();
                     }
+                    $text = $delta->getText();
+                    $io->write($text);
+                    $textBuffer .= $text;
+                },
+                function (ThinkingDelta $delta) use ($io, &$isThinking) {
+                    if (!$isThinking) {
+                        $isThinking = true;
+                        $io->write('<fg=magenta>');
+                    }
+                    $io->write($delta->getThinking());
+                },
+                function () use ($io, $messages, $textBuffer) {
                     $io->newLine();
-
-                    $messages->add(Message::ofAssistant($content));
-                } else {
-                    $io->error('Unexpected response type from agent');
+                    $messages->add(Message::ofAssistant($textBuffer));
                 }
-            } catch (\Exception $e) {
-                $io->error(\sprintf('Error: %s', $e->getMessage()));
-
-                if ($output->isVerbose()) {
-                    $io->writeln('');
-                    $io->writeln('<comment>Exception trace:</comment>');
-                    $io->text($e->getTraceAsString());
-                }
-            }
+            );
         }
 
         return Command::SUCCESS;
@@ -238,5 +234,29 @@ final class AgentCallCommand extends Command
     private function getAvailableAgentNames(): array
     {
         return array_keys($this->agents->getProvidedServices());
+    }
+
+    private function getDoomsdayCoderProjectMessages()
+    {
+        $finder = Finder::create()
+            ->in($this->projectDir)
+            ->files()
+            ->ignoreUnreadableDirs()
+            ->exclude(['bin', 'coverage', 'data', 'llm', 'var', 'vendor'])
+            ->filter(fn(SplFileInfo $file) => !in_array($file->getRelativePathname(), ['composer.lock', 'symfony.lock']))
+            ->sortByName();
+
+        $messages = new MessageBag();
+        foreach ($finder as $file) {
+            $content = <<<MD
+# {$file->getRelativePathname()}
+```
+{$file->getContents()}
+```
+MD;
+            $messages->add(Message::ofUser($content));
+        }
+
+        return $messages;
     }
 }
