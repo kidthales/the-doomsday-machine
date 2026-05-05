@@ -53,7 +53,7 @@ final readonly class PlatformStreamResultProcessor
                     $thinkingDeltaProcessor($delta);
                 }
             } else {
-                throw new RuntimeException('Unexpected result content delta type');
+                throw new RuntimeException('Unexpected stream result content delta type');
             }
         }
 

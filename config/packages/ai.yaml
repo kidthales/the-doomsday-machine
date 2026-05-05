@@ -6,7 +6,7 @@ ai:
     agent:
         doomsday_coder:
             platform: ai.platform.ollama
-            model: precision-qwen3.6
+            model: coder-qwen3.6
             prompt:
                 file: '%kernel.project_dir%/llm/prompts/doomsday_coder.md'
 

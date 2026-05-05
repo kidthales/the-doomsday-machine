@@ -30,7 +30,6 @@ namespace App\Command\AI;
 
 use App\Domain\Shared\AI\PlatformResultProcessor;
 use InvalidArgumentException;
-use Iterator;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -51,8 +50,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\TaggedLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
@@ -162,7 +159,7 @@ final class AgentCallCommand extends Command
         $io->info('Type your message and press Enter. Type "exit" or "quit" to end the conversation.');
         $io->newLine();
 
-        $messages = $agentName === 'doomsday_coder' ? $this->getDoomsdayCoderProjectMessages() : new MessageBag();
+        $messages = new MessageBag();
         $systemPromptDisplayed = false;
 
         while (true) {
@@ -177,9 +174,24 @@ final class AgentCallCommand extends Command
                 break;
             }
 
+            $paths = [];
+            preg_match_all('/@([\'"])((?:(?!\1)[^\\\\]|\\\\.)*)\1|@(\S+)/', $userInput, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                if (!empty($match[2])) {
+                    $paths[] = stripslashes($match[2]);
+                } else if (!empty($match[3])) {
+                    $paths[] = $match[3];
+                }
+                $userInput = str_replace($match[0], $paths[count($paths) - 1], $userInput);
+            }
+            $io->writeln('<fg=cyan>' . $userInput . '</>');
+            $messages = $messages->merge($this->getFileMessages($paths));
+
             $messages->add(Message::ofUser($userInput));
 
-            $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
+            $options = ['stream' => !$input->getOption('no-stream')];
+
+            $result = $agent->call($messages, $options);
 
             if (!$systemPromptDisplayed && null !== ($systemMessage = $messages->getSystemMessage())) {
                 $io->section('System Prompt');
@@ -191,17 +203,17 @@ final class AgentCallCommand extends Command
             $textBuffer = '';
             $this->platformResultProcessor->process(
                 $result,
-                function (TextResult $result) use ($io, $messages) {
+                textResultProcessor: function (TextResult $result) use ($io, $messages) {
                     $io->writeln('<fg=yellow>Assistant</>:');
                     $io->writeln($result->getContent());
                     $io->newLine();
 
                     $messages->add(Message::ofAssistant($result->getContent()));
                 },
-                function () use ($io) {
+                onStreamResultStart: function () use ($io) {
                     $io->writeln('<fg=yellow>Assistant</>:');
                 },
-                function (TextDelta $delta) use ($io, &$isThinking, &$textBuffer) {
+                textDeltaProcessor: function (TextDelta $delta) use ($io, &$isThinking, &$textBuffer) {
                     if ($isThinking) {
                         $isThinking = false;
                         $io->write('</>');
@@ -211,14 +223,14 @@ final class AgentCallCommand extends Command
                     $io->write($text);
                     $textBuffer .= $text;
                 },
-                function (ThinkingDelta $delta) use ($io, &$isThinking) {
+                thinkingDeltaProcessor: function (ThinkingDelta $delta) use ($io, &$isThinking) {
                     if (!$isThinking) {
                         $isThinking = true;
                         $io->write('<fg=magenta>');
                     }
                     $io->write($delta->getThinking());
                 },
-                function () use ($io, $messages, $textBuffer) {
+                onStreamResultFinish: function () use ($io, $messages, $textBuffer) {
                     $io->newLine();
                     $messages->add(Message::ofAssistant($textBuffer));
                 }
@@ -236,25 +248,18 @@ final class AgentCallCommand extends Command
         return array_keys($this->agents->getProvidedServices());
     }
 
-    private function getDoomsdayCoderProjectMessages()
+    private function getFileMessages(array $paths): MessageBag
     {
-        $finder = Finder::create()
-            ->in($this->projectDir)
-            ->files()
-            ->ignoreUnreadableDirs()
-            ->exclude(['bin', 'coverage', 'data', 'llm', 'var', 'vendor'])
-            ->filter(fn(SplFileInfo $file) => !in_array($file->getRelativePathname(), ['composer.lock', 'symfony.lock']))
-            ->sortByName();
-
         $messages = new MessageBag();
-        foreach ($finder as $file) {
-            $content = <<<MD
-# {$file->getRelativePathname()}
+        foreach ($paths as $path) {
+            $contents = file_get_contents($path);
+            $message = <<<MD
+# $path
 ```
-{$file->getContents()}
+{$contents}
 ```
 MD;
-            $messages->add(Message::ofUser($content));
+            $messages->add(Message::ofUser($message));
         }
 
         return $messages;
