@@ -47,19 +47,6 @@ services:
       - ../llm/ollama:/ollama:ro
     tty: true
 
-  open-webui:
-    image: ghcr.io/open-webui/open-webui
-    restart: unless-stopped
-    hostname: open-webui
-    environment:
-      OLLAMA_BASE_URL: http://ollama:11434
-    volumes:
-      - ../data/open_webui:/app/backend/data
-    ports:
-      - '3000:8080'
-    depends_on:
-      - ollama
-
 volumes:
   caddy_data:
   caddy_config:

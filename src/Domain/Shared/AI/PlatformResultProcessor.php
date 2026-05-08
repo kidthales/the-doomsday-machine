@@ -23,6 +23,8 @@ namespace App\Domain\Shared\AI;
 
 use InvalidArgumentException;
 use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
+use Symfony\AI\Platform\Result\Stream\Delta\ThinkingDelta;
 use Symfony\AI\Platform\Result\StreamResult;
 use Symfony\AI\Platform\Result\TextResult;
 
@@ -31,17 +33,29 @@ use Symfony\AI\Platform\Result\TextResult;
  */
 final readonly class PlatformResultProcessor
 {
+    /**
+     * @param PlatformStreamResultProcessor $streamResultProcessor
+     */
     public function __construct(private PlatformStreamResultProcessor $streamResultProcessor)
     {
     }
 
+    /**
+     * @param ResultInterface $result
+     * @param (callable(TextResult):void)|null $textResultProcessor
+     * @param (callable(StreamResult):void)|null $onStreamResultStart
+     * @param (callable(TextDelta):void)|null $textDeltaProcessor
+     * @param (callable(ThinkingDelta):void)|null $thinkingDeltaProcessor
+     * @param (callable(StreamResult):void)|null $onStreamResultFinish
+     * @return void
+     */
     public function process(
         ResultInterface $result,
-        ?callable $textResultProcessor = null,
-        ?callable $onStreamResultStart = null,
-        ?callable $textDeltaProcessor = null,
-        ?callable $thinkingDeltaProcessor = null,
-        ?callable $onStreamResultFinish = null,
+        ?callable       $textResultProcessor = null,
+        ?callable       $onStreamResultStart = null,
+        ?callable       $textDeltaProcessor = null,
+        ?callable       $thinkingDeltaProcessor = null,
+        ?callable       $onStreamResultFinish = null,
     ): void
     {
         if ($result instanceof TextResult) {

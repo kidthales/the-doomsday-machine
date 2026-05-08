@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace App\Command\AI;
 
 use App\Domain\Shared\AI\PlatformResultProcessor;
+use App\Domain\Shared\String\TagSearch;
 use InvalidArgumentException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
@@ -48,8 +49,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\Attribute\TaggedLocator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Filesystem\Path;
+use function Symfony\Component\String\u;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
@@ -66,9 +69,10 @@ final class AgentCallCommand extends Command
      * @param ServiceLocator<AgentInterface> $agents
      */
     public function __construct(
-        #[TaggedLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
-        private readonly PlatformResultProcessor                             $platformResultProcessor,
-        #[Autowire(param: 'kernel.project_dir')] private readonly string     $projectDir
+        #[AutowireLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
+        private readonly TagSearch                                             $tagSearch,
+        #[Autowire(param: 'kernel.project_dir')] private readonly string       $projectDir,
+        private readonly PlatformResultProcessor                               $platformResultProcessor
     )
     {
         parent::__construct();
@@ -91,7 +95,7 @@ final class AgentCallCommand extends Command
                 The <info>%command.name%</info> command allows you to chat with different agents.
 
                 Usage:
-                  <info>%command.full_name% [<agent_name>]</info>
+                  <info>%command.full_name% [<agent_name>] [--no-stream]</info>
 
                 Examples:
                   <info>%command.full_name% wikipedia</info>
@@ -100,6 +104,13 @@ final class AgentCallCommand extends Command
 
                 The chat session is interactive. Type your messages and press Enter to send.
                 Type 'exit' or 'quit' to end the conversation.
+
+                Files may be 'attached' to a message by typing '@' followed by a relative or
+                absolute path to the file. Wrap the path name with single or double quotes if it
+                contains whitespace.
+
+                Results are streamed by default. For non-streaming results, use the --no-stream
+                option.
                 HELP
             );
     }
@@ -163,29 +174,55 @@ final class AgentCallCommand extends Command
         $systemPromptDisplayed = false;
 
         while (true) {
-            $userInput = $io->ask('You');
+            $rawUserInput = $io->ask('You');
 
-            if (!\is_string($userInput) || '' === trim($userInput)) {
+            if (
+                !\is_string($rawUserInput) ||
+                (($userInput = u($rawUserInput)->trimStart()) && $userInput->trim()->isEmpty())
+            ) {
                 continue;
             }
 
-            if (\in_array(strtolower($userInput), ['exit', 'quit'], true)) {
+            if (\in_array($userInput->lower()->toString(), ['exit', 'quit'], true)) {
                 $io->success('Goodbye!');
                 break;
             }
 
-            $paths = [];
-            preg_match_all('/@([\'"])((?:(?!\1)[^\\\\]|\\\\.)*)\1|@(\S+)/', $userInput, $matches, PREG_SET_ORDER);
-            foreach ($matches as $match) {
-                if (!empty($match[2])) {
-                    $paths[] = stripslashes($match[2]);
-                } else if (!empty($match[3])) {
-                    $paths[] = $match[3];
+            $table = [];
+            $tagSearchResults = $this->tagSearch->search($rawUserInput, '@');
+            foreach ($tagSearchResults as $tagSearchResult) {
+                $path = Path::makeAbsolute($tagSearchResult->subject, $this->projectDir);
+                $row = [$tagSearchResult->tag, $tagSearchResult->subject, $path];
+
+                $contents = false;
+                if (file_exists($path)) {
+                    $contents = file_get_contents($path);
+                    if ($contents !== false) {
+                        $messages->add(
+                            Message::ofUser(<<<MD
+                            # $path
+                            ```
+                            $contents
+                            ```
+                            MD)
+                        );
+                        $row[] = '✅';
+                    }
                 }
-                $userInput = str_replace($match[0], $paths[count($paths) - 1], $userInput);
+
+                if ($contents === false) {
+                    $row[] = '❌';
+                }
+
+                $table[] = $row;
+                $userInput = $userInput->replace($tagSearchResult->tag, '`' . $path . '`');
             }
+
+            if (!empty($table)) {
+                $io->table(['Tag', 'Subject', 'Path', 'Attached'], $table);
+            }
+
             $io->writeln('<fg=cyan>' . $userInput . '</>');
-            $messages = $messages->merge($this->getFileMessages($paths));
 
             $messages->add(Message::ofUser($userInput));
 
@@ -246,22 +283,5 @@ final class AgentCallCommand extends Command
     private function getAvailableAgentNames(): array
     {
         return array_keys($this->agents->getProvidedServices());
-    }
-
-    private function getFileMessages(array $paths): MessageBag
-    {
-        $messages = new MessageBag();
-        foreach ($paths as $path) {
-            $contents = file_get_contents($path);
-            $message = <<<MD
-# $path
-```
-{$contents}
-```
-MD;
-            $messages->add(Message::ofUser($message));
-        }
-
-        return $messages;
     }
 }

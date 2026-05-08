@@ -31,12 +31,20 @@ use Symfony\AI\Platform\Result\StreamResult;
  */
 final readonly class PlatformStreamResultProcessor
 {
+    /**
+     * @param StreamResult $result
+     * @param (callable(StreamResult):void)|null $onStart
+     * @param (callable(TextDelta):void)|null $textDeltaProcessor
+     * @param (callable(ThinkingDelta):void)|null $thinkingDeltaProcessor
+     * @param (callable(StreamResult):void)|null $onFinish
+     * @return void
+     */
     public function process(
         StreamResult $result,
-        ?callable $onStart = null,
-        ?callable $textDeltaProcessor = null,
-        ?callable $thinkingDeltaProcessor = null,
-        ?callable $onFinish = null
+        ?callable    $onStart = null,
+        ?callable    $textDeltaProcessor = null,
+        ?callable    $thinkingDeltaProcessor = null,
+        ?callable    $onFinish = null
     ): void
     {
         if (\is_callable($onStart)) {
