@@ -42,7 +42,7 @@ final readonly class TagSearch
      */
     public function search(string $subject, string $start): array
     {
-        if (u($start)->length() !== 1 || preg_match('/^\s$/', $subject) === 1) {
+        if (u($start)->length() !== 1 || preg_match('/^\s$/', $start) === 1) {
             throw new InvalidArgumentException('Tag start string must have exactly 1 non-whitespace character');
         }
 
