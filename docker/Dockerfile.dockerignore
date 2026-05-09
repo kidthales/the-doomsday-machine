@@ -2,6 +2,7 @@
 !bin/
 !config/
 !docker/
+!llm/prompts/
 !migrations/
 !public/
 !src/

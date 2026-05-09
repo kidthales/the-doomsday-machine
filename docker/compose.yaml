@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     hostname: php
     environment:
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       PHP_DATE_TIMEZONE: ${APP_TIMEZONE:-UTC}
       PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT:-128M}
       SERVER_NAME: localhost, php:80
@@ -42,21 +44,8 @@ services:
     hostname: ollama
     volumes:
       - ../data/ollama:/root/.ollama
-      - ../ollama:/ollama:ro
+      - ../llm/ollama:/ollama:ro
     tty: true
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui
-    restart: unless-stopped
-    hostname: open-webui
-    environment:
-      OLLAMA_BASE_URL: http://ollama:11434
-    volumes:
-      - ../data/open_webui:/app/backend/data
-    ports:
-      - '3000:8080'
-    depends_on:
-      - ollama
 
 volumes:
   caddy_data:

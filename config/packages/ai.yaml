@@ -1,0 +1,19 @@
+ai:
+    platform:
+        ollama:
+            http_client: ollama.client
+
+    agent:
+        doomsday_coder:
+            platform: ai.platform.ollama
+            model: coder-qwen3.6
+            prompt:
+                file: '%kernel.project_dir%/llm/prompts/doomsday_coder.md'
+
+    store:
+        # Store configuration
+
+        # chromadb:
+        #    default:
+        #        client: 'client.service.id'
+        #        collection: 'my_collection'

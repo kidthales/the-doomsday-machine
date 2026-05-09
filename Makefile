@@ -22,7 +22,7 @@ OLLAMA   := $(OLLAMA_CONT) ollama
                 composer vendor \
                 sf cc \
                 own \
-                ollama \
+                ollama llm \
                 footy-stats-database-diff footy-stats-database-sync \
                 footy-stats-deduction-list footy-stats-deduction-update \
                 footy-stats-match-chance-list footy-stats-match-list footy-stats-match-xg-list \
@@ -54,7 +54,7 @@ logs: ## Show live logs
 bash: ## Connect to the php service via bash
 	@$(PHP_CONT) bash
 
-## —— Testing 🧪 ————————————————————————————————————————————————————————————————
+## —— Testing 🧪  ———————————————————————————————————————————————————————————————
 test: ## Start tests with phpunit, pass the parameter "c=" to add options to phpunit
 	@$(eval c ?=)
 	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test php bin/phpunit $(c)
@@ -88,7 +88,11 @@ ollama: ## Run ollama, pass the parameter "c=" to run a given command
 	@$(eval c ?=)
 	@$(OLLAMA) $(c)
 
-## —— Jabronibetz: Footy Stats ⚽ ———————————————————————————————————————————————
+llm: ## Create an llm from an ollama modelfile, pass the parameter "c=<model-name>" to complete the arguments
+	@$(eval c ?=)
+	@$(OLLAMA) create $(c) -f ollama/$(c).Modelfile
+
+## —— Jabronibetz: Footy Stats ⚽  ——————————————————————————————————————————————
 footy-stats-database-diff: ## Insert or update Footy Stats table data, pass the parameter "c=" to add options or arguments
 	@$(eval c ?=)
 	@$(SYMFONY) app:jabronibetz:footy-stats:database:diff $(c)

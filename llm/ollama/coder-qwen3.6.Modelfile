@@ -1,0 +1,3 @@
+FROM precision-qwen3.6
+
+PARAMETER num_ctx 16384
