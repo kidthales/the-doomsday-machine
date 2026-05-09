@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional;
+namespace App\Tests\Integration;
 
 use NumberFormatter;
 use PHPUnit\Framework\Attributes\Test;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Domain\Shared\String;
+namespace App\Tests\Unit\Domain\Shared\String;
 
 use App\Domain\Shared\String\TagSearch;
 use App\Domain\Shared\String\TagSearchResult;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Domain\Shared\Formatter;
+namespace App\Tests\Unit\Domain\Shared\Formatter;
 
 use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
 use NumberFormatter;
