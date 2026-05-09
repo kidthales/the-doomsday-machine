@@ -31,7 +31,9 @@ namespace App\Command\AI;
 use App\Domain\Shared\AI\PlatformResultProcessor;
 use App\Domain\Shared\String\TagSearch;
 use InvalidArgumentException;
+use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
@@ -52,6 +54,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Filesystem\Path;
+use Symfony\Component\String\UnicodeString;
 use function Symfony\Component\String\u;
 
 /**
@@ -65,8 +68,14 @@ use function Symfony\Component\String\u;
 )]
 final class AgentCallCommand extends Command
 {
+    private const int MAX_ATTACHMENT_SIZE = 1024 * 1024;
+    private const string AGENT_RESULT_START_TEXT = '<fg=yellow>Assistant</>:';
+
     /**
-     * @param ServiceLocator<AgentInterface> $agents
+     * @param ServiceLocator $agents
+     * @param TagSearch $tagSearch
+     * @param string $projectDir
+     * @param PlatformResultProcessor $platformResultProcessor
      */
     public function __construct(
         #[AutowireLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
@@ -78,6 +87,11 @@ final class AgentCallCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * @param CompletionInput $input
+     * @param CompletionSuggestions $suggestions
+     * @return void
+     */
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         if ($input->mustSuggestArgumentValuesFor('agent')) {
@@ -85,6 +99,9 @@ final class AgentCallCommand extends Command
         }
     }
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -106,8 +123,8 @@ final class AgentCallCommand extends Command
                 Type 'exit' or 'quit' to end the conversation.
 
                 Files may be 'attached' to a message by typing '@' followed by a relative or
-                absolute path to the file. Wrap the path name with single or double quotes if it
-                contains whitespace.
+                absolute path to the file; the path string is terminated at the first non-escaped
+                whitespace encountered.
 
                 Results are streamed by default. For non-streaming results, use the --no-stream
                 option.
@@ -115,17 +132,19 @@ final class AgentCallCommand extends Command
             );
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $agentArg = $input->getArgument('agent');
-
-        if ($agentArg) {
+        if ($input->getArgument('agent') !== null) {
             return;
         }
 
         $availableAgents = $this->getAvailableAgentNames();
-
-        if (0 === \count($availableAgents)) {
+        if (0 === count($availableAgents)) {
             throw new InvalidArgumentException('No agents are configured.');
         }
 
@@ -136,37 +155,27 @@ final class AgentCallCommand extends Command
         );
         $question->setErrorMessage('Agent %s is invalid.');
 
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-        $selectedAgent = $helper->ask($input, $output, $question);
+        $helper = $this->getHelperSet()?->get('question');
+        if (!$helper instanceof QuestionHelper) {
+            throw new RuntimeException('QuestionHelper is not available.');
+        }
 
+        $selectedAgent = $helper->ask($input, $output, $question);
         $input->setArgument('agent', $selectedAgent);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws AgentExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $availableAgents = array_keys($this->agents->getProvidedServices());
-
-        if (0 === \count($availableAgents)) {
-            throw new InvalidArgumentException('No agents are configured.');
-        }
-
-        $agentArg = $input->getArgument('agent');
-        $agentName = \is_string($agentArg) ? $agentArg : '';
-
-        if ($agentName && !$this->agents->has($agentName)) {
-            throw new InvalidArgumentException(\sprintf('Agent "%s" not found. Available agents: "%s"', $agentName, implode(', ', $availableAgents)));
-        }
-
-        if (!$agentName) {
-            throw new InvalidArgumentException(\sprintf('Agent name is required. Available agents: "%s"', implode(', ', $availableAgents)));
-        }
-
-        $agent = $this->agents->get($agentName);
-
         $io = new SymfonyStyle($input, $output);
+        $agent = $this->resolveAgentInput($input);
 
-        $io->title(\sprintf('Chat with %s Agent', $agentName));
+        $io->title(sprintf('Chat with %s Agent', $agent->getName()));
         $io->info('Type your message and press Enter. Type "exit" or "quit" to end the conversation.');
         $io->newLine();
 
@@ -174,61 +183,21 @@ final class AgentCallCommand extends Command
         $systemPromptDisplayed = false;
 
         while (true) {
-            $rawUserInput = $io->ask('You');
+            $rawInput = $io->ask('You');
 
-            if (
-                !\is_string($rawUserInput) ||
-                (($userInput = u($rawUserInput)->trimStart()) && $userInput->trim()->isEmpty())
-            ) {
+            if (!is_string($rawInput) || u($rawInput)->trim()->isEmpty()) {
                 continue;
             }
 
-            if (\in_array($userInput->lower()->toString(), ['exit', 'quit'], true)) {
-                $io->success('Goodbye!');
+            $chatInput = u($rawInput);
+
+            if (in_array($chatInput->lower()->toString(), ['exit', 'quit'], true)) {
                 break;
             }
 
-            $table = [];
-            $tagSearchResults = $this->tagSearch->search($rawUserInput, '@');
-            foreach ($tagSearchResults as $tagSearchResult) {
-                $path = Path::makeAbsolute($tagSearchResult->subject, $this->projectDir);
-                $row = [$tagSearchResult->tag, $tagSearchResult->subject, $path];
+            $messages = $messages->merge($this->processChatInput($io, $chatInput));
 
-                $contents = false;
-                if (file_exists($path)) {
-                    $contents = file_get_contents($path);
-                    if ($contents !== false) {
-                        $messages->add(
-                            Message::ofUser(<<<MD
-                            # $path
-                            ```
-                            $contents
-                            ```
-                            MD)
-                        );
-                        $row[] = '✅';
-                    }
-                }
-
-                if ($contents === false) {
-                    $row[] = '❌';
-                }
-
-                $table[] = $row;
-                $userInput = $userInput->replace($tagSearchResult->tag, '`' . $path . '`');
-            }
-
-            if (!empty($table)) {
-                $io->table(['Tag', 'Subject', 'Path', 'Attached'], $table);
-            }
-
-            $io->writeln('<fg=cyan>' . $userInput . '</>');
-
-            $messages->add(Message::ofUser($userInput));
-
-            $options = ['stream' => !$input->getOption('no-stream')];
-
-            $result = $agent->call($messages, $options);
+            $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
 
             if (!$systemPromptDisplayed && null !== ($systemMessage = $messages->getSystemMessage())) {
                 $io->section('System Prompt');
@@ -238,18 +207,17 @@ final class AgentCallCommand extends Command
 
             $isThinking = false;
             $textBuffer = '';
+
             $this->platformResultProcessor->process(
                 $result,
                 textResultProcessor: function (TextResult $result) use ($io, $messages) {
-                    $io->writeln('<fg=yellow>Assistant</>:');
+                    $io->writeln(self::AGENT_RESULT_START_TEXT);
                     $io->writeln($result->getContent());
                     $io->newLine();
 
                     $messages->add(Message::ofAssistant($result->getContent()));
                 },
-                onStreamResultStart: function () use ($io) {
-                    $io->writeln('<fg=yellow>Assistant</>:');
-                },
+                onStreamResultStart: fn () => $io->writeln(self::AGENT_RESULT_START_TEXT),
                 textDeltaProcessor: function (TextDelta $delta) use ($io, &$isThinking, &$textBuffer) {
                     if ($isThinking) {
                         $isThinking = false;
@@ -274,6 +242,8 @@ final class AgentCallCommand extends Command
             );
         }
 
+        $io->success('Goodbye!');
+
         return Command::SUCCESS;
     }
 
@@ -283,5 +253,92 @@ final class AgentCallCommand extends Command
     private function getAvailableAgentNames(): array
     {
         return array_keys($this->agents->getProvidedServices());
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return AgentInterface
+     */
+    private function resolveAgentInput(InputInterface $input): AgentInterface
+    {
+        $availableAgents = array_keys($this->agents->getProvidedServices());
+
+        if (0 === count($availableAgents)) {
+            throw new InvalidArgumentException('No agents are configured.');
+        }
+
+        $agentArg = $input->getArgument('agent');
+        $agentName = is_string($agentArg) ? $agentArg : '';
+
+        if ($agentName && !$this->agents->has($agentName)) {
+            throw new InvalidArgumentException(sprintf(
+                'Agent "%s" not found. Available agents: "%s"',
+                $agentName, implode(', ', $availableAgents)
+            ));
+        }
+
+        if (!$agentName) {
+            throw new InvalidArgumentException(sprintf(
+                'Agent name is required. Available agents: "%s"',
+                implode(', ', $availableAgents)
+            ));
+        }
+
+        return $this->agents->get($agentName);
+    }
+
+    /**
+     * @param SymfonyStyle $io
+     * @param UnicodeString $chatInput
+     * @return MessageBag
+     */
+    private function processChatInput(SymfonyStyle $io, UnicodeString $chatInput): MessageBag
+    {
+        $messages = new MessageBag();
+        $attachmentTable = [];
+        $tagSearchResults = $this->tagSearch->search($chatInput->toString(), '@');
+        foreach ($tagSearchResults as $tagSearchResult) {
+            // Canonicalized
+            $path = Path::makeAbsolute($tagSearchResult->subject, $this->projectDir);
+            $row = [$tagSearchResult->tag, $tagSearchResult->subject, $path];
+
+            if (!str_starts_with($path, $this->projectDir . DIRECTORY_SEPARATOR)) {
+                $row[] = '❌ (Access Denied)';
+            } else if (!is_readable($path) || !is_file($path)) {
+                $row[] = '❌';
+            } else if (filesize($path) > self::MAX_ATTACHMENT_SIZE) {
+                $row[] = '❌ (Too Large)';
+            } else {
+                $contents = file_get_contents($path);
+
+                if ($contents === false) {
+                    $row[] = '❌';
+                } else {
+                    $messages->add(
+                        Message::ofUser(<<<MD
+                            # $path
+                            ```
+                            $contents
+                            ```
+                            MD)
+                    );
+                    $row[] = '✅';
+                }
+            }
+
+            $attachmentTable[] = $row;
+            $chatInput = $chatInput->replace($tagSearchResult->tag, '`' . $path . '`');
+        }
+
+        $io->writeln('<fg=cyan>' . $chatInput . '</>');
+        $io->newLine();
+
+        if (!empty($attachmentTable)) {
+            $io->table(['Tag', 'Subject', 'Path', 'Attached'], $attachmentTable);
+        }
+
+        $messages->add(Message::ofUser($chatInput));
+
+        return $messages;
     }
 }
