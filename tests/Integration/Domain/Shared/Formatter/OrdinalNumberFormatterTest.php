@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration;
+namespace App\Tests\Integration\Domain\Shared\Formatter;
 
 use NumberFormatter;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * @author doomsday_coder
  */
-final class OrdinalNumberFormatterDiTest extends KernelTestCase
+#[Group('shared')]
+final class OrdinalNumberFormatterTest extends KernelTestCase
 {
     #[Test]
-    public function container_provides_ordinal_number_formatter_service(): void
+    public function it_is_provided_by_the_service_container(): void
     {
         self::bootKernel();
         $container = self::getContainer();

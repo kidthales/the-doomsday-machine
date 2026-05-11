@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Domain\Shared\Formatter;
 use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
 use NumberFormatter;
 use PHPUnit\Framework\Attributes\CoversTrait;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -29,11 +30,12 @@ final class OrdinalNumberFormatterAwareTraitTestSubject
 /**
  * @author doomsday_coder
  */
+#[Group('shared')]
 #[CoversTrait(OrdinalNumberFormatterAwareTrait::class)]
 final class OrdinalNumberFormatterAwareTraitTest extends TestCase
 {
     #[Test]
-    public function setOrdinalNumberFormatter_assigns_formatter_to_property(): void
+    public function it_assigns_formatter_to_property(): void
     {
         $subject = new OrdinalNumberFormatterAwareTraitTestSubject();
         $formatter = new NumberFormatter('en_US', NumberFormatter::ORDINAL);
@@ -44,7 +46,7 @@ final class OrdinalNumberFormatterAwareTraitTest extends TestCase
     }
 
     #[Test]
-    public function setOrdinalNumberFormatter_overwrites_existing_formatter(): void
+    public function it_overwrites_existing_formatter(): void
     {
         $subject = new OrdinalNumberFormatterAwareTraitTestSubject();
         $formatterA = new NumberFormatter('en_US', NumberFormatter::ORDINAL);
@@ -57,7 +59,7 @@ final class OrdinalNumberFormatterAwareTraitTest extends TestCase
     }
 
     #[Test]
-    public function setOrdinalNumberFormatter_enforces_type_safety(): void
+    public function it_enforces_type_safety(): void
     {
         $subject = new OrdinalNumberFormatterAwareTraitTestSubject();
         $this->expectException(\TypeError::class);

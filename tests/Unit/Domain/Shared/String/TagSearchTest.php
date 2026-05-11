@@ -8,6 +8,7 @@ use App\Domain\Shared\String\TagSearch;
 use App\Domain\Shared\String\TagSearchResult;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
@@ -15,24 +16,25 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author doomsday_coder
  */
+#[Group('shared')]
 #[CoversClass(TagSearch::class)]
 final class TagSearchTest extends TestCase
 {
     #[Test]
-    #[TestWith(['#'])]
-    #[TestWith(['@'])]
-    #[TestWith(['!'])]
-    public function testValidStartCharacter(string $start): void
+    #[TestWith(['#'], "'#'")]
+    #[TestWith(['@'], "'@'")]
+    #[TestWith(['!'], "'!'")]
+    public function valid_start_character(string $start): void
     {
         $search = new TagSearch();
         $this->assertSame([], $search->search('no tags here', $start));
     }
 
     #[Test]
-    #[TestWith([''])]
-    #[TestWith([' '])]
-    #[TestWith(['ab'])]
-    public function testInvalidStartCharacterThrowsException(string $start): void
+    #[TestWith([''], "''")]
+    #[TestWith([' '], "' '")]
+    #[TestWith(['ab'], "'ab'")]
+    public function invalid_start_character_throws_exception(string $start): void
     {
         $search = new TagSearch();
         $this->expectException(InvalidArgumentException::class);
@@ -41,16 +43,40 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    #[TestWith(['hello #world', '#', ['world']])]
-    #[TestWith(['#start', '#', ['start']])]
-    #[TestWith(['#a', '#', ['a']])]
-    #[TestWith(['#a b c', '#', ['a']])]
-    #[TestWith(['foo #bar baz', '#', ['bar']])]
-    #[TestWith(['#a #b #c', '#', ['a', 'b', 'c']])]
-    #[TestWith(['#a\  #b', '#', ['a ', 'b']])]
-    #[TestWith(['#', '#', []])]
-    #[TestWith(['# ', '#', []])]
-    public function testSearchParsesTagsCorrectly(string $subject, string $start, array $expectedSubjects): void
+    #[TestWith(['', '#', []], "'' -> ''")]
+    #[TestWith(['#', '#', []], "'#' -> ''")]
+    #[TestWith(['# ', '#', []], "'# ' -> ''")]
+    #[TestWith(['#  ', '#', []], "'#  ' -> ''")]
+    #[TestWith(['#\\', '#', ['\\']], "'#\\' -> '\\'")]
+    #[TestWith(['#\ ', '#', [' ']], "'#\ ' -> ' '")]
+    #[TestWith(['#\  ', '#', [' ']], "'#\  ' -> ' '")]
+    #[TestWith(['#\\\\', '#', ['\\\\']], "'#\\\' -> '\\\'")]
+    #[TestWith(['#\\\ ', '#', ['\ ']], "'#\\\ ' -> '\ '")]
+    #[TestWith(['#\\\  ', '#', ['\ ']], "'#\\\  ' -> '\ '")]
+    #[TestWith(['#a', '#', ['a']], "'#a' -> 'a'")]
+    #[TestWith(['#a ', '#', ['a']], "'#a ' -> 'a'")]
+    #[TestWith(['#aa', '#', ['aa']], "'#aa' -> 'aa'")]
+    #[TestWith(['#aa ', '#', ['aa']], "'#a ' -> 'aa'")]
+    #[TestWith(['#\a', '#', ['\a']], "'#\a' -> '\a'")]
+    #[TestWith(['#\a ', '#', ['\a']], "'#\a ' -> '\a'")]
+    #[TestWith(['#a\\', '#', ['a\\']], "'#a\' -> 'a\'")]
+    #[TestWith(['#a\ ', '#', ['a ']], "'#a\ ' -> 'a '")]
+    #[TestWith(['#a\  ', '#', ['a ']], "'#a\  ' -> 'a '")]
+    #[TestWith(['#\ \\', '#', [' \\']], "'#\ \' -> ' \\'")]
+    #[TestWith(['#\ \ ', '#', ['  ']], "'#\ \ ' -> '  '")]
+    #[TestWith(['#\ \  ', '#', ['  ']], "'#\ \  ' -> '  '")]
+    #[TestWith(['#\ \\\\', '#', [' \\\\']], "'#\ \\\' -> ' \\\'")]
+    #[TestWith(['#\ \\\ ', '#', [' \ ']], "'#\ \\\ ' -> ' \ '")]
+    #[TestWith(['#\ \\\  ', '#', [' \ ']], "'#\ \\\  ' -> ' \ '")]
+    #[TestWith(['#\ a', '#', [' a']], "'#\ a' -> ' a'")]
+    #[TestWith(['#\ a ', '#', [' a']], "'#\ a ' -> ' a'")]
+    #[TestWith(['#\ a\ ', '#', [' a ']], "'#\ a\ ' -> ' a '")]
+    #[TestWith(['#\ a\  ', '#', [' a ']], "'#\ a\  ' -> ' a '")]
+    #[TestWith(['hello #world', '#', ['world']], "'hello #world' -> 'world'")]
+    #[TestWith(['foo #bar baz', '#', ['bar']], "'foo #bar baz' -> 'bar'")]
+    #[TestWith(['#a #b #c', '#', ['a', 'b', 'c']], "'#a #b #c' -> 'a' 'b' 'c'")]
+    #[TestWith(['#a\  #b', '#', ['a ', 'b']], "'#a\  #b' -> 'a ', 'b'")]
+    public function search_parses_tags_correctly(string $subject, string $start, array $expectedSubjects): void
     {
         $search = new TagSearch();
         $results = $search->search($subject, $start);
@@ -63,7 +89,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function testSearchHandlesMultipleSpacesInTag(): void
+    public function search_handles_multiple_spaces_in_tag(): void
     {
         $search = new TagSearch();
         $results = $search->search('#a\ \ b', '#');
@@ -72,7 +98,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function testSearchIgnoresStartCharInsideWord(): void
+    public function search_ignores_start_char_inside_word(): void
     {
         $search = new TagSearch();
         $results = $search->search('hashtag#tag', '#');
@@ -80,7 +106,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function testSearchResetsOnWhitespaceAfterStartChar(): void
+    public function search_resets_on_whitespace_after_start_char(): void
     {
         $search = new TagSearch();
         // '# ' should discard the tag because the character immediately after '#' is whitespace

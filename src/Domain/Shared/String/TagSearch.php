@@ -67,7 +67,10 @@ final readonly class TagSearch
                     }
                     break;
                 case self::STATE_TAG_CANDIDATE:
-                    if (preg_match('/^\S$/', $ch)) {
+                    if ($ch === '\\') {
+                        $tag .= $ch;
+                        $state = self::STATE_TAG_ESCAPE_WHITESPACE_CANDIDATE;
+                    } else if (preg_match('/^\S$/', $ch)) {
                         $tag .= $ch;
                         $state = self::STATE_TAG;
                     } else {
