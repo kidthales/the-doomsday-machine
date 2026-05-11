@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @author doomsday_coder
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('shared')]
 #[CoversClass(TagSearchResult::class)]

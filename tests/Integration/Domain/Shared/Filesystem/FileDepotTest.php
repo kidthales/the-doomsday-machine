@@ -6,12 +6,17 @@ namespace App\Tests\Integration\Domain\Shared\Filesystem;
 
 use App\Domain\Shared\Filesystem\FileDepot;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Throwable;
 
+/**
+ * @author doomsday_coder
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
+ */
+#[Group('shared')]
 #[CoversClass(FileDepot::class)]
 final class FileDepotTest extends KernelTestCase
 {
@@ -143,12 +148,6 @@ final class FileDepotTest extends KernelTestCase
         $this->assertSame($expectedAfter, file_get_contents($this->testDirPath . DIRECTORY_SEPARATOR . $subject[0]));
     }
 
-    /**
-     * @param string $subject
-     * @param string $expected
-     * @return void
-     * @throws Throwable
-     */
     #[Test]
     #[TestWith([self::NOT_FOUND_FILE, 'IOException'], 'not found')]
     #[TestWith([self::TEST_FILE_A, ''], 'existing file')]

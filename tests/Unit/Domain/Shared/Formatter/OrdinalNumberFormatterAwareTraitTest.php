@@ -29,6 +29,7 @@ final class OrdinalNumberFormatterAwareTraitTestSubject
 
 /**
  * @author doomsday_coder
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('shared')]
 #[CoversTrait(OrdinalNumberFormatterAwareTrait::class)]
