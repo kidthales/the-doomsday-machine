@@ -25,7 +25,7 @@ final class TagSearchTest extends TestCase
     #[TestWith(['#'], "'#'")]
     #[TestWith(['@'], "'@'")]
     #[TestWith(['!'], "'!'")]
-    public function valid_start_character(string $start): void
+    public function it_finds_nothing_when_tags_not_present(string $start): void
     {
         $search = new TagSearch();
         $this->assertSame([], $search->search('no tags here', $start));
@@ -35,7 +35,7 @@ final class TagSearchTest extends TestCase
     #[TestWith([''], "''")]
     #[TestWith([' '], "' '")]
     #[TestWith(['ab'], "'ab'")]
-    public function invalid_start_character_throws_exception(string $start): void
+    public function it_throws_exception_on_invalid_start_char(string $start): void
     {
         $search = new TagSearch();
         $this->expectException(InvalidArgumentException::class);
@@ -77,7 +77,7 @@ final class TagSearchTest extends TestCase
     #[TestWith(['foo #bar baz', '#', ['bar']], "'foo #bar baz' -> 'bar'")]
     #[TestWith(['#a #b #c', '#', ['a', 'b', 'c']], "'#a #b #c' -> 'a' 'b' 'c'")]
     #[TestWith(['#a\  #b', '#', ['a ', 'b']], "'#a\  #b' -> 'a ', 'b'")]
-    public function search_parses_tags_correctly(string $subject, string $start, array $expectedSubjects): void
+    public function it_parses_tags_correctly(string $subject, string $start, array $expectedSubjects): void
     {
         $search = new TagSearch();
         $results = $search->search($subject, $start);
@@ -90,7 +90,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function search_handles_multiple_spaces_in_tag(): void
+    public function it_handles_multiple_spaces_in_tag(): void
     {
         $search = new TagSearch();
         $results = $search->search('#a\ \ b', '#');
@@ -99,7 +99,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function search_ignores_start_char_inside_word(): void
+    public function it_ignores_start_char_inside_word(): void
     {
         $search = new TagSearch();
         $results = $search->search('hashtag#tag', '#');
@@ -107,7 +107,7 @@ final class TagSearchTest extends TestCase
     }
 
     #[Test]
-    public function search_resets_on_whitespace_after_start_char(): void
+    public function it_resets_on_whitespace_after_start_char(): void
     {
         $search = new TagSearch();
         // '# ' should discard the tag because the character immediately after '#' is whitespace

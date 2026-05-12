@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 /**
  * Lightweight subject to expose the trait's protected property for testing.
@@ -63,7 +64,7 @@ final class OrdinalNumberFormatterAwareTraitTest extends TestCase
     public function it_enforces_type_safety(): void
     {
         $subject = new OrdinalNumberFormatterAwareTraitTestSubject();
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         $subject->setOrdinalNumberFormatter('invalid');
     }
 }
