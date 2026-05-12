@@ -47,17 +47,17 @@ final readonly class PlatformStreamResultProcessor
         ?callable    $onFinish = null
     ): void
     {
-        if (\is_callable($onStart)) {
+        if (is_callable($onStart)) {
             $onStart($result);
         }
 
         foreach ($result->getContent() as $delta) {
             if ($delta instanceof TextDelta) {
-                if (\is_callable($textDeltaProcessor)) {
+                if (is_callable($textDeltaProcessor)) {
                     $textDeltaProcessor($delta);
                 }
             } else if ($delta instanceof ThinkingDelta) {
-                if (\is_callable($thinkingDeltaProcessor)) {
+                if (is_callable($thinkingDeltaProcessor)) {
                     $thinkingDeltaProcessor($delta);
                 }
             } else {
@@ -65,7 +65,7 @@ final readonly class PlatformStreamResultProcessor
             }
         }
 
-        if (\is_callable($onFinish)) {
+        if (is_callable($onFinish)) {
             $onFinish($result);
         }
     }

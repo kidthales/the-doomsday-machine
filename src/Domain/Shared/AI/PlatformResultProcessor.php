@@ -59,7 +59,7 @@ final readonly class PlatformResultProcessor
     ): void
     {
         if ($result instanceof TextResult) {
-            if (\is_callable($textResultProcessor)) {
+            if (is_callable($textResultProcessor)) {
                 $textResultProcessor($result);
             }
         } else if ($result instanceof StreamResult) {
