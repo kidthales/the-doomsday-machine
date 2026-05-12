@@ -67,22 +67,25 @@ final class FileDepotTest extends KernelTestCase
     }
 
     #[Test]
-    #[TestWith(['test', '/test'], 'single part, no slashes')]
-    #[TestWith(['/test', '/test'], 'single part, leading slash')]
-    #[TestWith(['test/', '/test'], 'single part, trailing slash')]
-    #[TestWith(['/testA/testB', '/testA/testB'], 'multiple parts, leading slash')]
-    #[TestWith(['testA/testB/', '/testA/testB'], 'multiple parts, trailing slash')]
-    #[TestWith(['///testA///testB//', '/testA/testB'], 'multiple parts, multiple slashes')]
-    public function it_joins_a_path_with_the_file_depot_path(string $subject, string $expected): void
+    #[TestWith(['test', '/test'], 'test')]
+    #[TestWith(['/test', '/test'], '/test')]
+    #[TestWith(['test/', '/test'], 'test/')]
+    #[TestWith(['/testA/testB', '/testA/testB'], '/testA/testB')]
+    #[TestWith(['testA/testB/', '/testA/testB'], 'testA/testB/')]
+    #[TestWith(['///testA///testB//', '/testA/testB'], '///testA///testB//')]
+    public function it_makes_a_path_within_the_file_depot(string $subject, string $expected): void
     {
         $this->assertSame($this->fileDepotPath . $expected, $this->fileDepot->makePath($subject));
     }
 
     #[Test]
-    #[TestWith([self::TEST_FILE_A, true], 'existing file')]
-    #[TestWith([self::NOT_FOUND_FILE, false], 'non-existent file')]
-    #[TestWith([[self::TEST_FILE_A, self::TEST_FILE_B], true], 'multiple existing files')]
-    #[TestWith([[self::TEST_FILE_A, self::NOT_FOUND_FILE, self::TEST_FILE_B], false], 'multiple files, some do not exist')]
+    #[TestWith([self::TEST_FILE_A, true], self::TEST_FILE_A)]
+    #[TestWith([self::NOT_FOUND_FILE, false], self::NOT_FOUND_FILE)]
+    #[TestWith([[self::TEST_FILE_A, self::TEST_FILE_B], true], self::TEST_FILE_A . ', ' . self::TEST_FILE_B)]
+    #[TestWith(
+        [[self::TEST_FILE_A, self::NOT_FOUND_FILE, self::TEST_FILE_B], false],
+        self::TEST_FILE_A . ', ' . self::NOT_FOUND_FILE . ', ' . self::TEST_FILE_B
+    )]
     public function it_confirms_that_files_exist_in_the_file_depot(
         iterable|string $subject,
         bool $expected
@@ -98,7 +101,10 @@ final class FileDepotTest extends KernelTestCase
     }
 
     #[Test]
-    #[TestWith([[self::TEST_FILE_A, self::TEST_FILE_B], [true, true], [false, false]], 'multiple files')]
+    #[TestWith(
+        [[self::TEST_FILE_A, self::TEST_FILE_B], [true, true], [false, false]],
+        self::TEST_FILE_A . ', ' . self::TEST_FILE_B
+    )]
     public function it_removes_files_from_the_file_depot(
         iterable|string $subject,
         array|bool $expectedBefore,
@@ -127,15 +133,15 @@ final class FileDepotTest extends KernelTestCase
     }
 
     #[Test]
-    #[TestWith([[self::NOT_FOUND_FILE, self::TEST_FILE_CONTENT], false, self::TEST_FILE_CONTENT], 'new file')]
-    #[TestWith([[self::TEST_FILE_A, self::TEST_FILE_CONTENT], '', self::TEST_FILE_CONTENT], 'existing file')]
+    #[TestWith([[self::NOT_FOUND_FILE, self::TEST_FILE_CONTENT], false, self::TEST_FILE_CONTENT], self::NOT_FOUND_FILE)]
+    #[TestWith([[self::TEST_FILE_A, self::TEST_FILE_CONTENT], '', self::TEST_FILE_CONTENT], self::TEST_FILE_A)]
     #[TestWith(
         [
             [self::TEST_FILE_B, self::TEST_FILE_CONTENT],
             self::TEST_FILE_CONTENT,
             self::TEST_FILE_CONTENT . self::TEST_FILE_CONTENT
         ],
-        'existing file 2'
+        self::TEST_FILE_B
     )]
     public function it_appends_content_to_a_file_in_the_file_depot(
         array $subject,
@@ -149,24 +155,24 @@ final class FileDepotTest extends KernelTestCase
     }
 
     #[Test]
-    #[TestWith([self::NOT_FOUND_FILE, 'IOException'], 'not found')]
-    #[TestWith([self::TEST_FILE_A, ''], 'existing file')]
-    #[TestWith([self::TEST_FILE_B, self::TEST_FILE_CONTENT], 'existing file 2')]
+    #[TestWith([self::TEST_FILE_A, ''], self::TEST_FILE_A)]
+    #[TestWith([self::TEST_FILE_B, self::TEST_FILE_CONTENT], self::TEST_FILE_B)]
     public function it_reads_content_from_a_file_in_the_file_depot(string $subject, string $expected): void
     {
-        if ($expected === 'IOException') {
-            $this->expectException(IOException::class);
-            $this->fileDepot->readFile($this->testDir . DIRECTORY_SEPARATOR . $subject);
-            return;
-        }
-
         $this->assertSame($expected, $this->fileDepot->readFile($this->testDir . DIRECTORY_SEPARATOR . $subject));
     }
 
     #[Test]
-    #[TestWith([self::NOT_FOUND_FILE, false], 'not found')]
-    #[TestWith([self::TEST_FILE_A, 0], 'existing file')]
-    #[TestWith([self::TEST_FILE_B, 0], 'existing file 2')]
+    public function it_throws_exception_when_reading_file_that_does_not_exist(): void
+    {
+        $this->expectException(IOException::class);
+        $this->fileDepot->readFile($this->testDir . DIRECTORY_SEPARATOR . self::NOT_FOUND_FILE);
+    }
+
+    #[Test]
+    #[TestWith([self::NOT_FOUND_FILE, false], self::NOT_FOUND_FILE)]
+    #[TestWith([self::TEST_FILE_A, 0], self::TEST_FILE_A)]
+    #[TestWith([self::TEST_FILE_B, 0], self::TEST_FILE_B)]
     public function it_can_check_the_modified_time_of_a_file_in_the_file_depot(string $subject, int|false $expected): void
     {
         $actual = $this->fileDepot->filemtime($this->testDir . DIRECTORY_SEPARATOR . $subject);
