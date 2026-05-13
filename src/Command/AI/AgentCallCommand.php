@@ -34,6 +34,9 @@ use InvalidArgumentException;
 use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
+use Symfony\AI\Platform\Message\Content\Audio;
+use Symfony\AI\Platform\Message\Content\File;
+use Symfony\AI\Platform\Message\Content\Image;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
@@ -54,6 +57,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\String\UnicodeString;
 use function Symfony\Component\String\u;
 
@@ -305,24 +309,31 @@ final class AgentCallCommand extends Command
             if (!str_starts_with($path, $this->projectDir . DIRECTORY_SEPARATOR)) {
                 $row[] = '❌ (Access Denied)';
             } else if (!is_readable($path) || !is_file($path)) {
-                $row[] = '❌';
+                $row[] = '❌ (Not Readable File)';
             } else if (filesize($path) > self::MAX_ATTACHMENT_SIZE) {
                 $row[] = '❌ (Too Large)';
             } else {
-                $contents = file_get_contents($path);
+                $mimeType = (new MimeTypes())->guessMimeType($path);
 
-                if ($contents === false) {
-                    $row[] = '❌';
-                } else {
+                if (str_starts_with($mimeType, 'image/')) {
+                    $messages->add(Message::ofUser(Image::fromFile($path)));
+                    $row[] = '❓ (Pending)';
+                } else if (str_starts_with($mimeType, 'audio/')) {
+                    $messages->add(Message::ofUser(Audio::fromFile($path)));
+                    $row[] = '❓ (Pending)';
+                } else if (str_starts_with($mimeType, 'text/')) {
+                    $contents = file_get_contents($path);
                     $messages->add(
                         Message::ofUser(<<<MD
-                            # $path
-                            ```
-                            $contents
-                            ```
-                            MD)
+                        # $path
+                        ```
+                        $contents
+                        ```
+                        MD)
                     );
                     $row[] = '✅';
+                } else {
+                    $row[] = '❌ (Unsupported MIME Type)';
                 }
             }
 
