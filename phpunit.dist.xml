@@ -24,9 +24,6 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
-        <testsuite name="Legacy">
-            <directory>tests/Domain</directory>
-        </testsuite>
     </testsuites>
 
     <source ignoreSuppressionOfDeprecations="true"
@@ -37,6 +34,11 @@
         <include>
             <directory>src</directory>
         </include>
+
+        <exclude>
+            <directory>src/Domain/Jabronibetz/FootyStats</directory>
+            <directory>src/Command/Jabronibetz/FootyStats</directory>
+        </exclude>
 
         <deprecationTrigger>
             <method>Doctrine\Deprecations\Deprecation::trigger</method>

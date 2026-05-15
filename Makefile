@@ -60,7 +60,7 @@ test: ## Start tests with phpunit, pass the parameter "c=" to add options to php
 	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test php bin/phpunit $(c)
 
 cov: ## Start tests with phpunit and generate coverage report for the project
-	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test -e XDEBUG_MODE=coverage php bin/phpunit --testdox --coverage-text --coverage-html coverage
+	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test -e XDEBUG_MODE=coverage php bin/phpunit --testdox --display-all-issues --coverage-text --show-uncovered-for-coverage-text --coverage-html coverage
 
 ## —— Composer 🧙  ——————————————————————————————————————————————————————————————
 composer: ## Run composer, pass the parameter "c=" to run a given command

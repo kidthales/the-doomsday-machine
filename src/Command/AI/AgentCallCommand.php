@@ -28,20 +28,16 @@ declare(strict_types=1);
 
 namespace App\Command\AI;
 
-use App\Domain\Shared\AI\PlatformResultProcessor;
+use App\Domain\AI\Console\AgentCallPlatformResultProcessor;
 use App\Domain\Shared\String\TagSearch;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
 use Symfony\AI\Platform\Message\Content\Audio;
-use Symfony\AI\Platform\Message\Content\File;
 use Symfony\AI\Platform\Message\Content\Image;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
-use Symfony\AI\Platform\Result\Stream\Delta\ThinkingDelta;
-use Symfony\AI\Platform\Result\TextResult;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
@@ -73,19 +69,18 @@ use function Symfony\Component\String\u;
 final class AgentCallCommand extends Command
 {
     private const int MAX_ATTACHMENT_SIZE = 1024 * 1024;
-    private const string AGENT_RESULT_START_TEXT = '<fg=yellow>Assistant</>:';
 
     /**
      * @param ServiceLocator $agents
      * @param TagSearch $tagSearch
      * @param string $projectDir
-     * @param PlatformResultProcessor $platformResultProcessor
+     * @param AgentCallPlatformResultProcessor $platformResultProcessor
      */
     public function __construct(
         #[AutowireLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
         private readonly TagSearch                                             $tagSearch,
         #[Autowire(param: 'kernel.project_dir')] private readonly string       $projectDir,
-        private readonly PlatformResultProcessor                               $platformResultProcessor
+        private readonly AgentCallPlatformResultProcessor                      $platformResultProcessor
     )
     {
         parent::__construct();
@@ -209,41 +204,7 @@ final class AgentCallCommand extends Command
                 $systemPromptDisplayed = true;
             }
 
-            $isThinking = false;
-            $textBuffer = '';
-
-            $this->platformResultProcessor->process(
-                $result,
-                textResultProcessor: function (TextResult $result) use ($io, $messages) {
-                    $io->writeln(self::AGENT_RESULT_START_TEXT);
-                    $io->writeln($result->getContent());
-                    $io->newLine();
-
-                    $messages->add(Message::ofAssistant($result->getContent()));
-                },
-                onStreamResultStart: fn () => $io->writeln(self::AGENT_RESULT_START_TEXT),
-                textDeltaProcessor: function (TextDelta $delta) use ($io, &$isThinking, &$textBuffer) {
-                    if ($isThinking) {
-                        $isThinking = false;
-                        $io->write('</>');
-                        $io->newLine();
-                    }
-                    $text = $delta->getText();
-                    $io->write($text);
-                    $textBuffer .= $text;
-                },
-                thinkingDeltaProcessor: function (ThinkingDelta $delta) use ($io, &$isThinking) {
-                    if (!$isThinking) {
-                        $isThinking = true;
-                        $io->write('<fg=magenta>');
-                    }
-                    $io->write($delta->getThinking());
-                },
-                onStreamResultFinish: function () use ($io, $messages, $textBuffer) {
-                    $io->newLine();
-                    $messages->add(Message::ofAssistant($textBuffer));
-                }
-            );
+            $this->platformResultProcessor->process($result, $io, $messages);
         }
 
         $io->success('Goodbye!');
