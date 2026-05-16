@@ -55,7 +55,6 @@ use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
 use App\Domain\AI\Console\AgentCall\UserInputProcessor;
 use InvalidArgumentException;
-use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
 use Symfony\AI\Platform\Message\MessageBag;

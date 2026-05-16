@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\AI\Console\AgentCall;
 
+use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
 use App\Domain\AI\Console\AgentCall\UserInputProcessor;
 use App\Domain\Shared\String\TagSearch;
@@ -16,7 +20,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * @author doomsday_coder
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('ai')]
@@ -24,25 +27,29 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class UserInputProcessorTest extends TestCase
 {
     #[Test]
-    #[TestWith([null], 'null')]
-    #[TestWith([''], "''")]
-    #[TestWith(['   '], "'   '")]
-    public function it_processes_user_input_as_noop_user_input(mixed $rawUserInput): void
+    #[TestWith([null, NoopUserInput::class], 'null')]
+    #[TestWith(['', NoopUserInput::class], "''")]
+    #[TestWith(['   ', NoopUserInput::class], "'   '")]
+    #[TestWith(['Test', ChatUserInput::class], "'Test'")]
+    public function it_processes_basic_user_input(mixed $rawUserInput, string $expected): void
     {
         $this->assertInstanceOf(
-            NoopUserInput::class,
+            $expected,
             (new UserInputProcessor(new TagSearch(), 'test'))->process($rawUserInput, $this->createStub(SymfonyStyle::class))
         );
     }
 
     #[Test]
-    #[TestWith(['/exit'], "'/exit'")]
-    #[TestWith(['/quit'], "'/quit'")]
-    #[TestWith(['/bye'], "'/bye'")]
-    public function it_processes_slash_command_as_exit_user_input(string $rawUserInput): void
+    #[TestWith(['/exit', ExitUserInput::class], "'/exit'")]
+    #[TestWith(['/quit', ExitUserInput::class], "'/quit'")]
+    #[TestWith(['/bye', ExitUserInput::class], "'/bye'")]
+    #[TestWith(['/clear', ClearUserInput::class], "'/clear'")]
+    #[TestWith(['/help', HelpUserInput::class], "'/help'")]
+    #[TestWith(['/failit', ErrorUserInput::class], "'/failit'")]
+    public function it_processes_basic_slash_commands(string $rawUserInput, string $expected): void
     {
         $this->assertInstanceOf(
-            ExitUserInput::class,
+            $expected,
             (new UserInputProcessor(new TagSearch(), 'test'))->process($rawUserInput, $this->createStub(SymfonyStyle::class))
         );
     }
