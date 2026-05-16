@@ -22,8 +22,10 @@ declare(strict_types=1);
 namespace App\Domain\AI\Console\AgentCall;
 
 use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\UserInput;
 use App\Domain\Shared\String\TagSearch;
@@ -84,8 +86,11 @@ final readonly class UserInputProcessor
      */
     private function processSlashCommandInput(string $slashCommand, string $slashCommandRawInput): UserInput
     {
+        // TODO: save, load, list...
         return match ($slashCommand) {
             'exit', 'quit', 'bye' => new ExitUserInput(),
+            'clear' => new ClearUserInput(),
+            'help' => new HelpUserInput(),
             default => new ErrorUserInput(sprintf('Unknown slash command "%s"', $slashCommand))
         };
     }
@@ -106,6 +111,7 @@ final readonly class UserInputProcessor
             $row = [$tagSearchResult->tag, $tagSearchResult->subject, $path];
 
             // TODO: file exclusion list...
+            // TODO: track errors and prompt user y/n to proceed...
             if (!str_starts_with($path, $this->projectDir . DIRECTORY_SEPARATOR)) {
                 $row[] = '❌ (Access Denied)';
             } else if (!is_readable($path) || !is_file($path)) {
@@ -142,6 +148,7 @@ final readonly class UserInputProcessor
             $userInput = $userInput->replace($tagSearchResult->tag, '`' . $path . '`');
         }
 
+        // TODO: output block...
         $io->writeln('<fg=cyan>' . $userInput . '</>');
         $io->newLine();
 

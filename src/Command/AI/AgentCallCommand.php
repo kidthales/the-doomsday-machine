@@ -48,8 +48,10 @@ namespace App\Command\AI;
 
 use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
 use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
 use App\Domain\AI\Console\AgentCall\UserInputProcessor;
 use InvalidArgumentException;
@@ -131,6 +133,7 @@ final class AgentCallCommand extends Command
 
                 The chat session is interactive. Type your message and press <comment>Ctrl+D</comment> to send.
                 Type <comment>/exit</comment>, <comment>/quit</comment>, or <comment>/bye</comment> to end the conversation.
+                Type <comment>/help</comment> to display available slash commands.
 
                 Files may be attached to a message by typing <comment>@</comment> followed by a path to the file
                 (relative to the project's root directory). The path string is terminated at the
@@ -182,8 +185,7 @@ final class AgentCallCommand extends Command
         $agent = $this->resolveAgentInput($input);
 
         $io->title(sprintf('Chat with %s Agent', $agent->getName()));
-        $io->info('Type your message and press "Ctrl+D". Type "/exit", "/quit", or "/bye" to end the conversation.');
-        $io->newLine();
+        $io->info('Type your message and press "Ctrl+D". Type "/exit" to end the conversation. Type "/help" to display available slash commands.');
 
         $messages = new MessageBag();
         $systemPromptDisplayed = false;
@@ -194,12 +196,29 @@ final class AgentCallCommand extends Command
                 $io
             );
 
+            $io->newLine();
+
             switch (get_class($userInput)) {
                 case ExitUserInput::class:
                     break 2;
                 case ChatUserInput::class:
                     $messages = $messages->merge($userInput->messages);
                     break;
+                case ClearUserInput::class:
+                    $count = $messages->count();
+                    $messages = new MessageBag();
+                    $io->success(sprintf('Cleared %d messages.', $count));
+                    continue 2;
+                case HelpUserInput::class:
+                    $io->table(
+                        ['Slash Command', 'Description'],
+                        [
+                            ['/help', 'Display this help message.'],
+                            ['/exit, /quit, /bye', 'End the conversation.'],
+                            ['/clear', 'Clear the conversation\'s message bag.']
+                        ]
+                    );
+                    continue 2;
                 case ErrorUserInput::class:
                     $io->error($userInput->message); // fall-through
                 case NoopUserInput::class:
