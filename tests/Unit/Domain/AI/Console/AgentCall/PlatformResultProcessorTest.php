@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\AI\Console;
+namespace App\Tests\Unit\Domain\AI\Console\AgentCall;
 
-use App\Domain\AI\Console\AgentCallPlatformResultProcessor;
-use App\Domain\Shared\AI\PlatformResultProcessor;
+use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
+use App\Domain\Shared\AI\PlatformResultProcessor as InnerPlatformResultProcessor;
 use App\Domain\Shared\AI\PlatformStreamResultProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,8 +25,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('ai')]
-#[CoversClass(AgentCallPlatformResultProcessor::class)]
-final class AgentCallPlatformResultProcessorTest extends TestCase
+#[CoversClass(PlatformResultProcessor::class)]
+final class PlatformResultProcessorTest extends TestCase
 {
     #[Test]
     public function it_processes_a_text_result(): void
@@ -55,7 +55,7 @@ final class AgentCallPlatformResultProcessorTest extends TestCase
                 $this->callback(fn ($msg) => $msg instanceof AssistantMessage && $msg->getContent() === 'Hello World')
             );
 
-        (new AgentCallPlatformResultProcessor(new PlatformResultProcessor(new PlatformStreamResultProcessor())))
+        (new PlatformResultProcessor(new InnerPlatformResultProcessor(new PlatformStreamResultProcessor())))
             ->process(new TextResult('Hello World'), $io, $messages);
     }
 
@@ -84,7 +84,7 @@ final class AgentCallPlatformResultProcessorTest extends TestCase
             ->method('add')
             ->with($this->callback(fn ($msg) => $msg instanceof AssistantMessage && $msg->getContent() === 'Hello World'));
 
-        (new AgentCallPlatformResultProcessor(new PlatformResultProcessor(new PlatformStreamResultProcessor())))
+        (new PlatformResultProcessor(new InnerPlatformResultProcessor(new PlatformStreamResultProcessor())))
             ->process(new StreamResult($gen()), $io, $messages);
     }
 
@@ -121,7 +121,7 @@ final class AgentCallPlatformResultProcessorTest extends TestCase
             ->method('add')
             ->with($this->callback(fn ($msg) => $msg instanceof AssistantMessage && $msg->getContent() === ''));
 
-        (new AgentCallPlatformResultProcessor(new PlatformResultProcessor(new PlatformStreamResultProcessor())))
+        (new PlatformResultProcessor(new InnerPlatformResultProcessor(new PlatformStreamResultProcessor())))
             ->process(new StreamResult($gen()), $io, $messages);
     }
 
@@ -161,7 +161,7 @@ final class AgentCallPlatformResultProcessorTest extends TestCase
             ->method('add')
             ->with($this->callback(fn ($msg) => $msg instanceof AssistantMessage && $msg->getContent() === 'World'));
 
-        (new AgentCallPlatformResultProcessor(new PlatformResultProcessor(new PlatformStreamResultProcessor())))
+        (new PlatformResultProcessor(new InnerPlatformResultProcessor(new PlatformStreamResultProcessor())))
             ->process(new StreamResult($gen()), $io, $messages);
     }
 
@@ -175,7 +175,7 @@ final class AgentCallPlatformResultProcessorTest extends TestCase
         $io = $this->createStub(SymfonyStyle::class);
         $messages = $this->createStub(MessageBag::class);
 
-        $processor = new AgentCallPlatformResultProcessor(new PlatformResultProcessor(new PlatformStreamResultProcessor()));
+        $processor = new PlatformResultProcessor(new InnerPlatformResultProcessor(new PlatformStreamResultProcessor()));
         $processor->process(new StreamResult($gen()), $io, $messages);
 
         $reflection = new ReflectionClass($processor);

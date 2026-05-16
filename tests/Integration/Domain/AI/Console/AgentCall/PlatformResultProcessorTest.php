@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Domain\AI\Console;
+namespace App\Tests\Integration\Domain\AI\Console\AgentCall;
 
-use App\Domain\AI\Console\AgentCallPlatformResultProcessor;
+use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -14,9 +14,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  * @author doomsday_coder
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[Group('shared')]
-#[CoversClass(AgentCallPlatformResultProcessor::class)]
-final class AgentCallPlatformResultProcessorTest extends KernelTestCase
+#[Group('ai')]
+#[CoversClass(PlatformResultProcessor::class)]
+final class PlatformResultProcessorTest extends KernelTestCase
 {
     #[Test]
     public function it_is_provided_by_the_service_container(): void
@@ -24,14 +24,14 @@ final class AgentCallPlatformResultProcessorTest extends KernelTestCase
         $this->bootKernel();
 
         $this->assertTrue(
-            $this->getContainer()->has(AgentCallPlatformResultProcessor::class),
+            $this->getContainer()->has(PlatformResultProcessor::class),
             'The autowired service must be registered in the container.'
         );
 
         $this->assertInstanceOf(
-            AgentCallPlatformResultProcessor::class,
-            $this->getContainer()->get(AgentCallPlatformResultProcessor::class),
-            'The service must resolve to a valid AgentCallPlatformResultProcessor instance.'
+            PlatformResultProcessor::class,
+            $this->getContainer()->get(PlatformResultProcessor::class),
+            'The service must resolve to a valid PlatformResultProcessor instance.'
         );
     }
 }

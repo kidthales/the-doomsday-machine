@@ -24,19 +24,38 @@
  * THE SOFTWARE.
  */
 
+/*
+ * The Doomsday Machine
+ * Copyright (C) 2026  Tristan Bonsor
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 declare(strict_types=1);
 
 namespace App\Command\AI;
 
-use App\Domain\AI\Console\AgentCallPlatformResultProcessor;
-use App\Domain\Shared\String\TagSearch;
+use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
+use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
+use App\Domain\AI\Console\AgentCall\UserInputProcessor;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
-use Symfony\AI\Platform\Message\Content\Audio;
-use Symfony\AI\Platform\Message\Content\Image;
-use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -48,14 +67,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
-use Symfony\Component\Filesystem\Path;
-use Symfony\Component\Mime\MimeTypes;
-use Symfony\Component\String\UnicodeString;
-use function Symfony\Component\String\u;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
@@ -68,19 +83,15 @@ use function Symfony\Component\String\u;
 )]
 final class AgentCallCommand extends Command
 {
-    private const int MAX_ATTACHMENT_SIZE = 1024 * 1024;
-
     /**
      * @param ServiceLocator $agents
-     * @param TagSearch $tagSearch
-     * @param string $projectDir
-     * @param AgentCallPlatformResultProcessor $platformResultProcessor
+     * @param UserInputProcessor $userInputProcessor
+     * @param PlatformResultProcessor $platformResultProcessor
      */
     public function __construct(
         #[AutowireLocator('ai.agent', 'name')] private readonly ServiceLocator $agents,
-        private readonly TagSearch                                             $tagSearch,
-        #[Autowire(param: 'kernel.project_dir')] private readonly string       $projectDir,
-        private readonly AgentCallPlatformResultProcessor                      $platformResultProcessor
+        private readonly UserInputProcessor                                    $userInputProcessor,
+        private readonly PlatformResultProcessor                               $platformResultProcessor
     )
     {
         parent::__construct();
@@ -118,12 +129,12 @@ final class AgentCallCommand extends Command
 
                 If no agent is specified, you'll be prompted to select one interactively.
 
-                The chat session is interactive. Type your messages and press Enter to send.
-                Type 'exit' or 'quit' to end the conversation.
+                The chat session is interactive. Type your message and press <comment>Ctrl+D</comment> to send.
+                Type <comment>/exit</comment>, <comment>/quit</comment>, or <comment>/bye</comment> to end the conversation.
 
-                Files may be 'attached' to a message by typing '@' followed by a relative or
-                absolute path to the file; the path string is terminated at the first non-escaped
-                whitespace encountered.
+                Files may be attached to a message by typing <comment>@</comment> followed by a path to the file
+                (relative to the project's root directory). The path string is terminated at the
+                first non-escaped whitespace encountered.
 
                 Results are streamed by default. For non-streaming results, use the --no-stream
                 option.
@@ -154,11 +165,8 @@ final class AgentCallCommand extends Command
         );
         $question->setErrorMessage('Agent %s is invalid.');
 
-        $helper = $this->getHelperSet()?->get('question');
-        if (!$helper instanceof QuestionHelper) {
-            throw new RuntimeException('QuestionHelper is not available.');
-        }
-
+        /** @var QuestionHelper $helper */
+        $helper = $this->getHelper('question');
         $selectedAgent = $helper->ask($input, $output, $question);
         $input->setArgument('agent', $selectedAgent);
     }
@@ -167,7 +175,6 @@ final class AgentCallCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws AgentExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -175,28 +182,37 @@ final class AgentCallCommand extends Command
         $agent = $this->resolveAgentInput($input);
 
         $io->title(sprintf('Chat with %s Agent', $agent->getName()));
-        $io->info('Type your message and press Enter. Type "exit" or "quit" to end the conversation.');
+        $io->info('Type your message and press "Ctrl+D". Type "/exit", "/quit", or "/bye" to end the conversation.');
         $io->newLine();
 
         $messages = new MessageBag();
         $systemPromptDisplayed = false;
 
         while (true) {
-            $rawInput = $io->ask('You');
+            $userInput = $this->userInputProcessor->process(
+                $io->askQuestion((new Question('You'))->setMultiline(true)),
+                $io
+            );
 
-            if (!is_string($rawInput) || u($rawInput)->trim()->isEmpty()) {
+            switch (get_class($userInput)) {
+                case ExitUserInput::class:
+                    break 2;
+                case ChatUserInput::class:
+                    $messages = $messages->merge($userInput->messages);
+                    break;
+                case ErrorUserInput::class:
+                    $io->error($userInput->message); // fall-through
+                case NoopUserInput::class:
+                default:
+                    continue 2;
+            }
+
+            try {
+                $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
+            } catch (AgentExceptionInterface $e) {
+                $io->error(sprintf('Agent call failed: %s', $e->getMessage()));
                 continue;
             }
-
-            $chatInput = u($rawInput);
-
-            if (in_array($chatInput->lower()->toString(), ['exit', 'quit'], true)) {
-                break;
-            }
-
-            $messages = $messages->merge($this->processChatInput($io, $chatInput));
-
-            $result = $agent->call($messages, ['stream' => !$input->getOption('no-stream')]);
 
             if (!$systemPromptDisplayed && null !== ($systemMessage = $messages->getSystemMessage())) {
                 $io->section('System Prompt');
@@ -250,67 +266,5 @@ final class AgentCallCommand extends Command
         }
 
         return $this->agents->get($agentName);
-    }
-
-    /**
-     * @param SymfonyStyle $io
-     * @param UnicodeString $chatInput
-     * @return MessageBag
-     */
-    private function processChatInput(SymfonyStyle $io, UnicodeString $chatInput): MessageBag
-    {
-        $messages = new MessageBag();
-        $attachmentTable = [];
-        $tagSearchResults = $this->tagSearch->search($chatInput->toString(), '@');
-        foreach ($tagSearchResults as $tagSearchResult) {
-            // Canonicalized
-            $path = Path::makeAbsolute($tagSearchResult->subject, $this->projectDir);
-            $row = [$tagSearchResult->tag, $tagSearchResult->subject, $path];
-
-            if (!str_starts_with($path, $this->projectDir . DIRECTORY_SEPARATOR)) {
-                $row[] = '❌ (Access Denied)';
-            } else if (!is_readable($path) || !is_file($path)) {
-                $row[] = '❌ (Not Readable File)';
-            } else if (filesize($path) > self::MAX_ATTACHMENT_SIZE) {
-                $row[] = '❌ (Too Large)';
-            } else {
-                $mimeType = (new MimeTypes())->guessMimeType($path);
-
-                if (str_starts_with($mimeType, 'image/')) {
-                    $messages->add(Message::ofUser(Image::fromFile($path)));
-                    $row[] = '❓ (Pending)';
-                } else if (str_starts_with($mimeType, 'audio/')) {
-                    $messages->add(Message::ofUser(Audio::fromFile($path)));
-                    $row[] = '❓ (Pending)';
-                } else if (str_starts_with($mimeType, 'text/')) {
-                    $contents = file_get_contents($path);
-                    $messages->add(
-                        Message::ofUser(<<<MD
-                        # $path
-                        ```
-                        $contents
-                        ```
-                        MD)
-                    );
-                    $row[] = '✅';
-                } else {
-                    $row[] = '❌ (Unsupported MIME Type)';
-                }
-            }
-
-            $attachmentTable[] = $row;
-            $chatInput = $chatInput->replace($tagSearchResult->tag, '`' . $path . '`');
-        }
-
-        $io->writeln('<fg=cyan>' . $chatInput . '</>');
-        $io->newLine();
-
-        if (!empty($attachmentTable)) {
-            $io->table(['Tag', 'Subject', 'Path', 'Attached'], $attachmentTable);
-        }
-
-        $messages->add(Message::ofUser($chatInput));
-
-        return $messages;
     }
 }

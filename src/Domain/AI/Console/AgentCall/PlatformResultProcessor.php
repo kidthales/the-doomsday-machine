@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\AI\Console;
+namespace App\Domain\AI\Console\AgentCall;
 
-use App\Domain\Shared\AI\PlatformResultProcessor;
+use App\Domain\Shared\AI\PlatformResultProcessor as InnerPlatformResultProcessor;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Result\ResultInterface;
@@ -33,7 +33,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class AgentCallPlatformResultProcessor
+final class PlatformResultProcessor
 {
     /**
      * @var bool
@@ -56,9 +56,9 @@ final class AgentCallPlatformResultProcessor
     private MessageBag|null $messages = null;
 
     /**
-     * @param PlatformResultProcessor $platformResultProcessor
+     * @param InnerPlatformResultProcessor $platformResultProcessor
      */
-    public function __construct(private readonly PlatformResultProcessor $platformResultProcessor)
+    public function __construct(private readonly InnerPlatformResultProcessor $platformResultProcessor)
     {
     }
 
