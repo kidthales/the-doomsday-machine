@@ -7,6 +7,8 @@ doctrine:
                 use_savepoints: true
             jabronibetz_footy_stats:
                 url: '%env(resolve:JABRONIBETZ_FOOTY_STATS_DATABASE_URL)%'
+            jabronibetz:
+                url: '%env(resolve:JABRONIBETZ_DATABASE_URL)%'
         default_connection: default
 
     orm:
@@ -31,6 +33,20 @@ doctrine:
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
                         alias: App
+            jabronibetz:
+                connection: jabronibetz
+                report_fields_where_declared: true
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                mappings:
+                    Jabronibetz:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Domain/Jabronibetz/Entity'
+                        prefix: 'App\Domain\Jabronibetz\Entity'
+                        alias: Jabronibetz
 
 when@test:
     doctrine:
