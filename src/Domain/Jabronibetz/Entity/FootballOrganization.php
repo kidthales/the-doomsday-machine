@@ -23,6 +23,7 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -44,12 +45,16 @@ final class FootballOrganization
      * @var string|null
      */
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\Length(min: 1, max: 255)]
     private ?string $name = null;
 
     /**
      * @var string|null
      */
     #[ORM\Column(length: 32)]
+    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\Length(min: 1, max: 32)]
     private ?string $acronym = null;
 
     /**
