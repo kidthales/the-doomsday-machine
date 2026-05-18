@@ -21,19 +21,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Entity;
 
-use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: FootballOrganizationRepository::class)]
-#[ORM\Table(name: 'football_organization')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME', fields: ['name'])]
-final class FootballOrganization
+#[ORM\Entity(repositoryClass: FootballCompetitionRepository::class)]
+#[ORM\Table(name: 'football_competition')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_COMPETITION_NAME', fields: ['name'])]
+final class FootballCompetition
 {
     /**
      * @var int|null
@@ -60,18 +58,11 @@ final class FootballOrganization
     private ?string $shortName = null;
 
     /**
-     * @var Collection
+     * @var FootballOrganization|null
      */
-    #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'organization')]
-    private Collection $competitions;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        $this->competitions = new ArrayCollection();
-    }
+    #[ORM\ManyToOne(targetEntity: FootballOrganization::class, inversedBy: 'football_competition')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    private ?FootballOrganization $organization = null;
 
     /**
      * @return int|null
@@ -93,7 +84,7 @@ final class FootballOrganization
      * @param string $name
      * @return $this
      */
-    public function setName(string $name): static
+    public function setName(string $name): self
     {
         $this->name = $name;
         return $this;
@@ -111,17 +102,27 @@ final class FootballOrganization
      * @param string $shortName
      * @return $this
      */
-    public function setShortName(string $shortName): static
+    public function setShortName(string $shortName): self
     {
         $this->shortName = $shortName;
         return $this;
     }
 
     /**
-     * @return Collection<int, FootballCompetition>
+     * @return FootballOrganization|null
      */
-    public function getCompetitions(): Collection
+    public function getOrganization(): ?FootballOrganization
     {
-        return $this->competitions;
+        return $this->organization;
+    }
+
+    /**
+     * @param FootballOrganization $organization
+     * @return $this
+     */
+    public function setOrganization(FootballOrganization $organization): self
+    {
+        $this->organization = $organization;
+        return $this;
     }
 }
