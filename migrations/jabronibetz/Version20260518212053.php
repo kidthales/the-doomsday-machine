@@ -28,7 +28,8 @@ final class Version20260518212053 extends AbstractMigration
               short_name VARCHAR(32) NOT NULL,
               CONSTRAINT FK_6DCE6C5D32C8A3DE FOREIGN KEY (organization_id) REFERENCES football_organization (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
             )
-        SQL);
+        SQL
+        );
         $this->addSql('CREATE INDEX IDX_6DCE6C5D32C8A3DE ON football_competition (organization_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER_FOOTBALL_COMPETITION_NAME ON football_competition (name)');
         $this->addSql(<<<'SQL'
@@ -39,7 +40,8 @@ final class Version20260518212053 extends AbstractMigration
               short_name
             FROM
               football_organization
-        SQL);
+        SQL
+        );
         $this->addSql('DROP TABLE football_organization');
         $this->addSql(<<<'SQL'
             CREATE TABLE football_organization (
@@ -47,7 +49,8 @@ final class Version20260518212053 extends AbstractMigration
               name VARCHAR(255) NOT NULL,
               short_name VARCHAR(32) NOT NULL
             )
-        SQL);
+        SQL
+        );
         $this->addSql(<<<'SQL'
             INSERT INTO football_organization (id, name, short_name)
             SELECT
@@ -56,7 +59,8 @@ final class Version20260518212053 extends AbstractMigration
               short_name
             FROM
               __temp__football_organization
-        SQL);
+        SQL
+        );
         $this->addSql('DROP TABLE __temp__football_organization');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME ON football_organization (name)');
     }
@@ -72,7 +76,8 @@ final class Version20260518212053 extends AbstractMigration
               short_name
             FROM
               football_organization
-        SQL);
+        SQL
+        );
         $this->addSql('DROP TABLE football_organization');
         $this->addSql(<<<'SQL'
             CREATE TABLE football_organization (
@@ -80,7 +85,8 @@ final class Version20260518212053 extends AbstractMigration
               name VARCHAR(255) NOT NULL,
               short_name VARCHAR(32) NOT NULL
             )
-        SQL);
+        SQL
+        );
         $this->addSql(<<<'SQL'
             INSERT INTO football_organization (id, name, short_name)
             SELECT
@@ -89,7 +95,8 @@ final class Version20260518212053 extends AbstractMigration
               short_name
             FROM
               __temp__football_organization
-        SQL);
+        SQL
+        );
         $this->addSql('DROP TABLE __temp__football_organization');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER_NAME ON football_organization (name)');
     }
