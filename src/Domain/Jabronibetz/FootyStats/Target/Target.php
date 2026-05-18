@@ -21,12 +21,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Target;
 
+use Deprecated;
 use Stringable;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 class Target implements Stringable
 {
     /**

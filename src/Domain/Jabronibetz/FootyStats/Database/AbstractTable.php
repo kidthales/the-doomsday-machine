@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Query\QueryBuilder;
 use function Symfony\Component\String\s;
@@ -29,6 +30,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 abstract class AbstractTable extends AbstractTableOrView
 {
     public static function getDropSql(Target $target): string

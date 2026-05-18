@@ -15,6 +15,8 @@ SYMFONY  := $(PHP) bin/console
 OLLAMA   := $(OLLAMA_CONT) ollama
 
 # Misc
+JABRONIBETZ_MIGRATION_CONFIG_PATH := config/doctrine_migrations/jabronibetz.yaml
+
 .DEFAULT_GOAL = help
 .PHONY        : help \
                 build print up start down logs bash \
@@ -78,6 +80,39 @@ sf: ## List all Symfony commands or pass the parameter "c=" to run a given comma
 
 cc: c=c:c ## Clear the cache
 cc: sf
+
+## —— Doctrine 🛢️  ——————————————————————————————————————————————————————————————
+app-migrations-list: ## Display a list of all available app migrations and their status
+app-migrations-list: c=doctrine\:migrations\:list
+app-migrations-list: sf
+
+app-migrations-status: ## View the status of a set of app migrations
+app-migrations-status: c=doctrine\:migrations\:status
+app-migrations-status: sf
+
+app-migrations-diff: ## Generate a migration by comparing the current app database to the app mapping information
+app-migrations-diff: c=doctrine\:migrations\:diff --formatted
+app-migrations-diff: sf
+
+app-migrations-migrate: ## Execute an app migration to the latest available version
+app-migrations-migrate: c=doctrine\:migrations\:migrate
+app-migrations-migrate: sf
+
+jabronibetz-migrations-list: ## Display a list of all available jabronibetz migrations and their status
+jabronibetz-migrations-list: c=doctrine\:migrations\:list --configuration=$(JABRONIBETZ_MIGRATION_CONFIG_PATH)
+jabronibetz-migrations-list: sf
+
+jabronibetz-migrations-status: ## View the status of a set of jabronibetz migrations
+jabronibetz-migrations-status: c=doctrine\:migrations\:status --configuration=$(JABRONIBETZ_MIGRATION_CONFIG_PATH)
+jabronibetz-migrations-status: sf
+
+jabronibetz-migrations-diff: ## Generate a migration by comparing the current jabronibetz database to the jabronibetz mapping information
+jabronibetz-migrations-diff: c=doctrine\:migrations\:diff --formatted --configuration=$(JABRONIBETZ_MIGRATION_CONFIG_PATH)
+jabronibetz-migrations-diff: sf
+
+jabronibetz-migrations-migrate: ## Execute an jabronibetz migration to the latest available version
+jabronibetz-migrations-migrate: c=doctrine\:migrations\:migrate --configuration=$(JABRONIBETZ_MIGRATION_CONFIG_PATH)
+jabronibetz-migrations-migrate: sf
 
 ## —— Troubleshooting 🔎  ———————————————————————————————————————————————————————
 own: ## On Linux host, set current user as owner of the project files that were created by the docker container

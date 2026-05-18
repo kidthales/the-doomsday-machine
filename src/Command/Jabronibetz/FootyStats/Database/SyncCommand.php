@@ -23,6 +23,7 @@ namespace App\Command\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
+use Deprecated;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -39,6 +40,7 @@ use Throwable;
     name: 'app:jabronibetz:footy-stats:database:sync',
     description: 'Sync current Footy Stats seasons'
 )]
+#[Deprecated]
 final class SyncCommand extends Command
 {
     use ScraperAwareTrait;

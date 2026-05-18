@@ -23,6 +23,7 @@ namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Domain\Shared\Filesystem\FileDepot;
+use Deprecated;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DomCrawler\Crawler;
@@ -36,6 +37,7 @@ use function Symfony\Component\String\s;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class Scraper
 {
     private static function makePath(string $nation, string $competition, string $season, string $context): string

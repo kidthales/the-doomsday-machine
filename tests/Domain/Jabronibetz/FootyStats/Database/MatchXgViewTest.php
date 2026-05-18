@@ -10,6 +10,7 @@ use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\AwayTeamStandingViewS
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\HomeTeamStandingViewSetUpTearDownTrait;
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\TeamStrengthViewSetUpTearDownTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,6 +19,7 @@ use Throwable;
 
 #[CoversClass(MatchXgView::class)]
 #[UsesClass(Target::class)]
+#[Deprecated]
 final class MatchXgViewTest extends AbstractDatabaseTestCase
 {
     use MatchTableSetUpTearDownTrait,

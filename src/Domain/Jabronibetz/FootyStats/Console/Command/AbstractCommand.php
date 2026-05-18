@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Style\DataStyle;
+use Deprecated;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 abstract class AbstractCommand extends Command
 {
     public const int SUCCESS = Command::SUCCESS;

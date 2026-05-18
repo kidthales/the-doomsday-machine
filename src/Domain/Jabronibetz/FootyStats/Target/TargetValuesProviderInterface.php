@@ -21,9 +21,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Target;
 
+use Deprecated;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 interface TargetValuesProviderInterface
 {
     public function getNations(): array;

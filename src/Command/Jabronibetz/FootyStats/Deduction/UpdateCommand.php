@@ -23,6 +23,7 @@ namespace App\Command\Jabronibetz\FootyStats\Deduction;
 
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -40,6 +41,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
     name: 'app:jabronibetz:footy-stats:deduction:update',
     description: 'Update point deductions for a given team',
 )]
+#[Deprecated]
 final class UpdateCommand extends Command
 {
     use DeductionTableAwareTrait;

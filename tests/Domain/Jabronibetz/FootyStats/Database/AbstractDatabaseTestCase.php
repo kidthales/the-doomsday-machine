@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Domain\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+#[Deprecated]
 abstract class AbstractDatabaseTestCase extends KernelTestCase
 {
     protected ?Connection $connection = null;

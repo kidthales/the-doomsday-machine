@@ -123,7 +123,7 @@ final class AgentCallCommand extends Command
                 The <info>%command.name%</info> command allows you to chat with different agents.
 
                 Usage:
-                  <info>%command.full_name% [<agent_name>] [--no-stream]</info>
+                  <info>%command.full_name% <agent> [--no-stream]</info>
 
                 Examples:
                   <info>%command.full_name% wikipedia</info>

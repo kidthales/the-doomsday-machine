@@ -24,6 +24,7 @@ namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface;
+use Deprecated;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,6 +38,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 abstract class AbstractTargetCommand extends Command
 {
     public const int SUCCESS = Command::SUCCESS;

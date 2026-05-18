@@ -21,11 +21,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Calculator;
 
+use Deprecated;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 trait TeamStandingsCalculatorAwareTrait
 {
     protected TeamStandingsCalculator $teamStandingsCalculator;

@@ -40,6 +40,7 @@ use App\Domain\Jabronibetz\FootyStats\Database\TeamStrengthViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Scraper\ScraperAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Domain\Jabronibetz\FootyStats\Target\TargetValuesProviderInterface;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -59,6 +60,7 @@ use Throwable;
     name: 'app:jabronibetz:footy-stats:database:diff',
     description: 'Insert or update Footy Stats table data'
 )]
+#[Deprecated]
 final class DiffCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,

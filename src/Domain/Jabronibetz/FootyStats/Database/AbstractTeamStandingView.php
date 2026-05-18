@@ -22,12 +22,14 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use LogicException;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 abstract class AbstractTeamStandingView extends AbstractView
 {
     protected const ?string CREATE_SQL_TEMPLATE = null;

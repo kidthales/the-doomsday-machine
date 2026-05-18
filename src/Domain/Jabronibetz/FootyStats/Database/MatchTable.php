@@ -22,11 +22,13 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\FootyStats\Database;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use function Symfony\Component\String\s;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class MatchTable extends AbstractTable
 {
     public const string BASE_NAME = 'match';

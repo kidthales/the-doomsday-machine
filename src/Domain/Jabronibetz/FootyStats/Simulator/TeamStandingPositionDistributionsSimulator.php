@@ -26,11 +26,13 @@ use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class TeamStandingPositionDistributionsSimulator
 {
     use DeductionTableAwareTrait, OrdinalNumberFormatterAwareTrait, TeamStandingsCalculatorAwareTrait, TeamStandingViewAwareTrait;
