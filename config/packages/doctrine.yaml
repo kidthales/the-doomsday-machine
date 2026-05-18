@@ -7,8 +7,12 @@ doctrine:
                 use_savepoints: true
             jabronibetz_footy_stats:
                 url: '%env(resolve:JABRONIBETZ_FOOTY_STATS_DATABASE_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
             jabronibetz:
                 url: '%env(resolve:JABRONIBETZ_DATABASE_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
         default_connection: default
 
     orm:
