@@ -74,9 +74,9 @@ final class UpdateCommand extends Command
                 description: 'The name of the football organization'
             )
             ->addOption(
-                name: 'acronym',
+                name: 'short-name',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The acronym for the name of the football organization'
+                description: 'The short name of the football organization'
             )
             ->setHelp(
                 <<<'HELP'
@@ -84,10 +84,10 @@ final class UpdateCommand extends Command
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--acronym <acronym>]</info>
+                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>]</info>
 
                 Examples:
-                  <info>%command.full_name% 1 --acronym THIEFA</info>
+                  <info>%command.full_name% 1 --short-name THIEFA</info>
 
                 If no id is specified, you'll be prompted interactively.
                 HELP
@@ -128,7 +128,7 @@ final class UpdateCommand extends Command
             }
 
             $org->setName($input->getOption('name') ?? $org->getName());
-            $org->setAcronym($input->getOption('acronym') ?? $org->getAcronym());
+            $org->setShortName($input->getOption('short-name') ?? $org->getShortName());
 
             $errors = $this->validator->validate($org);
 
@@ -141,7 +141,7 @@ final class UpdateCommand extends Command
                 $io->definitionList(
                     ['id' => $org->getId()],
                     ['name' => $org->getName()],
-                    ['acronym' => $org->getAcronym()]
+                    ['short_name' => $org->getShortName()]
                 );
 
                 if (!$io->confirm('Update football organization?')) {

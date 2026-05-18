@@ -113,7 +113,7 @@ final class ReadCommand extends Command
             $io->definitionList(
                 ['id' => $org->getId()],
                 ['name' => $org->getName()],
-                ['acronym' => $org->getAcronym()]
+                ['short_name' => $org->getShortName()]
             );
         } catch (Throwable $e) {
             $io->error($e->getMessage());

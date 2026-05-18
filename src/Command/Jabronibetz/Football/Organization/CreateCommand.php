@@ -68,9 +68,9 @@ final class CreateCommand extends Command
                 description: 'The name of the football organization'
             )
             ->addArgument(
-                name: 'acronym',
+                name: 'short-name',
                 mode: InputArgument::REQUIRED,
-                description: 'The acronym for the name of the football organization'
+                description: 'The short name of the football organization'
             )
             ->setHelp(
                 <<<'HELP'
@@ -78,12 +78,12 @@ final class CreateCommand extends Command
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <acronym></info>
+                  <info>%command.full_name% <name> <short-name></info>
 
                 Examples:
-                  <info>%command.full_name% "Fédération Internationale de Football Association" FIFA</info>
+                  <info>%command.full_name% "International Federation of Association Football" FIFA</info>
 
-                If no name or acronym is specified, you'll be prompted interactively.
+                If no name or short name is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -102,8 +102,8 @@ final class CreateCommand extends Command
             $input->setArgument('name', $helper->ask($input, $output, new Question('Football organization name: ')));
         }
 
-        if ($input->getArgument('acronym') === null) {
-            $input->setArgument('acronym', $helper->ask($input, $output, new Question('Football organization acronym: ')));
+        if ($input->getArgument('short-name') === null) {
+            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football organization short name: ')));
         }
     }
 
@@ -120,7 +120,7 @@ final class CreateCommand extends Command
         try {
             $org = (new FootballOrganization())
                 ->setName(trim($input->getArgument('name')))
-                ->setAcronym(trim($input->getArgument('acronym')));
+                ->setShortName(trim($input->getArgument('short-name')));
 
             $errors = $this->validator->validate($org);
 
@@ -132,7 +132,7 @@ final class CreateCommand extends Command
             if ($input->isInteractive()) {
                 $io->definitionList(
                     ['name' => $org->getName()],
-                    ['acronym' => $org->getAcronym()]
+                    ['short_name' => $org->getShortName()]
                 );
 
                 if (!$io->confirm('Create football organization?')) {
@@ -147,7 +147,7 @@ final class CreateCommand extends Command
                 sprintf(
                     'Football organization %s (%s) has been created with id %d.',
                     $org->getName(),
-                    $org->getAcronym(),
+                    $org->getShortName(),
                     $org->getId()
                 )
             );

@@ -115,7 +115,7 @@ final class DeleteCommand extends Command
                 $io->definitionList(
                     ['id' => $org->getId()],
                     ['name' => $org->getName()],
-                    ['acronym' => $org->getAcronym()]
+                    ['short_name' => $org->getShortName()]
                 );
 
                 if (!$io->confirm('Delete football organization?')) {
@@ -132,7 +132,7 @@ final class DeleteCommand extends Command
                 sprintf(
                     'Football organization %s (%s) with id %d has been deleted.',
                     $org->getName(),
-                    $org->getAcronym(),
+                    $org->getShortName(),
                     $id
                 )
             );

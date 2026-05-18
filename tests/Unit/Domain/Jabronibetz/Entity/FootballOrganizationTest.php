@@ -34,11 +34,11 @@ final class FootballOrganizationTest extends TestCase
     }
 
     #[Test]
-    public function it_has_getter_and_setter_for_acronym(): void
+    public function it_has_getter_and_setter_for_short_name(): void
     {
         $org = new FootballOrganization();
-        $this->assertNull($org->getAcronym());
-        $this->assertSame($org, $org->setAcronym('TA'));
-        $this->assertSame('TA', $org->getAcronym());
+        $this->assertNull($org->getShortName());
+        $this->assertSame($org, $org->setShortName('TA'));
+        $this->assertSame('TA', $org->getShortName());
     }
 }

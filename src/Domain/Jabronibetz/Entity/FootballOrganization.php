@@ -52,10 +52,10 @@ final class FootballOrganization
     /**
      * @var string|null
      */
-    #[ORM\Column(length: 32)]
+    #[ORM\Column(name: 'short_name', length: 32)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 32)]
-    private ?string $acronym = null;
+    private ?string $shortName = null;
 
     /**
      * @return int|null
@@ -87,18 +87,18 @@ final class FootballOrganization
     /**
      * @return string|null
      */
-    public function getAcronym(): ?string
+    public function getShortName(): ?string
     {
-        return $this->acronym;
+        return $this->shortName;
     }
 
     /**
-     * @param string $acronym
+     * @param string $shortName
      * @return $this
      */
-    public function setAcronym(string $acronym): static
+    public function setShortName(string $shortName): static
     {
-        $this->acronym = $acronym;
+        $this->shortName = $shortName;
 
         return $this;
     }
