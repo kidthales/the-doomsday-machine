@@ -21,11 +21,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Calculator;
 
+use Deprecated;
 use Random\Randomizer;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final readonly class TeamStandingsCalculator
 {
     private Randomizer $randomizer;

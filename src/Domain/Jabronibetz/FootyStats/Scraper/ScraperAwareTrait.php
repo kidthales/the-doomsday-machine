@@ -21,11 +21,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
+use Deprecated;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 trait ScraperAwareTrait
 {
     protected Scraper $footyStatsScraper;

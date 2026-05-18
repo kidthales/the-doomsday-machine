@@ -29,6 +29,7 @@ use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyTeamStandingsTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\AwayTeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\HomeTeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use RuntimeException;
@@ -44,6 +45,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:jabronibetz:footy-stats:team-standing:list',
     description: 'List team standings',
 )]
+#[Deprecated]
 final class ListCommand extends Command
 {
     use AwayTeamStandingViewAwareTrait,

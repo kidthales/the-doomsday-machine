@@ -32,6 +32,7 @@ use App\Domain\Jabronibetz\FootyStats\Database\TeamStandingViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Simulator\MatchesSimulator;
 use App\Domain\Jabronibetz\FootyStats\Simulator\TeamStandingPositionDistributionsSimulator;
 use App\Domain\Shared\Formatter\OrdinalNumberFormatterAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use LogicException;
@@ -49,6 +50,7 @@ use Symfony\Contracts\Service\Attribute\Required;
     name: 'app:jabronibetz:footy-stats:team-standing:predict',
     description: 'Predict team standings',
 )]
+#[Deprecated]
 final class PredictCommand extends Command
 {
     use DataOptionsTrait,

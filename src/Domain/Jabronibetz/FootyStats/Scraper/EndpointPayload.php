@@ -21,11 +21,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Scraper;
 
+use Deprecated;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final readonly class EndpointPayload
 {
     /**

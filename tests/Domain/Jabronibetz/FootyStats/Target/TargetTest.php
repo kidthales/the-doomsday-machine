@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Domain\Jabronibetz\FootyStats\Target;
 
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Target::class)]
+#[Deprecated]
 final class TargetTest extends TestCase
 {
     public static function provide_test_toString(): array

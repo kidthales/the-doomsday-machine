@@ -24,12 +24,14 @@ namespace App\Domain\Jabronibetz\FootyStats\Simulator;
 use App\Domain\Jabronibetz\FootyStats\Calculator\MatchChancesCalculatorAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\MatchTableAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use Random\Randomizer;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class MatchesSimulator
 {
     use MatchChancesCalculatorAwareTrait, MatchTableAwareTrait;

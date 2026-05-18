@@ -26,6 +26,7 @@ use App\Domain\Jabronibetz\FootyStats\Console\Command\DataOptionsTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\DisplayTableDataTrait;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\MatchTableAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use JsonException;
 use RuntimeException;
@@ -41,6 +42,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:jabronibetz:footy-stats:match:list',
     description: 'List matches',
 )]
+#[Deprecated]
 final class ListCommand extends Command
 {
     use DataOptionsTrait, DisplayTableDataTrait, MatchTableAwareTrait, PrettyOptionTrait;

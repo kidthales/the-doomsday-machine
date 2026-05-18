@@ -21,9 +21,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Database;
 
+use Deprecated;
+
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class AwayTeamStandingView extends AbstractTeamStandingView
 {
     public const string BASE_NAME = 'away_team_standing';

@@ -21,12 +21,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Console\Style;
 
+use Deprecated;
 use JsonException;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 class DataStyle extends SymfonyStyle
 {
     /**

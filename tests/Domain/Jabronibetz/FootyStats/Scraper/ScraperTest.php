@@ -7,6 +7,7 @@ namespace App\Tests\Domain\Jabronibetz\FootyStats\Scraper;
 use App\Domain\Jabronibetz\FootyStats\Scraper\EndpointPayload;
 use App\Domain\Jabronibetz\FootyStats\Scraper\Scraper;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -23,6 +24,7 @@ use Throwable;
 
 #[CoversClass(Scraper::class)]
 #[UsesClass(Target::class)]
+#[Deprecated]
 final class ScraperTest extends KernelTestCase
 {
     public function tearDown(): void

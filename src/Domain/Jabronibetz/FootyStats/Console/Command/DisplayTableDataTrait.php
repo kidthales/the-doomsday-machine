@@ -21,11 +21,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
+use Deprecated;
 use JsonException;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 trait DisplayTableDataTrait
 {
     /**

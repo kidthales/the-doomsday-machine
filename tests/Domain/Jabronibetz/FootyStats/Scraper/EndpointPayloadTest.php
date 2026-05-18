@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Domain\Jabronibetz\FootyStats\Scraper;
 
 use App\Domain\Jabronibetz\FootyStats\Scraper\EndpointPayload;
+use Deprecated;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
 #[CoversClass(EndpointPayload::class)]
+#[Deprecated]
 final class EndpointPayloadTest extends TestCase
 {
     public static function provide_test_fromNode(): array

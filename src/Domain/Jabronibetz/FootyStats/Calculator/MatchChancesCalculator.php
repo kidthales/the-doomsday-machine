@@ -23,11 +23,13 @@ namespace App\Domain\Jabronibetz\FootyStats\Calculator;
 
 use App\Domain\Jabronibetz\FootyStats\Database\MatchXgViewAwareTrait;
 use App\Domain\Jabronibetz\FootyStats\Target\Target;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 final class MatchChancesCalculator
 {
     use MatchXgViewAwareTrait;

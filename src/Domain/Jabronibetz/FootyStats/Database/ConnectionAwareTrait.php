@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Database;
 
+use Deprecated;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Service\Attribute\Required;
@@ -28,6 +29,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 trait ConnectionAwareTrait
 {
     protected Connection $footyStatsConnection;

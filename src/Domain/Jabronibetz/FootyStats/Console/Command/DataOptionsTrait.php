@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\FootyStats\Console\Command;
 
+use Deprecated;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,6 +29,7 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
+#[Deprecated]
 trait DataOptionsTrait
 {
     protected function configureCommandDataOptions(): self

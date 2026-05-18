@@ -9,6 +9,7 @@ use App\Domain\Jabronibetz\FootyStats\Target\Target;
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\MatchTableSetUpTearDownTrait;
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\TeamStandingViewSetUpTearDownTrait;
 use App\Tests\Domain\Jabronibetz\FootyStats\Database\Trait\TeamStrengthViewSetUpTearDownTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -16,6 +17,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(TeamStrengthView::class)]
 #[UsesClass(Target::class)]
+#[Deprecated]
 final class TeamStrengthViewTest extends AbstractDatabaseTestCase
 {
     use MatchTableSetUpTearDownTrait, TeamStandingViewSetUpTearDownTrait, TeamStrengthViewSetUpTearDownTrait;

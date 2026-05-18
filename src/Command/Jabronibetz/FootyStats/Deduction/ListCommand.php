@@ -24,6 +24,7 @@ namespace App\Command\Jabronibetz\FootyStats\Deduction;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\AbstractTargetCommand as Command;
 use App\Domain\Jabronibetz\FootyStats\Console\Command\PrettyOptionTrait;
 use App\Domain\Jabronibetz\FootyStats\Database\DeductionTableAwareTrait;
+use Deprecated;
 use Doctrine\DBAL\Exception as DBALException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,6 +37,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:jabronibetz:footy-stats:deduction:list',
     description: 'List point deductions',
 )]
+#[Deprecated]
 final class ListCommand extends Command
 {
     use DeductionTableAwareTrait, PrettyOptionTrait;
