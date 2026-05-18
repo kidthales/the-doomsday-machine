@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Football\Organization;
 
+use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -79,11 +80,11 @@ final class ListCommand extends Command
 
         try {
             $rows = array_map(
-                fn($org) => [$org->getId(), $org->getName(), $org->getAcronym()],
+                fn(FootballOrganization $org) => [$org->getId(), $org->getName(), $org->getShortName()],
                 $this->footballOrganizationRepository->findAll()
             );
 
-            $io->table(['id', 'name', 'acronym'], $rows);
+            $io->table(['id', 'name', 'short_name'], $rows);
             $io->info(sprintf('Found %d rows.', count($rows)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
