@@ -32,7 +32,7 @@ final class CreateCommandTest extends KernelTestCase
             [
                 'command' => 'app:jabronibetz:football:organization:create',
                 'name' => 'Test Association',
-                'acronym' => 'TA',
+                'short-name' => 'TA',
             ],
             [
                 'interactive' => false

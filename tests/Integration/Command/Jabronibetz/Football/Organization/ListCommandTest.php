@@ -36,6 +36,6 @@ final class ListCommandTest extends KernelTestCase
 
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertMatchesRegularExpression('/\s+id\s+name\s+acronym\s+/', $appTester->getDisplay());
+        $this->assertMatchesRegularExpression('/\s+id\s+name\s+short_name\s+/', $appTester->getDisplay());
     }
 }
