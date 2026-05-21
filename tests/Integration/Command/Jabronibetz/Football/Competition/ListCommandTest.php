@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 final class ListCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_table_header(): void
+    public function it_displays_a_count_of_football_competitions_found(): void
     {
         $this->bootKernel();
 
@@ -36,6 +36,6 @@ final class ListCommandTest extends KernelTestCase
 
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertMatchesRegularExpression('/\s+id\s+organization_id\s+name\s+short_name\s+/', $appTester->getDisplay());
+        $this->assertStringContainsString('Found 0 football competitions.', $appTester->getDisplay());
     }
 }
