@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\Jabronibetz\Football\Competition;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -29,31 +29,26 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:update',
-    description: 'Update a football organization',
-    aliases: ['app:jbetz:footy:org:update'],
+    name: 'app:jabronibetz:football:competition:delete',
+    description: 'Delete a football competition',
+    aliases: ['app:jbetz:footy:cmp:delete'],
 )]
-final class UpdateCommand extends Command
+final class DeleteCommand extends Command
 {
     /**
-     * @param ValidatorInterface $validator
      * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly ValidatorInterface      $validator,
         private readonly EntityManagerInterface  $jabronibetzEntityManager,
         private readonly DefinitionListConverter $definitionListConverter
     )
@@ -70,28 +65,18 @@ final class UpdateCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the football organization'
-            )
-            ->addOption(
-                name: 'name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The name of the football organization'
-            )
-            ->addOption(
-                name: 'short-name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The short name of the football organization'
+                description: 'The id of the football competition'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to update a <comment>football organization</comment>
+                The <info>%command.name%</info> command allows you to delete a <comment>football competition</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>]</info>
+                  <info>%command.full_name% <id></info>
 
                 Examples:
-                  <info>%command.full_name% 1 --short-name THIEFA</info>
+                  <info>%command.full_name% 1</info>
 
                 If no id is specified, you'll be prompted interactively.
                 HELP
@@ -109,7 +94,7 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Football organization id: ')));
+            $input->setArgument('id', $helper->ask($input, $output, new Question('Football competition id: ')));
         }
     }
 
@@ -121,43 +106,40 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Update');
+        $io->title('Jabronibetz: Football Competition Delete');
 
         try {
-            $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('id'));
+            $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
 
-            if ($org === null) {
-                $io->error('Football organization not found');
-                return Command::FAILURE;
-            }
-
-            $org->setName($input->getOption('name') ?? $org->getName());
-            $org->setShortName($input->getOption('short-name') ?? $org->getShortName());
-
-            $errors = $this->validator->validate($org);
-
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
+            if ($cmp === null) {
+                $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $cmp,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_UPDATE
+                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DELETE
                     ]
                 ));
 
-                if (!$io->confirm('Update football organization?')) {
+                if (!$io->confirm('Delete football competition?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($org);
+            $id = $cmp->getId();
+
+            $this->jabronibetzEntityManager->remove($cmp);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf('Football organization with id %d has been updated.', $org->getId()));
+            $io->success(sprintf(
+                'Football competition %s (%s) with id %d has been deleted.',
+                $cmp->getName(),
+                $cmp->getShortName(),
+                $id
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

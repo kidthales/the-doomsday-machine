@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Football\Organization;
 
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -31,6 +32,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
@@ -49,8 +51,9 @@ final class CreateCommand extends Command
      * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
      */
     public function __construct(
-        private readonly ValidatorInterface     $validator,
-        private readonly EntityManagerInterface $jabronibetzEntityManager,
+        private readonly ValidatorInterface      $validator,
+        private readonly EntityManagerInterface  $jabronibetzEntityManager,
+        private readonly DefinitionListConverter $definitionListConverter
     )
     {
         parent::__construct();
@@ -130,10 +133,12 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
-                $io->definitionList(
-                    ['name' => $org->getName()],
-                    ['short_name' => $org->getShortName()]
-                );
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $org,
+                    [
+                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_CREATE
+                    ]
+                ));
 
                 if (!$io->confirm('Create football organization?')) {
                     return Command::SUCCESS;
@@ -143,14 +148,12 @@ final class CreateCommand extends Command
             $this->jabronibetzEntityManager->persist($org);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(
-                sprintf(
-                    'Football organization %s (%s) has been created with id %d.',
-                    $org->getName(),
-                    $org->getShortName(),
-                    $org->getId()
-                )
-            );
+            $io->success(sprintf(
+                'Football organization %s (%s) has been created with id %d.',
+                $org->getName(),
+                $org->getShortName(),
+                $org->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Football\Organization;
 
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -31,6 +32,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
 
 /**
@@ -46,7 +48,10 @@ final class DeleteCommand extends Command
     /**
      * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
      */
-    public function __construct(private readonly EntityManagerInterface $jabronibetzEntityManager)
+    public function __construct(
+        private readonly EntityManagerInterface  $jabronibetzEntityManager,
+        private readonly DefinitionListConverter $definitionListConverter,
+    )
     {
         parent::__construct();
     }
@@ -112,10 +117,15 @@ final class DeleteCommand extends Command
             }
 
             if ($input->isInteractive()) {
-                $io->definitionList(
-                    ['id' => $org->getId()],
-                    ['name' => $org->getName()],
-                    ['short_name' => $org->getShortName()]
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $org,
+                    [
+                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DELETE
+                    ]
+                ));
+
+                $io->warning(
+                    sprintf('%d football competitions will also be deleted!', $org->getCompetitions()->count())
                 );
 
                 if (!$io->confirm('Delete football organization?')) {
@@ -128,14 +138,12 @@ final class DeleteCommand extends Command
             $this->jabronibetzEntityManager->remove($org);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(
-                sprintf(
-                    'Football organization %s (%s) with id %d has been deleted.',
-                    $org->getName(),
-                    $org->getShortName(),
-                    $id
-                )
-            );
+            $io->success(sprintf(
+                'Football organization %s (%s) with id %d has been deleted.',
+                $org->getName(),
+                $org->getShortName(),
+                $id
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

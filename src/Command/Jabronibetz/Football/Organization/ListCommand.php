@@ -23,11 +23,13 @@ namespace App\Command\Jabronibetz\Football\Organization;
 
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
+use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
 
 /**
@@ -42,8 +44,12 @@ final class ListCommand extends Command
 {
     /**
      * @param FootballOrganizationRepository $footballOrganizationRepository
+     * @param DefinitionListConverter $definitionListConverter
      */
-    public function __construct(private readonly FootballOrganizationRepository $footballOrganizationRepository)
+    public function __construct(
+        private readonly FootballOrganizationRepository $footballOrganizationRepository,
+        private readonly DefinitionListConverter        $definitionListConverter
+    )
     {
         parent::__construct();
     }
@@ -79,13 +85,18 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: Football Organization List');
 
         try {
-            $rows = array_map(
-                fn(FootballOrganization $org) => [$org->getId(), $org->getName(), $org->getShortName()],
-                $this->footballOrganizationRepository->findAll()
-            );
+            $orgs = $this->footballOrganizationRepository->findAll();
 
-            $io->table(['id', 'name', 'short_name'], $rows);
-            $io->info(sprintf('Found %d rows.', count($rows)));
+            foreach ($orgs as $org) {
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $org,
+                    [
+                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_LIST
+                    ]
+                ));
+            }
+
+            $io->info(sprintf('Found %d football organizations.', count($orgs)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

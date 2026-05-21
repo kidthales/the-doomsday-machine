@@ -22,13 +22,14 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Football\Competition;
 
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
+use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
 
 /**
@@ -43,8 +44,12 @@ final class ListCommand extends Command
 {
     /**
      * @param FootballCompetitionRepository $footballCompetitionRepository
+     * @param DefinitionListConverter $definitionListConverter
      */
-    public function __construct(private readonly FootballCompetitionRepository $footballCompetitionRepository)
+    public function __construct(
+        private readonly FootballCompetitionRepository $footballCompetitionRepository,
+        private readonly DefinitionListConverter       $definitionListConverter
+    )
     {
         parent::__construct();
     }
@@ -80,13 +85,18 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: Football Competition List');
 
         try {
-            $rows = array_map(
-                fn(FootballCompetition $org) => [$org->getId(), $org->getName(), $org->getShortName(), $org->getOrganization()?->getId()],
-                $this->footballCompetitionRepository->findAll()
-            );
+            $cmps = $this->footballCompetitionRepository->findAll();
 
-            $io->table(['id', 'name', 'short_name', 'organization_id'], $rows);
-            $io->info(sprintf('Found %d rows.', count($rows)));
+            foreach ($cmps as $cmp) {
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $cmp,
+                    [
+                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_LIST
+                    ]
+                ));
+            }
+
+            $io->info(sprintf('Found %d football competitions.', count($cmps)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

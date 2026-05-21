@@ -25,6 +25,7 @@ use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -33,14 +34,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: FootballOrganizationRepository::class)]
 #[ORM\Table(name: 'football_organization')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME', fields: ['name'])]
-final class FootballOrganization
+class FootballOrganization
 {
+    public const string GROUP_CREATE = 'football_organization_create';
+    public const string GROUP_LIST = 'football_organization_list';
+    public const string GROUP_READ = 'football_organization_read';
+    public const string GROUP_UPDATE = 'football_organization_update';
+    public const string GROUP_DELETE = 'football_organization_delete';
+
     /**
      * @var int|null
      */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups([
+        self::GROUP_LIST,
+        self::GROUP_READ,
+        self::GROUP_UPDATE,
+        self::GROUP_DELETE,
+        FootballCompetition::GROUP_CREATE,
+        FootballCompetition::GROUP_READ,
+        FootballCompetition::GROUP_UPDATE,
+        FootballCompetition::GROUP_DELETE
+    ])]
     private ?int $id = null;
 
     /**
@@ -49,6 +66,17 @@ final class FootballOrganization
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 255)]
+    #[Groups([
+        self::GROUP_CREATE,
+        self::GROUP_LIST,
+        self::GROUP_READ,
+        self::GROUP_UPDATE,
+        self::GROUP_DELETE,
+        FootballCompetition::GROUP_CREATE,
+        FootballCompetition::GROUP_READ,
+        FootballCompetition::GROUP_UPDATE,
+        FootballCompetition::GROUP_DELETE
+    ])]
     private ?string $name = null;
 
     /**
@@ -57,12 +85,27 @@ final class FootballOrganization
     #[ORM\Column(name: 'short_name', length: 32)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 32)]
+    #[Groups([
+        self::GROUP_CREATE,
+        self::GROUP_LIST,
+        self::GROUP_READ,
+        self::GROUP_UPDATE,
+        self::GROUP_DELETE,
+        FootballCompetition::GROUP_CREATE,
+        FootballCompetition::GROUP_READ,
+        FootballCompetition::GROUP_UPDATE,
+        FootballCompetition::GROUP_DELETE
+    ])]
     private ?string $shortName = null;
 
     /**
      * @var Collection
      */
     #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'organization')]
+    #[Groups([
+        self::GROUP_READ,
+        self::GROUP_DELETE
+    ])]
     private Collection $competitions;
 
     /**
