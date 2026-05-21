@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\Jabronibetz\Football\Organization;
+namespace App\Tests\Integration\Command\Jabronibetz\Football\Competition;
 
-use App\Command\Jabronibetz\Football\Organization\ListCommand;
+use App\Command\Jabronibetz\Football\Competition\ListCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 final class ListCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_count_of_football_organizations_found(): void
+    public function it_displays_a_count_of_football_competitions_found(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,12 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:organization:list',
+                'command' => 'app:jabronibetz:football:competition:list',
             ]
         );
 
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertStringContainsString('Found 0 football organizations.', $appTester->getDisplay());
+        $this->assertStringContainsString('Found 0 football competitions.', $appTester->getDisplay());
     }
 }

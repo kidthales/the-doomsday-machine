@@ -21,9 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Entity;
 
-use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,16 +29,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: FootballOrganizationRepository::class)]
-#[ORM\Table(name: 'football_organization')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME', fields: ['name'])]
-class FootballOrganization
+#[ORM\Entity(repositoryClass: FootballCompetitionRepository::class)]
+#[ORM\Table(name: 'football_competition')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_COMPETITION_NAME', fields: ['name'])]
+class FootballCompetition
 {
-    public const string GROUP_CREATE = 'football_organization_create';
-    public const string GROUP_LIST = 'football_organization_list';
-    public const string GROUP_READ = 'football_organization_read';
-    public const string GROUP_UPDATE = 'football_organization_update';
-    public const string GROUP_DELETE = 'football_organization_delete';
+    public const string GROUP_CREATE = 'football_competition_create';
+    public const string GROUP_LIST = 'football_competition_list';
+    public const string GROUP_READ = 'football_competition_read';
+    public const string GROUP_UPDATE = 'football_competition_update';
+    public const string GROUP_DELETE = 'football_competition_delete';
 
     /**
      * @var int|null
@@ -53,10 +51,8 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?int $id = null;
 
@@ -72,10 +68,8 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?string $name = null;
 
@@ -91,30 +85,24 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?string $shortName = null;
 
     /**
-     * @var Collection
+     * @var FootballOrganization|null
      */
-    #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'managingOrganization')]
+    #[ORM\ManyToOne(targetEntity: FootballOrganization::class, inversedBy: 'football_competition')]
+    #[ORM\JoinColumn(name: 'managing_organization_id', onDelete: 'CASCADE')]
+    #[Assert\NotNull]
     #[Groups([
+        self::GROUP_CREATE,
         self::GROUP_READ,
+        self::GROUP_UPDATE,
         self::GROUP_DELETE
     ])]
-    private Collection $managedCompetitions;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        $this->managedCompetitions = new ArrayCollection();
-    }
+    private ?FootballOrganization $managingOrganization = null;
 
     /**
      * @return int|null
@@ -161,10 +149,20 @@ class FootballOrganization
     }
 
     /**
-     * @return Collection<int, FootballCompetition>
+     * @return FootballOrganization|null
      */
-    public function getManagedCompetitions(): Collection
+    public function getManagingOrganization(): ?FootballOrganization
     {
-        return $this->managedCompetitions;
+        return $this->managingOrganization;
+    }
+
+    /**
+     * @param FootballOrganization $organization
+     * @return $this
+     */
+    public function setManagingOrganization(FootballOrganization $organization): static
+    {
+        $this->managingOrganization = $organization;
+        return $this;
     }
 }

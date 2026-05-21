@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\Jabronibetz\Football\Organization;
+namespace App\Tests\Integration\Command\Jabronibetz\Football\Competition;
 
-use App\Command\Jabronibetz\Football\Organization\ListCommand;
+use App\Command\Jabronibetz\Football\Competition\UpdateCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('jabronibetz')]
-#[CoversClass(ListCommand::class)]
-final class ListCommandTest extends KernelTestCase
+#[CoversClass(UpdateCommand::class)]
+final class UpdateCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_count_of_football_organizations_found(): void
+    public function it_fails_when_football_competition_id_not_found(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,12 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:organization:list',
+                'command' => 'app:jabronibetz:football:competition:update',
+                'id' => -1,
             ]
         );
 
-        $appTester->assertCommandIsSuccessful();
-
-        $this->assertStringContainsString('Found 0 football organizations.', $appTester->getDisplay());
+        $this->assertSame(1, $appTester->getStatusCode());
+        $this->assertStringContainsString('Football competition not found', $appTester->getDisplay());
     }
 }

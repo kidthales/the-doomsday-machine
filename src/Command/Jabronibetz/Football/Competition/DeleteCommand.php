@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\Jabronibetz\Football\Competition;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -39,9 +39,9 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:delete',
-    description: 'Delete a football organization',
-    aliases: ['app:jbetz:footy:org:delete'],
+    name: 'app:jabronibetz:football:competition:delete',
+    description: 'Delete a football competition',
+    aliases: ['app:jbetz:footy:cmp:delete'],
 )]
 final class DeleteCommand extends Command
 {
@@ -50,7 +50,7 @@ final class DeleteCommand extends Command
      */
     public function __construct(
         private readonly EntityManagerInterface  $jabronibetzEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter,
+        private readonly DefinitionListConverter $definitionListConverter
     )
     {
         parent::__construct();
@@ -65,11 +65,11 @@ final class DeleteCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the football organization'
+                description: 'The id of the football competition'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to delete a <comment>football organization</comment>
+                The <info>%command.name%</info> command allows you to delete a <comment>football competition</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
@@ -94,7 +94,7 @@ final class DeleteCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Football organization id: ')));
+            $input->setArgument('id', $helper->ask($input, $output, new Question('Football competition id: ')));
         }
     }
 
@@ -106,42 +106,38 @@ final class DeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Delete');
+        $io->title('Jabronibetz: Football Competition Delete');
 
         try {
-            $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('id'));
+            $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
 
-            if ($org === null) {
-                $io->error('Football organization not found');
+            if ($cmp === null) {
+                $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $cmp,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DELETE
+                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DELETE
                     ]
                 ));
 
-                $io->warning(
-                    sprintf('%d football competitions will also be deleted!', $org->getManagedCompetitions()->count())
-                );
-
-                if (!$io->confirm('Delete football organization?')) {
+                if (!$io->confirm('Delete football competition?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $id = $org->getId();
+            $id = $cmp->getId();
 
-            $this->jabronibetzEntityManager->remove($org);
+            $this->jabronibetzEntityManager->remove($cmp);
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football organization %s (%s) with id %d has been deleted.',
-                $org->getName(),
-                $org->getShortName(),
+                'Football competition %s (%s) with id %d has been deleted.',
+                $cmp->getName(),
+                $cmp->getShortName(),
                 $id
             ));
         } catch (Throwable $e) {
