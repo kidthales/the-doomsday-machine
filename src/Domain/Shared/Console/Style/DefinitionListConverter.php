@@ -25,12 +25,15 @@ use ArrayObject;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+/**
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
+ */
 final readonly class DefinitionListConverter
 {
     /**
      * @param NormalizerInterface $normalizer
      */
-    public function __construct(protected NormalizerInterface $normalizer)
+    public function __construct(private NormalizerInterface $normalizer)
     {
     }
 
