@@ -151,10 +151,10 @@ final class UpdateCommand extends Command
                     return Command::FAILURE;
                 }
             } else {
-                $org = $cmp->getOrganization();
+                $org = $cmp->getManagingOrganization();
             }
 
-            $cmp->setOrganization($org);
+            $cmp->setManagingOrganization($org);
 
             $errors = $this->validator->validate($cmp);
 

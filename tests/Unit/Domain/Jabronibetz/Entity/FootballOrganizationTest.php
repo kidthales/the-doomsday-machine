@@ -43,9 +43,9 @@ final class FootballOrganizationTest extends TestCase
     }
 
     #[Test]
-    public function it_has_getter_for_competitions(): void
+    public function it_has_getter_for_managed_competitions(): void
     {
         $org = new FootballOrganization();
-        $this->assertEmpty($org->getCompetitions());
+        $this->assertEmpty($org->getManagedCompetitions());
     }
 }

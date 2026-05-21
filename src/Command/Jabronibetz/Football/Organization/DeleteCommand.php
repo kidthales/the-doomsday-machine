@@ -125,7 +125,7 @@ final class DeleteCommand extends Command
                 ));
 
                 $io->warning(
-                    sprintf('%d football competitions will also be deleted!', $org->getCompetitions()->count())
+                    sprintf('%d football competitions will also be deleted!', $org->getManagedCompetitions()->count())
                 );
 
                 if (!$io->confirm('Delete football organization?')) {

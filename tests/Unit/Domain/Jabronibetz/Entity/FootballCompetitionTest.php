@@ -44,12 +44,12 @@ final class FootballCompetitionTest extends TestCase
     }
 
     #[Test]
-    public function it_has_getter_and_setter_for_organization(): void
+    public function it_has_getter_and_setter_for_managing_organization(): void
     {
         $cmp = new FootballCompetition();
-        $this->assertNull($cmp->getOrganization());
+        $this->assertNull($cmp->getManagingOrganization());
         $org = new FootballOrganization();
-        $this->assertSame($cmp, $cmp->setOrganization($org));
-        $this->assertSame($org, $cmp->getOrganization());
+        $this->assertSame($cmp, $cmp->setManagingOrganization($org));
+        $this->assertSame($org, $cmp->getManagingOrganization());
     }
 }

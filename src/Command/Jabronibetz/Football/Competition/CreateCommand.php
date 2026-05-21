@@ -160,7 +160,7 @@ final class CreateCommand extends Command
             $cmp = (new FootballCompetition())
                 ->setName(trim($input->getArgument('name')))
                 ->setShortName(trim($input->getArgument('short-name')))
-                ->setOrganization($org);
+                ->setManagingOrganization($org);
 
             $errors = $this->validator->validate($cmp);
 

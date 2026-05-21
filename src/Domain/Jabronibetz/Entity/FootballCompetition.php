@@ -94,7 +94,7 @@ class FootballCompetition
      * @var FootballOrganization|null
      */
     #[ORM\ManyToOne(targetEntity: FootballOrganization::class, inversedBy: 'football_competition')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'managing_organization_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([
         self::GROUP_CREATE,
@@ -102,7 +102,7 @@ class FootballCompetition
         self::GROUP_UPDATE,
         self::GROUP_DELETE
     ])]
-    private ?FootballOrganization $organization = null;
+    private ?FootballOrganization $managingOrganization = null;
 
     /**
      * @return int|null
@@ -151,18 +151,18 @@ class FootballCompetition
     /**
      * @return FootballOrganization|null
      */
-    public function getOrganization(): ?FootballOrganization
+    public function getManagingOrganization(): ?FootballOrganization
     {
-        return $this->organization;
+        return $this->managingOrganization;
     }
 
     /**
      * @param FootballOrganization $organization
      * @return $this
      */
-    public function setOrganization(FootballOrganization $organization): static
+    public function setManagingOrganization(FootballOrganization $organization): static
     {
-        $this->organization = $organization;
+        $this->managingOrganization = $organization;
         return $this;
     }
 }

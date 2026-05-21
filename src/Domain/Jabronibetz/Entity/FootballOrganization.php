@@ -101,19 +101,19 @@ class FootballOrganization
     /**
      * @var Collection
      */
-    #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'organization')]
+    #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'managingOrganization')]
     #[Groups([
         self::GROUP_READ,
         self::GROUP_DELETE
     ])]
-    private Collection $competitions;
+    private Collection $managedCompetitions;
 
     /**
      *
      */
     public function __construct()
     {
-        $this->competitions = new ArrayCollection();
+        $this->managedCompetitions = new ArrayCollection();
     }
 
     /**
@@ -163,8 +163,8 @@ class FootballOrganization
     /**
      * @return Collection<int, FootballCompetition>
      */
-    public function getCompetitions(): Collection
+    public function getManagedCompetitions(): Collection
     {
-        return $this->competitions;
+        return $this->managedCompetitions;
     }
 }
