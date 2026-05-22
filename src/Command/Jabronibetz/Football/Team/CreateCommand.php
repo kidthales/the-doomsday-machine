@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Competition;
+namespace App\Command\Jabronibetz\Football\Team;
 
-use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,8 +30,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -42,11 +42,11 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:update',
-    description: 'Update a football competition',
-    aliases: ['app:jbetz:footy:cmp:update'],
+    name: 'app:jabronibetz:football:team:create',
+    description: 'Create a football team',
+    aliases: ['app:jbetz:footy:team:create'],
 )]
-final class UpdateCommand extends Command
+final class CreateCommand extends Command
 {
     /**
      * @param ValidatorInterface $validator
@@ -69,37 +69,32 @@ final class UpdateCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'id',
-                mode: InputArgument::REQUIRED,
-                description: 'The id of the football competition'
-            )
-            ->addOption(
                 name: 'name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The name of the football competition'
+                mode: InputArgument::REQUIRED,
+                description: 'The name of the football team'
             )
-            ->addOption(
+            ->addArgument(
                 name: 'short-name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The short name of the football competition'
+                mode: InputArgument::REQUIRED,
+                description: 'The short name of the football team'
             )
-            ->addOption(
+            ->addArgument(
                 name: 'organization-id',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The id of the football organization managing this competition'
+                mode: InputArgument::REQUIRED,
+                description: 'The id of the football organization that manages the team'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to update a <comment>football competition</comment>
+                The <info>%command.name%</info> command allows you to create a <comment>football team</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>]</info>
+                  <info>%command.full_name% <name> <short-name> <organization-id></info>
 
                 Examples:
-                  <info>%command.full_name% 1 --short-name THIEFA</info>
+                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1</info>
 
-                If no id is specified, you'll be prompted interactively.
+                If no name, short name, or organization id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -114,8 +109,33 @@ final class UpdateCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Football competition id: ')));
+        if ($input->getArgument('name') === null) {
+            $input->setArgument('name', $helper->ask($input, $output, new Question('Football team name: ')));
+        }
+
+        if ($input->getArgument('short-name') === null) {
+            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football team short name: ')));
+        }
+
+        if ($input->getArgument('organization-id') === null) {
+            $choices = array_reduce(
+                $this->jabronibetzEntityManager->getRepository(FootballOrganization::class)->findAll(),
+                function (array $orgs, FootballOrganization $org) {
+                    $orgs[(string)$org->getId()] = sprintf('%s (%s)', $org->getName(), $org->getShortName());
+                    return $orgs;
+                },
+                []
+            );
+
+            if (!empty($choices)) {
+                $choiceValue = $helper->ask(
+                    $input,
+                    $output,
+                    new ChoiceQuestion('Football team managed by: ', $choices)
+                );
+
+                $input->setArgument('organization-id', array_search($choiceValue, $choices, true));
+            }
         }
     }
 
@@ -127,35 +147,22 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Competition Update');
+        $io->title('Jabronibetz: Football Team Create');
 
         try {
-            $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
+            $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
 
-            if ($cmp === null) {
-                $io->error('Football competition not found');
+            if ($org === null) {
+                $io->error('Football organization not found');
                 return Command::FAILURE;
             }
 
-            $cmp->setName($input->getOption('name') ?? $cmp->getName());
-            $cmp->setShortName($input->getOption('short-name') ?? $cmp->getShortName());
+            $team = (new FootballTeam())
+                ->setName(trim($input->getArgument('name')))
+                ->setShortName(trim($input->getArgument('short-name')))
+                ->setManagingOrganization($org);
 
-            $orgId = $input->getOption('organization-id');
-
-            if ($orgId !== null) {
-                $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $orgId);
-
-                if ($org === null) {
-                    $io->error('Football organization not found');
-                    return Command::FAILURE;
-                }
-            } else {
-                $org = $cmp->getManagingOrganization();
-            }
-
-            $cmp->setManagingOrganization($org);
-
-            $errors = $this->validator->validate($cmp);
+            $errors = $this->validator->validate($team);
 
             if (count($errors) > 0) {
                 $io->error((string)$errors);
@@ -164,21 +171,26 @@ final class UpdateCommand extends Command
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $cmp,
+                    $team,
                     [
-                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_UPDATE
+                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_CREATE
                     ]
                 ));
 
-                if (!$io->confirm('Update football competition?')) {
+                if (!$io->confirm('Create football team?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($cmp);
+            $this->jabronibetzEntityManager->persist($team);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf('Football competition with id %d has been updated.', $cmp->getId()));
+            $io->success(sprintf(
+                'Football team %s (%s) has been created with id %d.',
+                $team->getName(),
+                $team->getShortName(),
+                $team->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
