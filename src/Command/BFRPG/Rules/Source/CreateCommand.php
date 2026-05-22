@@ -32,6 +32,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
@@ -123,7 +124,12 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
-                $io->definitionList(...$this->definitionListConverter->convert($source));
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $source,
+                    [
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_CREATE
+                    ]
+                ));
 
                 if (!$io->confirm('Create rules source?')) {
                     return Command::SUCCESS;
