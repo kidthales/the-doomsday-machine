@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\Jabronibetz\Football\Competition;
+namespace App\Tests\Integration\Command\Jabronibetz\Football\Team;
 
-use App\Command\Jabronibetz\Football\Competition\CreateCommand;
+use App\Command\Jabronibetz\Football\Team\DeleteCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('jabronibetz')]
-#[CoversClass(CreateCommand::class)]
-final class CreateCommandTest extends KernelTestCase
+#[CoversClass(DeleteCommand::class)]
+final class DeleteCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_fails_creating_football_competition_if_managing_organization_does_not_exist(): void
+    public function it_fails_when_football_team_id_not_found(): void
     {
         $this->bootKernel();
 
@@ -30,14 +30,12 @@ final class CreateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:create',
-                'name' => 'Test Competition',
-                'short-name' => 'TC',
-                'organization-id' => -1
+                'command' => 'app:jabronibetz:football:team:delete',
+                'id' => -1,
             ]
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Football organization not found', $appTester->getDisplay());
+        $this->assertStringContainsString('Football team not found', $appTester->getDisplay());
     }
 }
