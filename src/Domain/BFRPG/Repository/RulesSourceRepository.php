@@ -28,7 +28,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<RulesSource>
  */
-final class RuleSourceRepository extends ServiceEntityRepository
+final class RulesSourceRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

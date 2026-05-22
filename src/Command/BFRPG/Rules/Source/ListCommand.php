@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Rules\Source;
 
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RuleSourceRepository;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -43,11 +43,11 @@ use Throwable;
 final class ListCommand extends Command
 {
     /**
-     * @param RuleSourceRepository $ruleSourceRepository
+     * @param RulesSourceRepository $ruleSourceRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RuleSourceRepository    $ruleSourceRepository,
+        private readonly RulesSourceRepository   $ruleSourceRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {

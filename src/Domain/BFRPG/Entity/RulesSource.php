@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Entity;
 
-use App\Domain\BFRPG\Repository\RuleSourceRepository;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,7 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: RuleSourceRepository::class)]
+#[ORM\Entity(repositoryClass: RulesSourceRepository::class)]
 #[ORM\Table(name: 'rules_source')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_SOURCE_NAME', fields: ['name'])]
 class RulesSource
