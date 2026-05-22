@@ -21,9 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Entity;
 
-use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,16 +29,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: FootballOrganizationRepository::class)]
-#[ORM\Table(name: 'football_organization')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME', fields: ['name'])]
-class FootballOrganization
+#[ORM\Entity(repositoryClass: FootballTeamRepository::class)]
+#[ORM\Table(name: 'football_team')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME', fields: ['name'])]
+class FootballTeam
 {
-    public const string GROUP_CREATE = 'football_organization_create';
-    public const string GROUP_LIST = 'football_organization_list';
-    public const string GROUP_READ = 'football_organization_read';
-    public const string GROUP_UPDATE = 'football_organization_update';
-    public const string GROUP_DELETE = 'football_organization_delete';
+    public const string GROUP_CREATE = 'football_team_create';
+    public const string GROUP_LIST = 'football_team_list';
+    public const string GROUP_READ = 'football_team_read';
+    public const string GROUP_UPDATE = 'football_team_update';
+    public const string GROUP_DELETE = 'football_team_delete';
 
     /**
      * @var int|null
@@ -53,14 +51,8 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE,
-        FootballTeam::GROUP_CREATE,
-        FootballTeam::GROUP_READ,
-        FootballTeam::GROUP_UPDATE,
-        FootballTeam::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?int $id = null;
 
@@ -76,14 +68,8 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE,
-        FootballTeam::GROUP_CREATE,
-        FootballTeam::GROUP_READ,
-        FootballTeam::GROUP_UPDATE,
-        FootballTeam::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?string $name = null;
 
@@ -99,45 +85,24 @@ class FootballOrganization
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
-        FootballCompetition::GROUP_CREATE,
-        FootballCompetition::GROUP_READ,
-        FootballCompetition::GROUP_UPDATE,
-        FootballCompetition::GROUP_DELETE,
-        FootballTeam::GROUP_CREATE,
-        FootballTeam::GROUP_READ,
-        FootballTeam::GROUP_UPDATE,
-        FootballTeam::GROUP_DELETE
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
     ])]
     private ?string $shortName = null;
 
     /**
-     * @var Collection
+     * @var FootballOrganization|null
      */
-    #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'managingOrganization')]
+    #[ORM\ManyToOne(targetEntity: FootballOrganization::class, inversedBy: 'football_team')]
+    #[ORM\JoinColumn(name: 'managing_organization_id', onDelete: 'CASCADE')]
+    #[Assert\NotNull]
     #[Groups([
+        self::GROUP_CREATE,
         self::GROUP_READ,
+        self::GROUP_UPDATE,
         self::GROUP_DELETE
     ])]
-    private Collection $managedCompetitions;
-
-    /**
-     * @var Collection
-     */
-    #[ORM\OneToMany(targetEntity: FootballTeam::class, mappedBy: 'managingOrganization')]
-    #[Groups([
-        self::GROUP_READ,
-        self::GROUP_DELETE
-    ])]
-    private Collection $managedTeams;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        $this->managedCompetitions = new ArrayCollection();
-        $this->managedTeams = new ArrayCollection();
-    }
+    private ?FootballOrganization $managingOrganization = null;
 
     /**
      * @return int|null
@@ -184,18 +149,20 @@ class FootballOrganization
     }
 
     /**
-     * @return Collection<int, FootballCompetition>
+     * @return FootballOrganization|null
      */
-    public function getManagedCompetitions(): Collection
+    public function getManagingOrganization(): ?FootballOrganization
     {
-        return $this->managedCompetitions;
+        return $this->managingOrganization;
     }
 
     /**
-     * @return Collection<int, FootballTeam>
+     * @param FootballOrganization $organization
+     * @return $this
      */
-    public function getManagedTeams(): Collection
+    public function setManagingOrganization(FootballOrganization $organization): static
     {
-        return $this->managedTeams;
+        $this->managingOrganization = $organization;
+        return $this;
     }
 }
