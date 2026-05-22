@@ -124,9 +124,15 @@ final class DeleteCommand extends Command
                     ]
                 ));
 
-                $io->warning(
-                    sprintf('%d football competitions will also be deleted!', $org->getManagedCompetitions()->count())
-                );
+                $numCmps = $org->getManagedCompetitions()->count();
+                if ($numCmps > 0) {
+                    $io->warning(sprintf('%d football competitions will also be deleted!', $numCmps));
+                }
+
+                $numTeams = $org->getManagedTeams()->count();
+                if ($numTeams > 0) {
+                    $io->warning(sprintf('%d football teams will also be deleted!', $numTeams));
+                }
 
                 if (!$io->confirm('Delete football organization?')) {
                     return Command::SUCCESS;
