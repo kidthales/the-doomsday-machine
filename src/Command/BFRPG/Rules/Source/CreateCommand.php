@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\BFRPG\Rules\Source;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -32,7 +32,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
@@ -40,20 +39,20 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:create',
-    description: 'Create a football organization',
-    aliases: ['app:jbetz:footy:org:create'],
+    name: 'app:bfrpg:rules:source:create',
+    description: 'Create a rules source',
+    aliases: ['app:bfrpg:rules:src:create'],
 )]
 final class CreateCommand extends Command
 {
     /**
      * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
+     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
         private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
+        private readonly EntityManagerInterface  $bfrpgEntityManager,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -69,25 +68,20 @@ final class CreateCommand extends Command
             ->addArgument(
                 name: 'name',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the football organization'
-            )
-            ->addArgument(
-                name: 'short-name',
-                mode: InputArgument::REQUIRED,
-                description: 'The short name of the football organization'
+                description: 'The name of the rules source'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>football organization</comment>
-                in the <comment>Jabronibetz</comment> db.
+                The <info>%command.name%</info> command allows you to create a <comment>rules source</comment>
+                in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name></info>
+                  <info>%command.full_name% <name></info>
 
                 Examples:
-                  <info>%command.full_name% "International Federation of Association Football" FIFA</info>
+                  <info>%command.full_name% "Core Rules 4th Edition"</info>
 
-                If no name or short name is specified, you'll be prompted interactively.
+                If no name is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -103,11 +97,7 @@ final class CreateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('name') === null) {
-            $input->setArgument('name', $helper->ask($input, $output, new Question('Football organization name: ')));
-        }
-
-        if ($input->getArgument('short-name') === null) {
-            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football organization short name: ')));
+            $input->setArgument('name', $helper->ask($input, $output, new Question('Rules source name: ')));
         }
     }
 
@@ -119,14 +109,13 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Create');
+        $io->title('BFRPG: Rules Source Create');
 
         try {
-            $org = (new FootballOrganization())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')));
+            $source = (new RulesSource())
+                ->setName(trim($input->getArgument('name')));
 
-            $errors = $this->validator->validate($org);
+            $errors = $this->validator->validate($source);
 
             if (count($errors) > 0) {
                 $io->error((string)$errors);
@@ -134,26 +123,20 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
-                $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
-                    [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_CREATE
-                    ]
-                ));
+                $io->definitionList(...$this->definitionListConverter->convert($source));
 
-                if (!$io->confirm('Create football organization?')) {
+                if (!$io->confirm('Create rules source?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($org);
-            $this->jabronibetzEntityManager->flush();
+            $this->bfrpgEntityManager->persist($source);
+            $this->bfrpgEntityManager->flush();
 
             $io->success(sprintf(
-                'Football organization %s (%s) has been created with id %d.',
-                $org->getName(),
-                $org->getShortName(),
-                $org->getId()
+                'Rules source %s has been created with id %d.',
+                $source->getName(),
+                $source->getId()
             ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
