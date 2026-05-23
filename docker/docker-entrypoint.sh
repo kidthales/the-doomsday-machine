@@ -41,6 +41,10 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ] || [ 
 		php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing --configuration=config/doctrine_migrations/jabronibetz.yaml
 	fi
 
+	if [ "$(find ./migrations/bfrpg -iname '*.php' -print -quit)" ]; then
+		php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing --configuration=config/doctrine_migrations/bfrpg.yaml
+	fi
+
 	echo 'PHP app ready!'
 fi
 

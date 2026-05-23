@@ -1,0 +1,3 @@
+migrations_paths:
+    'DoctrineMigrations\BFRPG': 'migrations/bfrpg'
+em: bfrpg

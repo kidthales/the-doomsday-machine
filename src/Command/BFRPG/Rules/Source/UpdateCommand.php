@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\BFRPG\Rules\Source;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -29,6 +29,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -40,20 +41,20 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:create',
-    description: 'Create a football organization',
-    aliases: ['app:jbetz:footy:org:create'],
+    name: 'app:bfrpg:rules:source:update',
+    description: 'Update a rules source',
+    aliases: ['app:bfrpg:rules:src:update'],
 )]
-final class CreateCommand extends Command
+final class UpdateCommand extends Command
 {
     /**
      * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
+     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
         private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
+        private readonly EntityManagerInterface  $bfrpgEntityManager,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -67,27 +68,27 @@ final class CreateCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'name',
+                name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the football organization'
+                description: 'The id of the rules source'
             )
-            ->addArgument(
-                name: 'short-name',
-                mode: InputArgument::REQUIRED,
-                description: 'The short name of the football organization'
+            ->addOption(
+                name: 'name',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The name of the rules source'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>football organization</comment>
-                in the <comment>Jabronibetz</comment> db.
+                The <info>%command.name%</info> command allows you to update a <comment>rules source</comment>
+                in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name></info>
+                  <info>%command.full_name% <id> [--name <name>]</info>
 
                 Examples:
-                  <info>%command.full_name% "International Federation of Association Football" FIFA</info>
+                  <info>%command.full_name% 1 --name "Core Rules 5th Edition"</info>
 
-                If no name or short name is specified, you'll be prompted interactively.
+                If no id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -102,12 +103,8 @@ final class CreateCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('name') === null) {
-            $input->setArgument('name', $helper->ask($input, $output, new Question('Football organization name: ')));
-        }
-
-        if ($input->getArgument('short-name') === null) {
-            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football organization short name: ')));
+        if ($input->getArgument('id') === null) {
+            $input->setArgument('id', $helper->ask($input, $output, new Question('Rules source id: ')));
         }
     }
 
@@ -119,14 +116,19 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Create');
+        $io->title('BFRPG: Rules Source Update');
 
         try {
-            $org = (new FootballOrganization())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')));
+            $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));
 
-            $errors = $this->validator->validate($org);
+            if ($source === null) {
+                $io->error('Rules source not found');
+                return Command::FAILURE;
+            }
+
+            $source->setName($input->getOption('name') ?? $source->getName());
+
+            $errors = $this->validator->validate($source);
 
             if (count($errors) > 0) {
                 $io->error((string)$errors);
@@ -135,26 +137,21 @@ final class CreateCommand extends Command
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $source,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_UPDATE
                     ]
                 ));
 
-                if (!$io->confirm('Create football organization?')) {
+                if (!$io->confirm('Update rules source?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($org);
-            $this->jabronibetzEntityManager->flush();
+            $this->bfrpgEntityManager->persist($source);
+            $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf(
-                'Football organization %s (%s) has been created with id %d.',
-                $org->getName(),
-                $org->getShortName(),
-                $org->getId()
-            ));
+            $io->success(sprintf('Rules source with id %d has been updated.', $source->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

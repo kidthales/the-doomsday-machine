@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\BFRPG\Rules\Source;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -33,28 +33,24 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:create',
-    description: 'Create a football organization',
-    aliases: ['app:jbetz:footy:org:create'],
+    name: 'app:bfrpg:rules:source:delete',
+    description: 'Delete a rules source',
+    aliases: ['app:bfrpg:rules:src:delete'],
 )]
-final class CreateCommand extends Command
+final class DeleteCommand extends Command
 {
     /**
-     * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
+     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
      */
     public function __construct(
-        private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter
+        private readonly EntityManagerInterface  $bfrpgEntityManager,
+        private readonly DefinitionListConverter $definitionListConverter,
     )
     {
         parent::__construct();
@@ -67,27 +63,22 @@ final class CreateCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'name',
+                name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the football organization'
-            )
-            ->addArgument(
-                name: 'short-name',
-                mode: InputArgument::REQUIRED,
-                description: 'The short name of the football organization'
+                description: 'The id of the rules source'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>football organization</comment>
-                in the <comment>Jabronibetz</comment> db.
+                The <info>%command.name%</info> command allows you to delete a <comment>rules source</comment>
+                in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name></info>
+                  <info>%command.full_name% <id></info>
 
                 Examples:
-                  <info>%command.full_name% "International Federation of Association Football" FIFA</info>
+                  <info>%command.full_name% 1</info>
 
-                If no name or short name is specified, you'll be prompted interactively.
+                If no id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -102,12 +93,8 @@ final class CreateCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('name') === null) {
-            $input->setArgument('name', $helper->ask($input, $output, new Question('Football organization name: ')));
-        }
-
-        if ($input->getArgument('short-name') === null) {
-            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football organization short name: ')));
+        if ($input->getArgument('id') === null) {
+            $input->setArgument('id', $helper->ask($input, $output, new Question('Rules source id: ')));
         }
     }
 
@@ -119,42 +106,35 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Create');
+        $io->title('BFRPG: Rules Source Delete');
 
         try {
-            $org = (new FootballOrganization())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')));
+            $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));
 
-            $errors = $this->validator->validate($org);
-
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
+            if ($source === null) {
+                $io->error('Rules source not found');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $source,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DELETE
                     ]
                 ));
 
-                if (!$io->confirm('Create football organization?')) {
+                if (!$io->confirm('Delete rules source?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($org);
-            $this->jabronibetzEntityManager->flush();
+            $id = $source->getId();
 
-            $io->success(sprintf(
-                'Football organization %s (%s) has been created with id %d.',
-                $org->getName(),
-                $org->getShortName(),
-                $org->getId()
-            ));
+            $this->bfrpgEntityManager->remove($source);
+            $this->bfrpgEntityManager->flush();
+
+            $io->success(sprintf('Rules source %s with id %d has been deleted.', $source->getName(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
