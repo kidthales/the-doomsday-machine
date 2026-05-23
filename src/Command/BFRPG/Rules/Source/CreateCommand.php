@@ -42,7 +42,7 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:create',
     description: 'Create a rules source',
-    aliases: ['app:bfrpg:rules:src:create'],
+    aliases: ['app:bf:rls:src:create'],
 )]
 final class CreateCommand extends Command
 {

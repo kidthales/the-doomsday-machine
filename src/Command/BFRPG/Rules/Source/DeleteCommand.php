@@ -41,7 +41,7 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:delete',
     description: 'Delete a rules source',
-    aliases: ['app:bfrpg:rules:src:delete'],
+    aliases: ['app:bf:rls:src:delete'],
 )]
 final class DeleteCommand extends Command
 {

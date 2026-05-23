@@ -43,7 +43,7 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:update',
     description: 'Update a rules source',
-    aliases: ['app:bfrpg:rules:src:update'],
+    aliases: ['app:bf:rls:src:update'],
 )]
 final class UpdateCommand extends Command
 {

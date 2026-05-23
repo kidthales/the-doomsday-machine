@@ -53,6 +53,10 @@ class RulesSource
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
+        RulesItem::GROUP_CREATE,
+        RulesItem::GROUP_READ,
+        RulesItem::GROUP_UPDATE,
+        RulesItem::GROUP_DELETE
     ])]
     private ?int $id = null;
 
@@ -68,6 +72,10 @@ class RulesSource
         self::GROUP_READ,
         self::GROUP_UPDATE,
         self::GROUP_DELETE,
+        RulesItem::GROUP_CREATE,
+        RulesItem::GROUP_READ,
+        RulesItem::GROUP_UPDATE,
+        RulesItem::GROUP_DELETE
     ])]
     private ?string $name = null;
 

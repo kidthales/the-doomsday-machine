@@ -38,16 +38,16 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:list',
     description: 'List rules sources',
-    aliases: ['app:bfrpg:rules:src:list'],
+    aliases: ['app:bf:rls:src:list'],
 )]
 final class ListCommand extends Command
 {
     /**
-     * @param RulesSourceRepository $ruleSourceRepository
+     * @param RulesSourceRepository $rulesSourceRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RulesSourceRepository   $ruleSourceRepository,
+        private readonly RulesSourceRepository   $rulesSourceRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -85,7 +85,7 @@ final class ListCommand extends Command
         $io->title('BFRPG: Rules Source List');
 
         try {
-            $sources = $this->ruleSourceRepository->findAll();
+            $sources = $this->rulesSourceRepository->findAll();
 
             foreach ($sources as $source) {
                 $io->definitionList(...$this->definitionListConverter->convert(

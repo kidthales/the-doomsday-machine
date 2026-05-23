@@ -19,18 +19,15 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Source;
+namespace App\Command\BFRPG\Rules\Item;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -39,18 +36,18 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:source:read',
-    description: 'Read a rules source',
-    aliases: ['app:bf:rls:src:read'],
+    name: 'app:bfrpg:rules:item:list',
+    description: 'List rules items',
+    aliases: ['app:bf:rls:itm:list'],
 )]
-final class ReadCommand extends Command
+final class ListCommand extends Command
 {
     /**
-     * @param RulesSourceRepository $rulesSourceRepository
+     * @param RulesItemRepository $rulesItemRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RulesSourceRepository   $rulesSourceRepository,
+        private readonly RulesItemRepository     $rulesItemRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -63,40 +60,18 @@ final class ReadCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument(
-                name: 'id',
-                mode: InputArgument::REQUIRED,
-                description: 'The id of the rules source'
-            )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules source</comment>
-                in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to list
+                <comment>rules item</comment>s in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id></info>
+                  <info>%command.full_name%</info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
-
-                If no id is specified, you'll be prompted interactively.
+                  <info>%command.full_name%</info>
                 HELP
             );
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return void
-     */
-    protected function interact(InputInterface $input, OutputInterface $output): void
-    {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Rules source id: ')));
-        }
     }
 
     /**
@@ -107,22 +82,21 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Read');
+        $io->title('BFRPG: Rules Item List');
 
         try {
-            $source = $this->rulesSourceRepository->find($input->getArgument('id'));
+            $items = $this->rulesItemRepository->findAll();
 
-            if ($source === null) {
-                $io->error('Rules source not found');
-                return Command::FAILURE;
+            foreach ($items as $item) {
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $item,
+                    [
+                        AbstractNormalizer::GROUPS => RulesItem::GROUP_LIST
+                    ]
+                ));
             }
 
-            $io->definitionList(...$this->definitionListConverter->convert(
-                $source,
-                [
-                    AbstractNormalizer::GROUPS => RulesSource::GROUP_READ
-                ]
-            ));
+            $io->info(sprintf('Found %d rules items.', count($items)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
