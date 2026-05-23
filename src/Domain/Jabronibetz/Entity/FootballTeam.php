@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Entity;
 
+use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -31,7 +32,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity(repositoryClass: FootballTeamRepository::class)]
 #[ORM\Table(name: 'football_team')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME', fields: ['name'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME_GENDER', fields: ['name', 'gender'])]
 class FootballTeam
 {
     public const string GROUP_CREATE = 'football_team_create';
@@ -72,6 +73,22 @@ class FootballTeam
         FootballOrganization::GROUP_DELETE
     ])]
     private ?string $name = null;
+
+    /**
+     * @var FootballGender|null
+     */
+    #[ORM\Column(type: 'string', enumType: FootballGender::class)]
+    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Groups([
+        self::GROUP_CREATE,
+        self::GROUP_LIST,
+        self::GROUP_READ,
+        self::GROUP_UPDATE,
+        self::GROUP_DELETE,
+        FootballOrganization::GROUP_READ,
+        FootballOrganization::GROUP_DELETE
+    ])]
+    private ?FootballGender $gender = null;
 
     /**
      * @var string|null
@@ -127,6 +144,24 @@ class FootballTeam
     public function setName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return FootballGender|null
+     */
+    public function getGender(): ?FootballGender
+    {
+        return $this->gender;
+    }
+
+    /**
+     * @param FootballGender $gender
+     * @return $this
+     */
+    public function setGender(FootballGender $gender): static
+    {
+        $this->gender = $gender;
         return $this;
     }
 
