@@ -24,7 +24,8 @@ final class Version20260522040254 extends AbstractMigration
               short_name VARCHAR(32) NOT NULL,
               CONSTRAINT FK_C53936CADD9F7FF2 FOREIGN KEY (managing_organization_id) REFERENCES football_organization (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
             )
-        SQL);
+        SQL
+        );
         $this->addSql('CREATE INDEX IDX_C53936CADD9F7FF2 ON football_team (managing_organization_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME ON football_team (name)');
     }

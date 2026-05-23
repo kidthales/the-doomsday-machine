@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Command\Jabronibetz\Football\Team;
 
 use App\Command\Jabronibetz\Football\Team\CreateCommand;
+use App\Domain\Jabronibetz\Enum\FootballGender;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,7 +34,8 @@ final class CreateCommandTest extends KernelTestCase
                 'command' => 'app:jabronibetz:football:team:create',
                 'name' => 'Test Team',
                 'short-name' => 'TT',
-                'organization-id' => -1
+                'organization-id' => -1,
+                'gender' => FootballGender::Male->value
             ]
         );
 

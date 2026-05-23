@@ -23,6 +23,7 @@ namespace App\Command\Jabronibetz\Football\Team;
 
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -67,6 +68,8 @@ final class CreateCommand extends Command
      */
     protected function configure(): void
     {
+        $availableGenders = '<info>' . implode('</info>, <info>', array_column(FootballGender::cases(), 'value')) . '</info>';
+
         $this
             ->addArgument(
                 name: 'name',
@@ -83,18 +86,24 @@ final class CreateCommand extends Command
                 mode: InputArgument::REQUIRED,
                 description: 'The id of the football organization that manages the team'
             )
+            ->addArgument(
+                name: 'gender',
+                mode: InputArgument::REQUIRED,
+                description: 'The gender of the football team'
+            )
             ->setHelp(
-                <<<'HELP'
+                <<<HELP
                 The <info>%command.name%</info> command allows you to create a <comment>football team</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name> <organization-id></info>
+                  <info>%command.full_name% <name> <short-name> <organization-id> <gender></info>
 
                 Examples:
-                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1</info>
+                  <info>%command.full_name% Mexico MEX 10 male</info>
 
-                If no name, short name, or organization id is specified, you'll be prompted interactively.
+                If no name, short name, organization id, or gender is specified, you'll be prompted interactively.
+                Gender may be one of $availableGenders.
                 HELP
             );
     }
@@ -137,6 +146,17 @@ final class CreateCommand extends Command
                 $input->setArgument('organization-id', array_search($choiceValue, $choices, true));
             }
         }
+
+        if ($input->getArgument('gender') === null) {
+            $input->setArgument(
+                'gender',
+                $helper->ask(
+                    $input,
+                    $output,
+                    new ChoiceQuestion('Football team gender: ', array_column(FootballGender::cases(), 'value'))
+                )
+            );
+        }
     }
 
     /**
@@ -160,7 +180,8 @@ final class CreateCommand extends Command
             $team = (new FootballTeam())
                 ->setName(trim($input->getArgument('name')))
                 ->setShortName(trim($input->getArgument('short-name')))
-                ->setManagingOrganization($org);
+                ->setManagingOrganization($org)
+                ->setGender(FootballGender::from($input->getArgument('gender')));
 
             $errors = $this->validator->validate($team);
 

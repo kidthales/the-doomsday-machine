@@ -23,6 +23,7 @@ namespace App\Command\Jabronibetz\Football\Team;
 
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -67,6 +68,8 @@ final class UpdateCommand extends Command
      */
     protected function configure(): void
     {
+        $availableGenders = '<info>' . implode('</info>, <info>', array_column(FootballGender::cases(), 'value')) . '</info>';
+
         $this
             ->addArgument(
                 name: 'id',
@@ -88,18 +91,24 @@ final class UpdateCommand extends Command
                 mode: InputOption::VALUE_REQUIRED,
                 description: 'The id of the football organization managing this team'
             )
+            ->addOption(
+                name: 'gender',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The gender of the football team'
+            )
             ->setHelp(
-                <<<'HELP'
+                <<<HELP
                 The <info>%command.name%</info> command allows you to update a <comment>football team</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>]</info>
+                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>] [--gender <gender>]</info>
 
                 Examples:
                   <info>%command.full_name% 1 --short-name THIEFA</info>
 
                 If no id is specified, you'll be prompted interactively.
+                Gender may be one of $availableGenders.
                 HELP
             );
     }
@@ -141,7 +150,6 @@ final class UpdateCommand extends Command
             $team->setShortName($input->getOption('short-name') ?? $team->getShortName());
 
             $orgId = $input->getOption('organization-id');
-
             if ($orgId !== null) {
                 $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $orgId);
 
@@ -152,8 +160,12 @@ final class UpdateCommand extends Command
             } else {
                 $org = $team->getManagingOrganization();
             }
-
             $team->setManagingOrganization($org);
+
+            $gender = $input->getOption('gender');
+            if ($gender !== null) {
+                $team->setGender(FootballGender::from($gender));
+            }
 
             $errors = $this->validator->validate($team);
 
