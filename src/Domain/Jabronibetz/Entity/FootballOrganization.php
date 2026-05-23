@@ -111,7 +111,7 @@ class FootballOrganization
     private ?string $shortName = null;
 
     /**
-     * @var Collection
+     * @var Collection<int, FootballCompetition>
      */
     #[ORM\OneToMany(targetEntity: FootballCompetition::class, mappedBy: 'managingOrganization')]
     #[Groups([
@@ -121,7 +121,7 @@ class FootballOrganization
     private Collection $managedCompetitions;
 
     /**
-     * @var Collection
+     * @var Collection<int, FootballTeam>
      */
     #[ORM\OneToMany(targetEntity: FootballTeam::class, mappedBy: 'managingOrganization')]
     #[Groups([

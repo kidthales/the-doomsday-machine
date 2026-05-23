@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -70,6 +72,20 @@ class RulesSource
     private ?string $name = null;
 
     /**
+     * @var Collection<int, RulesItem>
+     */
+    #[ORM\OneToMany(targetEntity: RulesItem::class, mappedBy: 'source')]
+    private Collection $items;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->items = new ArrayCollection();
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
@@ -93,5 +109,13 @@ class RulesSource
     {
         $this->name = $name;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, RulesItem>
+     */
+    public function getItems(): Collection
+    {
+        return $this->items;
     }
 }
