@@ -124,6 +124,11 @@ final class DeleteCommand extends Command
                     ]
                 ));
 
+                $numItems = $source->getItems()->count();
+                if ($numItems > 0) {
+                    $io->warning(sprintf('%d rules items will also be deleted!', $numItems));
+                }
+
                 if (!$io->confirm('Delete rules source?')) {
                     return Command::SUCCESS;
                 }
