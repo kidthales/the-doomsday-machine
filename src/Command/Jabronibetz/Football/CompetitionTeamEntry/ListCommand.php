@@ -38,9 +38,9 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:team:entry:list',
+    name: 'app:jabronibetz:football:competition-team-entry:list',
     description: 'List football competition team entries',
-    aliases: ['app:jbetz:footy:cmp:team:entry:list'],
+    aliases: ['app:jbetz:footy:cmp-team-entry:list'],
 )]
 final class ListCommand extends Command
 {

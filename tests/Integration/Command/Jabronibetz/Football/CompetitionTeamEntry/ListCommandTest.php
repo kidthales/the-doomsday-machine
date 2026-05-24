@@ -30,7 +30,7 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:team:entry:list',
+                'command' => 'app:jabronibetz:football:competition-team-entry:list',
             ]
         );
 
