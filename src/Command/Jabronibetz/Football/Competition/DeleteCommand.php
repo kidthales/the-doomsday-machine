@@ -131,6 +131,11 @@ final class DeleteCommand extends Command
                     ]
                 ));
 
+                $numEntries = $cmp->getTeamEntries()->count();
+                if ($numEntries > 0) {
+                    $io->warning(sprintf('%d football competition team entries will also be deleted!', $numEntries));
+                }
+
                 if (!$io->confirm('Delete football competition?')) {
                     return Command::SUCCESS;
                 }
