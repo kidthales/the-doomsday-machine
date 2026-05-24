@@ -21,7 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Football\Organization;
 
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -120,7 +122,11 @@ final class ReadCommand extends Command
             $io->definitionList(...$this->definitionListConverter->convert(
                 $org,
                 [
-                    AbstractNormalizer::GROUPS => FootballOrganization::GROUP_READ
+                    AbstractNormalizer::GROUPS => [
+                        FootballOrganization::GROUP_DETAIL,
+                        FootballCompetition::GROUP_LIST,
+                        FootballTeam::GROUP_LIST
+                    ]
                 ]
             ));
         } catch (Throwable $e) {

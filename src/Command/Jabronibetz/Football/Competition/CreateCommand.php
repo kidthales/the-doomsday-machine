@@ -173,7 +173,7 @@ final class CreateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $cmp,
                     [
-                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
 

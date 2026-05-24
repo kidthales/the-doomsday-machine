@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Football\Team;
 
+use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
@@ -120,7 +121,7 @@ final class ReadCommand extends Command
             $io->definitionList(...$this->definitionListConverter->convert(
                 $team,
                 [
-                    AbstractNormalizer::GROUPS => FootballTeam::GROUP_READ
+                    AbstractNormalizer::GROUPS => [FootballTeam::GROUP_DETAIL, FootballOrganization::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {

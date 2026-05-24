@@ -120,7 +120,7 @@ final class DeleteCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $org,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DELETE
+                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
 

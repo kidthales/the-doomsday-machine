@@ -178,7 +178,7 @@ final class UpdateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $team,
                     [
-                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_UPDATE
+                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
                     ]
                 ));
 
