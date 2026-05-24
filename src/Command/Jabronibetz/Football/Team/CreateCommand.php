@@ -194,7 +194,7 @@ final class CreateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $team,
                     [
-                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
                     ]
                 ));
 

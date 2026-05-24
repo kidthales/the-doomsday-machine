@@ -37,4 +37,19 @@ final class FootballOrganizationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, FootballOrganization::class);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function findAllChoices(): array
+    {
+        return array_reduce(
+            $this->findAll(),
+            function (array $orgs, FootballOrganization $org) {
+                $orgs[(string)$org->getId()] = sprintf('%s (%s)', $org->getName(), $org->getShortName());
+                return $orgs;
+            },
+            []
+        );
+    }
 }

@@ -37,4 +37,19 @@ final class FootballCompetitionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, FootballCompetition::class);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function findAllChoices(): array
+    {
+        return array_reduce(
+            $this->findAll(),
+            function (array $cmps, FootballCompetition $cmp) {
+                $cmps[(string)$cmp->getId()] = sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName());
+                return $cmps;
+            },
+            []
+        );
+    }
 }

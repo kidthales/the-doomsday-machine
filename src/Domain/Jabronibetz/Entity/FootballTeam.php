@@ -35,11 +35,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME_GENDER', fields: ['name', 'gender'])]
 class FootballTeam
 {
-    public const string GROUP_CREATE = 'football_team_create';
     public const string GROUP_LIST = 'football_team_list';
-    public const string GROUP_READ = 'football_team_read';
-    public const string GROUP_UPDATE = 'football_team_update';
-    public const string GROUP_DELETE = 'football_team_delete';
+    public const string GROUP_DETAIL = 'football_team_detail';
 
     /**
      * @var int|null
@@ -47,14 +44,7 @@ class FootballTeam
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        FootballOrganization::GROUP_READ,
-        FootballOrganization::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?int $id = null;
 
     /**
@@ -63,31 +53,15 @@ class FootballTeam
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 255)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        FootballOrganization::GROUP_READ,
-        FootballOrganization::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $name = null;
 
     /**
      * @var FootballGender|null
      */
-    #[ORM\Column(type: 'string', enumType: FootballGender::class)]
+    #[ORM\Column(length: 8, enumType: FootballGender::class)]
     #[Assert\NotBlank(normalizer: 'trim')]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        FootballOrganization::GROUP_READ,
-        FootballOrganization::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?FootballGender $gender = null;
 
     /**
@@ -96,15 +70,7 @@ class FootballTeam
     #[ORM\Column(name: 'short_name', length: 32)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 32)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        FootballOrganization::GROUP_READ,
-        FootballOrganization::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $shortName = null;
 
     /**
@@ -113,12 +79,7 @@ class FootballTeam
     #[ORM\ManyToOne(targetEntity: FootballOrganization::class, inversedBy: 'football_team')]
     #[ORM\JoinColumn(name: 'managing_organization_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_DETAIL])]
     private ?FootballOrganization $managingOrganization = null;
 
     /**
