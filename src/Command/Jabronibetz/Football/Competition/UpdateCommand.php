@@ -137,8 +137,8 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
-            $cmp->setName($input->getOption('name') ?? $cmp->getName());
-            $cmp->setShortName($input->getOption('short-name') ?? $cmp->getShortName());
+            $cmp->setName(trim($input->getOption('name') ?? $cmp->getName()));
+            $cmp->setShortName(trim($input->getOption('short-name') ?? $cmp->getShortName()));
 
             $orgId = $input->getOption('organization-id');
 

@@ -131,8 +131,8 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
-            $org->setName($input->getOption('name') ?? $org->getName());
-            $org->setShortName($input->getOption('short-name') ?? $org->getShortName());
+            $org->setName(trim($input->getOption('name') ?? $org->getName()));
+            $org->setShortName(trim($input->getOption('short-name') ?? $org->getShortName()));
 
             $errors = $this->validator->validate($org);
 

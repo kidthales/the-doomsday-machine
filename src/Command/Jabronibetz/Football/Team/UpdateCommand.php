@@ -146,8 +146,8 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
-            $team->setName($input->getOption('name') ?? $team->getName());
-            $team->setShortName($input->getOption('short-name') ?? $team->getShortName());
+            $team->setName(trim($input->getOption('name') ?? $team->getName()));
+            $team->setShortName(trim($input->getOption('short-name') ?? $team->getShortName()));
 
             $orgId = $input->getOption('organization-id');
             if ($orgId !== null) {
