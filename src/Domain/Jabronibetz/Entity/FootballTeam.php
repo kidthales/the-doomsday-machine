@@ -77,7 +77,7 @@ class FootballTeam
     /**
      * @var FootballGender|null
      */
-    #[ORM\Column(type: 'string', enumType: FootballGender::class)]
+    #[ORM\Column(length: 8, enumType: FootballGender::class)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Groups([
         self::GROUP_CREATE,
