@@ -90,6 +90,14 @@ class FootballOrganization
     }
 
     /**
+     * @return string
+     */
+    public function getChoiceValue(): string
+    {
+        return sprintf('%s (%s)', $this->getName() ?? 'Unknown', $this->getShortName() ?? 'UNK');
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int

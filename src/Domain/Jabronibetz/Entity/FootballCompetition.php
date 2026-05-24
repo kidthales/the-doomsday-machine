@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -72,6 +74,29 @@ class FootballCompetition
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?FootballOrganization $managingOrganization = null;
+
+    /**
+     * @var Collection<int, FootballCompetitionTeamEntry>
+     */
+    #[ORM\OneToMany(targetEntity: FootballCompetitionTeamEntry::class, mappedBy: 'competition')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $teamEntries;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->teamEntries = new ArrayCollection();
+    }
+
+    /**
+     * @return string
+     */
+    public function getChoiceValue(): string
+    {
+        return sprintf('%s (%s)', $this->getName() ?? 'Unknown', $this->getShortName() ?? 'UNK');
+    }
 
     /**
      * @return int|null
@@ -133,5 +158,13 @@ class FootballCompetition
     {
         $this->managingOrganization = $organization;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, FootballCompetitionTeamEntry>
+     */
+    public function getTeamEntries(): Collection
+    {
+        return $this->teamEntries;
     }
 }
