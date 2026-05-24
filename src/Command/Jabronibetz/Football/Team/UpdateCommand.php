@@ -24,6 +24,7 @@ namespace App\Command\Jabronibetz\Football\Team;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Enum\FootballGender;
+use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -33,7 +34,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -124,7 +125,14 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Football team id: ')));
+            /** @var FootballTeamRepository $repo */
+            $repo = $this->jabronibetzEntityManager->getRepository(FootballTeam::class);
+            $choices = $repo->findAllChoices();
+
+            if (!empty($choices)) {
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football team id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
+            }
         }
     }
 

@@ -32,7 +32,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -97,7 +97,12 @@ final class ReadCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Football organization id: ')));
+            $choices = $this->footballOrganizationRepository->findAllChoices();
+
+            if (!empty($choices)) {
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football organization id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
+            }
         }
     }
 
