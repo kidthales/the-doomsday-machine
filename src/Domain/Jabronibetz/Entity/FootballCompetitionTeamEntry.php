@@ -70,7 +70,7 @@ class FootballCompetitionTeamEntry
     /**
      * @var string|null
      */
-    #[ORM\Column(length: 1)]
+    #[ORM\Column(name: '`group`', length: 1)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 1)]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
