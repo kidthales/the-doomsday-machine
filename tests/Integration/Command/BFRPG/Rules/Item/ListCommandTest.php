@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Rules\Item;
 
-use App\Command\BFRPG\Rules\Source\ListCommand;
+use App\Command\BFRPG\Rules\Item\ListCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 final class ListCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_count_of_rules_sources_found(): void
+    public function it_displays_a_count_of_rules_items_found(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,12 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:list',
+                'command' => 'app:bfrpg:rules:item:list',
             ]
         );
 
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertStringContainsString('Found 0 rules sources.', $appTester->getDisplay());
+        $this->assertStringContainsString('Found 0 rules items.', $appTester->getDisplay());
     }
 }

@@ -19,10 +19,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Source;
+namespace App\Command\BFRPG\Rules\Item;
 
+use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -37,14 +38,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
+use UnexpectedValueException;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:source:update',
-    description: 'Update a rules source',
-    aliases: ['app:bf:rls:src:update'],
+    name: 'app:bfrpg:rules:item:update',
+    description: 'Update a rules item',
+    aliases: ['app:bf:rls:itm:update'],
 )]
 final class UpdateCommand extends Command
 {
@@ -71,23 +73,44 @@ final class UpdateCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules source'
+                description: 'The id of the rules item'
             )
             ->addOption(
                 name: 'name',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The name of the rules source'
+                description: 'The name of the rules item'
+            )
+            ->addOption(
+                name: 'price',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The price of the rules item'
+            )
+            ->addOption(
+                name: 'weight',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The weight of the rules item'
+            )
+            ->addOption(
+                name: 'source-id',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The rules source id for the item'
+            )
+            ->addOption(
+                name: 'description',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The description of the rules item',
+                default: false
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to update a <comment>rules source</comment>
+                The <info>%command.name%</info> command allows you to update a <comment>rules item</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>]</info>
+                  <info>%command.full_name% <id> [--name <name>] [--price <price>] [--weight <weight>] [--source-id <source-id>] [--description [<description>]]</info>
 
                 Examples:
-                  <info>%command.full_name% 1 --name "Core Rules 5th Edition"</info>
+                  <info>%command.full_name% 1 --price 8</info>
 
                 If no id is specified, you'll be prompted interactively.
                 HELP
@@ -105,12 +128,12 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            /** @var RulesSourceRepository $repo */
-            $repo = $this->bfrpgEntityManager->getRepository(RulesSource::class);
+            /** @var RulesItemRepository $repo */
+            $repo = $this->bfrpgEntityManager->getRepository(RulesItem::class);
             $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
                 $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
@@ -124,19 +147,51 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Update');
+        $io->title('BFRPG: Rules Item Update');
 
         try {
-            $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));
+            $item = $this->bfrpgEntityManager->find(RulesItem::class, $input->getArgument('id'));
 
-            if ($source === null) {
-                $io->error('Rules source not found');
+            if ($item === null) {
+                $io->error('Rules item not found');
                 return Command::FAILURE;
             }
 
-            $source->setName(trim($input->getOption('name') ?? $source->getName()));
+            $price = $input->getOption('price');
+            if ($price !== null) {
+                if (!is_numeric($price)) {
+                    throw new UnexpectedValueException('The price option must be a numeric value.');
+                }
+                $price = floatval($price);
+            }
 
-            $errors = $this->validator->validate($source);
+            $weight = $input->getOption('weight');
+            if ($weight !== null) {
+                if (!is_numeric($weight)) {
+                    throw new UnexpectedValueException('The weight option must be a numeric value.');
+                }
+                $weight = floatval($weight);
+            }
+
+            $source = null;
+            $sourceId = $input->getOption('source-id');
+            if ($sourceId !== null) {
+                $source = $this->bfrpgEntityManager->find(RulesSource::class, $sourceId);
+                if ($source === null) {
+                    $io->error('Rules source not found');
+                    return Command::FAILURE;
+                }
+            }
+
+            $description = $input->getOption('description');
+
+            $item->setName(trim($input->getOption('name') ?? $item->getName()));
+            $item->setPrice($price ?? $item->getPrice());
+            $item->setWeight($weight ?? $item->getWeight());
+            $item->setDescription(trim($description === false ? $item->getDescription() : $description));
+            $item->setSourceId($source ?? $item->getSource());
+
+            $errors = $this->validator->validate($item);
 
             if (count($errors) > 0) {
                 $io->error((string)$errors);
@@ -145,21 +200,21 @@ final class UpdateCommand extends Command
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $source,
+                    $item,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
+                        AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
 
-                if (!$io->confirm('Update rules source?')) {
+                if (!$io->confirm('Update rules item?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->bfrpgEntityManager->persist($source);
+            $this->bfrpgEntityManager->persist($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules source with id %d has been updated.', $source->getId()));
+            $io->success(sprintf('Rules item with id %d has been updated.', $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

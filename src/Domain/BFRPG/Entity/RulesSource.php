@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -34,11 +36,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_SOURCE_NAME', fields: ['name'])]
 class RulesSource
 {
-    public const string GROUP_CREATE = 'rules_source_create';
     public const string GROUP_LIST = 'rules_source_list';
-    public const string GROUP_READ = 'rules_source_read';
-    public const string GROUP_UPDATE = 'rules_source_update';
-    public const string GROUP_DELETE = 'rules_source_delete';
+    public const string GROUP_DETAIL = 'rules_source_detail';
 
     /**
      * @var int|null
@@ -46,12 +45,7 @@ class RulesSource
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?int $id = null;
 
     /**
@@ -60,14 +54,22 @@ class RulesSource
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 255)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $name = null;
+
+    /**
+     * @var Collection<int, RulesItem>
+     */
+    #[ORM\OneToMany(targetEntity: RulesItem::class, mappedBy: 'source')]
+    private Collection $items;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->items = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -93,5 +95,13 @@ class RulesSource
     {
         $this->name = $name;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, RulesItem>
+     */
+    public function getItems(): Collection
+    {
+        return $this->items;
     }
 }

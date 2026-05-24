@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Rules\Source;
 
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -30,7 +31,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -41,7 +42,7 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:delete',
     description: 'Delete a rules source',
-    aliases: ['app:bfrpg:rules:src:delete'],
+    aliases: ['app:bf:rls:src:delete'],
 )]
 final class DeleteCommand extends Command
 {
@@ -94,7 +95,14 @@ final class DeleteCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Rules source id: ')));
+            /** @var RulesSourceRepository $repo */
+            $repo = $this->bfrpgEntityManager->getRepository(RulesSource::class);
+            $choices = $repo->findAllChoices();
+
+            if (!empty($choices)) {
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
+            }
         }
     }
 
@@ -120,9 +128,14 @@ final class DeleteCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DELETE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
+
+                $numItems = $source->getItems()->count();
+                if ($numItems > 0) {
+                    $io->warning(sprintf('%d rules items will also be deleted!', $numItems));
+                }
 
                 if (!$io->confirm('Delete rules source?')) {
                     return Command::SUCCESS;

@@ -21,21 +21,21 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Repository;
 
-use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Entity\RulesItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @extends ServiceEntityRepository<RulesItem>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+final class RulesItemRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, RulesSource::class);
+        parent::__construct($registry, RulesItem::class);
     }
 
     /**
@@ -45,9 +45,9 @@ final class RulesSourceRepository extends ServiceEntityRepository
     {
         return array_reduce(
             $this->findAll(),
-            function (array $sources, RulesSource $source) {
-                $sources[(string)$source->getId()] = $source->getName();
-                return $sources;
+            function (array $items, RulesItem $item) {
+                $items[(string)$item->getId()] = $item->getName();
+                return $items;
             },
             []
         );

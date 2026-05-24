@@ -42,7 +42,7 @@ use Throwable;
 #[AsCommand(
     name: 'app:bfrpg:rules:source:create',
     description: 'Create a rules source',
-    aliases: ['app:bfrpg:rules:src:create'],
+    aliases: ['app:bf:rls:src:create'],
 )]
 final class CreateCommand extends Command
 {
@@ -127,7 +127,7 @@ final class CreateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
 
@@ -139,11 +139,7 @@ final class CreateCommand extends Command
             $this->bfrpgEntityManager->persist($source);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf(
-                'Rules source %s has been created with id %d.',
-                $source->getName(),
-                $source->getId()
-            ));
+            $io->success(sprintf('Rules source %s has been created with id %d.', $source->getName(), $source->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
