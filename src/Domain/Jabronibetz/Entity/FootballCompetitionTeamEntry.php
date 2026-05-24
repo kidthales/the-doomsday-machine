@@ -106,24 +106,6 @@ class FootballCompetitionTeamEntry
     }
 
     /**
-     * @return FootballTeam|null
-     */
-    public function getTeam(): ?FootballTeam
-    {
-        return $this->team;
-    }
-
-    /**
-     * @param FootballTeam $team
-     * @return $this
-     */
-    public function setTeam(FootballTeam $team): static
-    {
-        $this->team = $team;
-        return $this;
-    }
-
-    /**
      * @return FootballCompetition|null
      */
     public function getCompetition(): ?FootballCompetition
@@ -138,6 +120,24 @@ class FootballCompetitionTeamEntry
     public function setCompetition(FootballCompetition $cmp): static
     {
         $this->competition = $cmp;
+        return $this;
+    }
+
+    /**
+     * @return FootballTeam|null
+     */
+    public function getTeam(): ?FootballTeam
+    {
+        return $this->team;
+    }
+
+    /**
+     * @param FootballTeam $team
+     * @return $this
+     */
+    public function setTeam(FootballTeam $team): static
+    {
+        $this->team = $team;
         return $this;
     }
 
