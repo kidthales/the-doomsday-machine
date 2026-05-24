@@ -184,12 +184,18 @@ final class UpdateCommand extends Command
             }
 
             $description = $input->getOption('description');
+            if ($description === false) {
+                $description = $item->getDescription();
+            }
+            if ($description !== null) {
+                $description = trim($description);
+            }
 
             $item->setName(trim($input->getOption('name') ?? $item->getName()));
             $item->setPrice($price ?? $item->getPrice());
             $item->setWeight($weight ?? $item->getWeight());
-            $item->setDescription(trim($description === false ? $item->getDescription() : $description));
-            $item->setSourceId($source ?? $item->getSource());
+            $item->setDescription($description);
+            $item->setSource($source ?? $item->getSource());
 
             $errors = $this->validator->validate($item);
 
