@@ -30,28 +30,34 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
+use UnexpectedValueException;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:item:delete',
-    description: 'Delete a rules item',
-    aliases: ['app:bf:rls:itm:delete'],
+    name: 'app:bfrpg:rules:item:update',
+    description: 'Update a rules item',
+    aliases: ['app:bf:rls:itm:update'],
 )]
-final class DeleteCommand extends Command
+final class UpdateCommand extends Command
 {
     /**
+     * @param ValidatorInterface $validator
      * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
+     * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
+        private readonly ValidatorInterface      $validator,
         private readonly EntityManagerInterface  $bfrpgEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter,
+        private readonly DefinitionListConverter $definitionListConverter
     )
     {
         parent::__construct();
@@ -68,16 +74,42 @@ final class DeleteCommand extends Command
                 mode: InputArgument::REQUIRED,
                 description: 'The id of the rules item'
             )
+            ->addOption(
+                name: 'name',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The name of the rules item'
+            )
+            ->addOption(
+                name: 'price',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The price of the rules item'
+            )
+            ->addOption(
+                name: 'weight',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The weight of the rules item'
+            )
+            ->addOption(
+                name: 'source-id',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The rules source id for the item'
+            )
+            ->addOption(
+                name: 'description',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The description of the rules item',
+                default: false
+            )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to delete a <comment>rules item</comment>
+                The <info>%command.name%</info> command allows you to update a <comment>rules item</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id></info>
+                  <info>%command.full_name% <id> [--name <name>] [--price <price>] [--weight <weight>] [--source-id <source-id>] [--description [<description>]]</info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
+                  <info>%command.full_name% 1 --price 8</info>
 
                 If no id is specified, you'll be prompted interactively.
                 HELP
@@ -107,13 +139,54 @@ final class DeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Item Delete');
+        $io->title('BFRPG: Rules Item Update');
 
         try {
             $item = $this->bfrpgEntityManager->find(RulesItem::class, $input->getArgument('id'));
 
             if ($item === null) {
                 $io->error('Rules item not found');
+                return Command::FAILURE;
+            }
+
+            $price = $input->getOption('price');
+            if ($price !== null) {
+                if (!is_numeric($price)) {
+                    throw new UnexpectedValueException('The price option must be a numeric value.');
+                }
+                $price = floatval($price);
+            }
+
+            $weight = $input->getOption('weight');
+            if ($weight !== null) {
+                if (!is_numeric($weight)) {
+                    throw new UnexpectedValueException('The weight option must be a numeric value.');
+                }
+                $weight = floatval($weight);
+            }
+
+            $source = null;
+            $sourceId = $input->getOption('source-id');
+            if ($sourceId !== null) {
+                $source = $this->bfrpgEntityManager->find(RulesSource::class, $sourceId);
+                if ($source === null) {
+                    $io->error('Rules source not found');
+                    return Command::FAILURE;
+                }
+            }
+
+            $description = $input->getOption('description');
+
+            $item->setName(trim($input->getOption('name') ?? $item->getName()));
+            $item->setPrice($price ?? $item->getPrice());
+            $item->setWeight($weight ?? $item->getWeight());
+            $item->setDescription(trim($description === false ? $item->getDescription() : $description));
+            $item->setSourceId($source ?? $item->getSource());
+
+            $errors = $this->validator->validate($item);
+
+            if (count($errors) > 0) {
+                $io->error((string)$errors);
                 return Command::FAILURE;
             }
 
@@ -125,17 +198,15 @@ final class DeleteCommand extends Command
                     ]
                 ));
 
-                if (!$io->confirm('Delete rules item?')) {
+                if (!$io->confirm('Update rules item?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $id = $item->getId();
-
-            $this->bfrpgEntityManager->remove($item);
+            $this->bfrpgEntityManager->persist($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getName(), $id));
+            $io->success(sprintf('Rules item with id %d has been updated.', $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

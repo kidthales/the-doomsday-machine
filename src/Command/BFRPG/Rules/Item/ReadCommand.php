@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Rules\Item;
 
 use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -120,7 +121,7 @@ final class ReadCommand extends Command
             $io->definitionList(...$this->definitionListConverter->convert(
                 $item,
                 [
-                    AbstractNormalizer::GROUPS => RulesItem::GROUP_DETAIL
+                    AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {
