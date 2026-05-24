@@ -97,24 +97,11 @@ final class ReadCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = array_reduce(
-                $this->rulesItemRepository->findAll(),
-                function (array $items, RulesSource $item) {
-                    $items[(string)$item->getId()] = $item->getName();
-                    return $items;
-                },
-                []
-            );
+            $choices = $this->rulesItemRepository->findAllChoices();
 
             if (!empty($choices)) {
-                $input->setArgument(
-                    'id',
-                    array_search(
-                        $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices)),
-                        $choices,
-                        true
-                    )
-                );
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
     }

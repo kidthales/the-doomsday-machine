@@ -37,4 +37,19 @@ final class RulesSourceRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, RulesSource::class);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function findAllChoices(): array
+    {
+        return array_reduce(
+            $this->findAll(),
+            function (array $sources, RulesSource $source) {
+                $sources[(string)$source->getId()] = $source->getName();
+                return $sources;
+            },
+            []
+        );
+    }
 }

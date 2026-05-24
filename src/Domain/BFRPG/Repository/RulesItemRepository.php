@@ -37,4 +37,19 @@ final class RulesItemRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, RulesItem::class);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function findAllChoices(): array
+    {
+        return array_reduce(
+            $this->findAll(),
+            function (array $items, RulesItem $item) {
+                $items[(string)$item->getId()] = $item->getName();
+                return $items;
+            },
+            []
+        );
+    }
 }

@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Rules\Source;
 
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -32,7 +33,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -105,24 +105,13 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = array_reduce(
-                $this->bfrpgEntityManager->getRepository(RulesSource::class)->findAll(),
-                function (array $sources, RulesSource $source) {
-                    $sources[(string)$source->getId()] = $source->getName();
-                    return $sources;
-                },
-                []
-            );
+            /** @var RulesSourceRepository $repo */
+            $repo = $this->bfrpgEntityManager->getRepository(RulesSource::class);
+            $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $input->setArgument(
-                    'id',
-                    array_search(
-                        $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices)),
-                        $choices,
-                        true
-                    )
-                );
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
     }

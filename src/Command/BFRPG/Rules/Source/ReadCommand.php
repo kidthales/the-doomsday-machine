@@ -31,7 +31,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -96,24 +95,11 @@ final class ReadCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = array_reduce(
-                $this->rulesSourceRepository->findAll(),
-                function (array $sources, RulesSource $source) {
-                    $sources[(string)$source->getId()] = $source->getName();
-                    return $sources;
-                },
-                []
-            );
+            $choices = $this->rulesSourceRepository->findAllChoices();
 
             if (!empty($choices)) {
-                $input->setArgument(
-                    'id',
-                    array_search(
-                        $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices)),
-                        $choices,
-                        true
-                    )
-                );
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
     }

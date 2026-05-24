@@ -23,6 +23,7 @@ namespace App\Command\BFRPG\Rules\Item;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -33,7 +34,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -128,24 +128,13 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = array_reduce(
-                $this->bfrpgEntityManager->getRepository(RulesItem::class)->findAll(),
-                function (array $items, RulesItem $item) {
-                    $items[(string)$item->getId()] = $item->getName();
-                    return $items;
-                },
-                []
-            );
+            /** @var RulesItemRepository $repo */
+            $repo = $this->bfrpgEntityManager->getRepository(RulesItem::class);
+            $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $input->setArgument(
-                    'id',
-                    array_search(
-                        $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices)),
-                        $choices,
-                        true
-                    )
-                );
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
     }
