@@ -118,7 +118,6 @@ final class DeleteCommand extends Command
 
         try {
             $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
-
             if ($cmp === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
@@ -142,12 +141,7 @@ final class DeleteCommand extends Command
             $this->jabronibetzEntityManager->remove($cmp);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf(
-                'Football competition %s (%s) with id %d has been deleted.',
-                $cmp->getName(),
-                $cmp->getShortName(),
-                $id
-            ));
+            $io->success(sprintf('Football competition %s with id %d has been deleted.', $cmp->getChoiceValue(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

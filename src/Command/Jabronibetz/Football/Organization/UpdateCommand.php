@@ -133,7 +133,6 @@ final class UpdateCommand extends Command
 
         try {
             $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('id'));
-
             if ($org === null) {
                 $io->error('Football organization not found');
                 return Command::FAILURE;
@@ -143,7 +142,6 @@ final class UpdateCommand extends Command
             $org->setShortName(trim($input->getOption('short-name') ?? $org->getShortName()));
 
             $errors = $this->validator->validate($org);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -165,7 +163,11 @@ final class UpdateCommand extends Command
             $this->jabronibetzEntityManager->persist($org);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf('Football organization with id %d has been updated.', $org->getId()));
+            $io->success(sprintf(
+                'Football organization %s with id %d has been updated.',
+                $org->getChoiceValue(),
+                $org->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

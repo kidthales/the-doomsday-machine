@@ -24,6 +24,7 @@ namespace App\Command\Jabronibetz\Football\Team;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Enum\FootballGender;
+use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -127,23 +128,13 @@ final class CreateCommand extends Command
         }
 
         if ($input->getArgument('organization-id') === null) {
-            $choices = array_reduce(
-                $this->jabronibetzEntityManager->getRepository(FootballOrganization::class)->findAll(),
-                function (array $orgs, FootballOrganization $org) {
-                    $orgs[(string)$org->getId()] = sprintf('%s (%s)', $org->getName(), $org->getShortName());
-                    return $orgs;
-                },
-                []
-            );
+            /** @var FootballOrganizationRepository $repo */
+            $repo = $this->jabronibetzEntityManager->getRepository(FootballOrganization::class);
+            $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $choiceValue = $helper->ask(
-                    $input,
-                    $output,
-                    new ChoiceQuestion('Football team managed by: ', $choices)
-                );
-
-                $input->setArgument('organization-id', array_search($choiceValue, $choices, true));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football team managed by: ', $choices));
+                $input->setArgument('organization-id', array_search($choice, $choices, true));
             }
         }
 
@@ -171,7 +162,6 @@ final class CreateCommand extends Command
 
         try {
             $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
-
             if ($org === null) {
                 $io->error('Football organization not found');
                 return Command::FAILURE;
@@ -184,7 +174,6 @@ final class CreateCommand extends Command
                 ->setGender(FootballGender::from($input->getArgument('gender')));
 
             $errors = $this->validator->validate($team);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -207,9 +196,8 @@ final class CreateCommand extends Command
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football team %s (%s) has been created with id %d.',
-                $team->getName(),
-                $team->getShortName(),
+                'Football team %s has been created with id %d.',
+                $team->getChoiceValue(),
                 $team->getId()
             ));
         } catch (Throwable $e) {

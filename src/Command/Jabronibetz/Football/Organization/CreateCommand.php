@@ -127,7 +127,6 @@ final class CreateCommand extends Command
                 ->setShortName(trim($input->getArgument('short-name')));
 
             $errors = $this->validator->validate($org);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -150,9 +149,8 @@ final class CreateCommand extends Command
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football organization %s (%s) has been created with id %d.',
-                $org->getName(),
-                $org->getShortName(),
+                'Football organization %s has been created with id %d.',
+                $org->getChoiceValue(),
                 $org->getId()
             ));
         } catch (Throwable $e) {

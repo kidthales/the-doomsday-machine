@@ -118,7 +118,6 @@ final class DeleteCommand extends Command
 
         try {
             $team = $this->jabronibetzEntityManager->find(FootballTeam::class, $input->getArgument('id'));
-
             if ($team === null) {
                 $io->error('Football team not found');
                 return Command::FAILURE;
@@ -142,12 +141,7 @@ final class DeleteCommand extends Command
             $this->jabronibetzEntityManager->remove($team);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf(
-                'Football team %s (%s) with id %d has been deleted.',
-                $team->getName(),
-                $team->getShortName(),
-                $id
-            ));
+            $io->success(sprintf('Football team %s with id %d has been deleted.', $team->getChoiceValue(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

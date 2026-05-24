@@ -37,8 +37,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FootballCompetitionTeamEntry
 {
-    public const string GROUP_LIST = 'football_competition_entry_list';
-    public const string GROUP_DETAIL = 'football_competition_entry_detail';
+    public const string GROUP_LIST = 'football_competition_team_entry_list';
+    public const string GROUP_DETAIL = 'football_competition_team_entry_detail';
 
     /**
      * @var int|null
@@ -55,7 +55,7 @@ class FootballCompetitionTeamEntry
     #[ORM\ManyToOne(targetEntity: FootballCompetition::class, inversedBy: 'football_competition_entry')]
     #[ORM\JoinColumn(name: 'competition_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
-    #[Groups([self::GROUP_DETAIL])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?FootballCompetition $competition = null;
 
     /**
@@ -64,13 +64,13 @@ class FootballCompetitionTeamEntry
     #[ORM\ManyToOne(targetEntity: FootballTeam::class, inversedBy: 'football_competition_entry')]
     #[ORM\JoinColumn(name: 'team_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
-    #[Groups([self::GROUP_DETAIL])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?FootballTeam $team = null;
 
     /**
      * @var string|null
      */
-    #[ORM\Column(name: '`group`', length: 1)]
+    #[ORM\Column(name: '`group`', length: 1, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 1)]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
@@ -79,7 +79,7 @@ class FootballCompetitionTeamEntry
     /**
      * @var string|null
      */
-    #[ORM\Column(length: 128)]
+    #[ORM\Column(length: 128, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 128)]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]

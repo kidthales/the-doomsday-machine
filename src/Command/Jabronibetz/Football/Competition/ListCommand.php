@@ -86,7 +86,6 @@ final class ListCommand extends Command
 
         try {
             $cmps = $this->footballCompetitionRepository->findAll();
-
             foreach ($cmps as $cmp) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $cmp,
@@ -95,7 +94,6 @@ final class ListCommand extends Command
                     ]
                 ));
             }
-
             $io->info(sprintf('Found %d football competitions.', count($cmps)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

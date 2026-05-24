@@ -23,6 +23,7 @@ namespace App\Command\Jabronibetz\Football\Competition;
 
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -118,23 +119,13 @@ final class CreateCommand extends Command
         }
 
         if ($input->getArgument('organization-id') === null) {
-            $choices = array_reduce(
-                $this->jabronibetzEntityManager->getRepository(FootballOrganization::class)->findAll(),
-                function (array $orgs, FootballOrganization $org) {
-                    $orgs[(string)$org->getId()] = sprintf('%s (%s)', $org->getName(), $org->getShortName());
-                    return $orgs;
-                },
-                []
-            );
+            /** @var FootballOrganizationRepository $repo */
+            $repo = $this->jabronibetzEntityManager->getRepository(FootballOrganization::class);
+            $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $choiceValue = $helper->ask(
-                    $input,
-                    $output,
-                    new ChoiceQuestion('Football competition managed by: ', $choices)
-                );
-
-                $input->setArgument('organization-id', array_search($choiceValue, $choices, true));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football competition managed by: ', $choices));
+                $input->setArgument('organization-id', array_search($choice, $choices, true));
             }
         }
     }
@@ -151,7 +142,6 @@ final class CreateCommand extends Command
 
         try {
             $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
-
             if ($org === null) {
                 $io->error('Football organization not found');
                 return Command::FAILURE;
@@ -163,7 +153,6 @@ final class CreateCommand extends Command
                 ->setManagingOrganization($org);
 
             $errors = $this->validator->validate($cmp);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -186,9 +175,8 @@ final class CreateCommand extends Command
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football competition %s (%s) has been created with id %d.',
-                $cmp->getName(),
-                $cmp->getShortName(),
+                'Football competition %s has been created with id %d.',
+                $cmp->getChoiceValue(),
                 $cmp->getId()
             ));
         } catch (Throwable $e) {

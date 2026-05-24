@@ -117,7 +117,6 @@ final class ReadCommand extends Command
 
         try {
             $cmp = $this->footballCompetitionRepository->find($input->getArgument('id'));
-
             if ($cmp === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;

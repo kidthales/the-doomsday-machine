@@ -86,7 +86,6 @@ final class ListCommand extends Command
 
         try {
             $teams = $this->footballTeamRepository->findAll();
-
             foreach ($teams as $team) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $team,
@@ -95,7 +94,6 @@ final class ListCommand extends Command
                     ]
                 ));
             }
-
             $io->info(sprintf('Found %d football teams.', count($teams)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

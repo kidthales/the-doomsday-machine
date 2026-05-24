@@ -139,7 +139,6 @@ final class UpdateCommand extends Command
 
         try {
             $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
-
             if ($cmp === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
@@ -149,10 +148,8 @@ final class UpdateCommand extends Command
             $cmp->setShortName(trim($input->getOption('short-name') ?? $cmp->getShortName()));
 
             $orgId = $input->getOption('organization-id');
-
             if ($orgId !== null) {
                 $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $orgId);
-
                 if ($org === null) {
                     $io->error('Football organization not found');
                     return Command::FAILURE;
@@ -160,11 +157,9 @@ final class UpdateCommand extends Command
             } else {
                 $org = $cmp->getManagingOrganization();
             }
-
             $cmp->setManagingOrganization($org);
 
             $errors = $this->validator->validate($cmp);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -186,7 +181,11 @@ final class UpdateCommand extends Command
             $this->jabronibetzEntityManager->persist($cmp);
             $this->jabronibetzEntityManager->flush();
 
-            $io->success(sprintf('Football competition with id %d has been updated.', $cmp->getId()));
+            $io->success(sprintf(
+                'Football competition %s with id %d has been updated.',
+                $cmp->getChoiceValue(),
+                $cmp->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -88,7 +88,6 @@ final class ListCommand extends Command
 
         try {
             $entries = $this->footballCompetitionTeamEntryRepository->findAll();
-
             foreach ($entries as $entry) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $entry,
@@ -101,7 +100,6 @@ final class ListCommand extends Command
                     ]
                 ));
             }
-
             $io->info(sprintf('Found %d football competition team entries.', count($entries)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
