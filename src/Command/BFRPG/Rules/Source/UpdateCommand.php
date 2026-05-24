@@ -139,7 +139,7 @@ final class UpdateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_UPDATE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
 

@@ -127,7 +127,7 @@ final class CreateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_CREATE
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
 

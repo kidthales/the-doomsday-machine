@@ -36,11 +36,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_SOURCE_NAME', fields: ['name'])]
 class RulesSource
 {
-    public const string GROUP_CREATE = 'rules_source_create';
     public const string GROUP_LIST = 'rules_source_list';
-    public const string GROUP_READ = 'rules_source_read';
-    public const string GROUP_UPDATE = 'rules_source_update';
-    public const string GROUP_DELETE = 'rules_source_delete';
+    public const string GROUP_DETAIL = 'rules_source_detail';
 
     /**
      * @var int|null
@@ -48,16 +45,7 @@ class RulesSource
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        RulesItem::GROUP_CREATE,
-        RulesItem::GROUP_READ,
-        RulesItem::GROUP_UPDATE,
-        RulesItem::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?int $id = null;
 
     /**
@@ -66,17 +54,7 @@ class RulesSource
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 255)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-        RulesItem::GROUP_CREATE,
-        RulesItem::GROUP_READ,
-        RulesItem::GROUP_UPDATE,
-        RulesItem::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $name = null;
 
     /**

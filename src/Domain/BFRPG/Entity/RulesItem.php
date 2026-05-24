@@ -35,11 +35,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_ITEM_NAME', fields: ['name'])]
 class RulesItem
 {
-    public const string GROUP_CREATE = 'rules_item_create';
     public const string GROUP_LIST = 'rules_item_list';
-    public const string GROUP_READ = 'rules_item_read';
-    public const string GROUP_UPDATE = 'rules_item_update';
-    public const string GROUP_DELETE = 'rules_item_delete';
+    public const string GROUP_DETAIL = 'rules_item_detail';
 
     /**
      * @var int|null
@@ -47,12 +44,7 @@ class RulesItem
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?int $id = null;
 
     /**
@@ -61,13 +53,7 @@ class RulesItem
     #[ORM\Column(length: 128)]
     #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 128)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $name = null;
 
     /**
@@ -76,13 +62,8 @@ class RulesItem
     #[ORM\Column(precision: 5, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Assert\LessThan(value: 1000)]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?float $price = null;
 
     /**
@@ -91,26 +72,16 @@ class RulesItem
     #[ORM\Column(precision: 5, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Assert\LessThan(value: 1000)]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?float $weight = null;
 
     /**
      * @var string|null
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_LIST,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE,
-    ])]
+    #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
+    #[Groups([self::GROUP_DETAIL])]
     private ?string $description = null;
 
     /**
@@ -119,12 +90,7 @@ class RulesItem
     #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_item')]
     #[ORM\JoinColumn(name: 'rules_source_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
-    #[Groups([
-        self::GROUP_CREATE,
-        self::GROUP_READ,
-        self::GROUP_UPDATE,
-        self::GROUP_DELETE
-    ])]
+    #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
 
     /**
@@ -198,10 +164,10 @@ class RulesItem
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
      * @return $this
      */
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
         return $this;

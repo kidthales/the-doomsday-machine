@@ -120,7 +120,7 @@ final class ReadCommand extends Command
             $io->definitionList(...$this->definitionListConverter->convert(
                 $source,
                 [
-                    AbstractNormalizer::GROUPS => RulesSource::GROUP_READ
+                    AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                 ]
             ));
         } catch (Throwable $e) {
