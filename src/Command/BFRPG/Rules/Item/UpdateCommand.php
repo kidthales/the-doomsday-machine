@@ -32,6 +32,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -127,7 +128,25 @@ final class UpdateCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $input->setArgument('id', $helper->ask($input, $output, new Question('Rules item id: ')));
+            $choices = array_reduce(
+                $this->bfrpgEntityManager->getRepository(RulesItem::class)->findAll(),
+                function (array $items, RulesItem $item) {
+                    $items[(string)$item->getId()] = $item->getName();
+                    return $items;
+                },
+                []
+            );
+
+            if (!empty($choices)) {
+                $input->setArgument(
+                    'id',
+                    array_search(
+                        $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices)),
+                        $choices,
+                        true
+                    )
+                );
+            }
         }
     }
 

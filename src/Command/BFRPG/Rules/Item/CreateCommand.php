@@ -25,7 +25,6 @@ use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
-use InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -144,13 +143,14 @@ final class CreateCommand extends Command
             );
 
             if (!empty($choices)) {
-                $choiceValue = $helper->ask(
-                    $input,
-                    $output,
-                    new ChoiceQuestion('Rules item sourced from: ', $choices)
+                $input->setArgument(
+                    'source-id',
+                    array_search(
+                        $helper->ask($input, $output, new ChoiceQuestion('Rules item sourced from: ', $choices)),
+                        $choices,
+                        true
+                    )
                 );
-
-                $input->setArgument('source-id', array_search($choiceValue, $choices, true));
             }
         }
     }
@@ -168,12 +168,14 @@ final class CreateCommand extends Command
         try {
             $price = $input->getArgument('price');
             if (!is_numeric($price)) {
-                throw new InvalidArgumentException('The price argument must be a numeric value.');
+                $io->error('The price argument must be a numeric value.');
+                return Command::FAILURE;
             }
 
             $weight = $input->getArgument('weight');
             if (!is_numeric($weight)) {
-                throw new InvalidArgumentException('The weight argument must be a numeric value.');
+                $io->error('The weight argument must be a numeric value.');
+                return Command::FAILURE;
             }
 
             $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('source-id'));
@@ -217,11 +219,7 @@ final class CreateCommand extends Command
             $this->bfrpgEntityManager->persist($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf(
-                'Rules item %s has been created with id %d.',
-                $item->getName(),
-                $item->getId()
-            ));
+            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getName(), $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
