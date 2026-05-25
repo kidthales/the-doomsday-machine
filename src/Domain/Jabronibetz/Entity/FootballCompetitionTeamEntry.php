@@ -73,7 +73,7 @@ class FootballCompetitionTeamEntry
     #[ORM\Column(name: '`group`', length: 1, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 1)]
-    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
+    #[Groups([self::GROUP_DETAIL])]
     private ?string $group = null;
 
     /**
@@ -82,7 +82,7 @@ class FootballCompetitionTeamEntry
     #[ORM\Column(length: 128, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 1, max: 128)]
-    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
+    #[Groups([self::GROUP_DETAIL])]
     private ?string $result = null;
 
     /**
