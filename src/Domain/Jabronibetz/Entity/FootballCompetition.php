@@ -83,11 +83,19 @@ class FootballCompetition
     private Collection $teamEntries;
 
     /**
+     * @var Collection<int, FootballMatch>
+     */
+    #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'competition')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $matches;
+
+    /**
      *
      */
     public function __construct()
     {
         $this->teamEntries = new ArrayCollection();
+        $this->matches = new ArrayCollection();
     }
 
     /**
@@ -166,5 +174,13 @@ class FootballCompetition
     public function getTeamEntries(): Collection
     {
         return $this->teamEntries;
+    }
+
+    /**
+     * @return Collection<int, FootballMatch>
+     */
+    public function getMatches(): Collection
+    {
+        return $this->matches;
     }
 }

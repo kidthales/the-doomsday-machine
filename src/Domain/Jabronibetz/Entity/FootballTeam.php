@@ -92,11 +92,27 @@ class FootballTeam
     private Collection $competitionEntries;
 
     /**
+     * @var Collection<int, FootballMatch>
+     */
+    #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'homeTeam')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $homeMatches;
+
+    /**
+     * @var Collection<int, FootballMatch>
+     */
+    #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'awayTeam')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $awayMatches;
+
+    /**
      *
      */
     public function __construct()
     {
         $this->competitionEntries = new ArrayCollection();
+        $this->homeMatches = new ArrayCollection();
+        $this->awayMatches = new ArrayCollection();
     }
 
     /**
@@ -198,5 +214,21 @@ class FootballTeam
     public function getCompetitionEntries(): Collection
     {
         return $this->competitionEntries;
+    }
+
+    /**
+     * @return Collection<int, FootballMatch>
+     */
+    public function getHomeMatches(): Collection
+    {
+        return $this->homeMatches;
+    }
+
+    /**
+     * @return Collection<int, FootballMatch>
+     */
+    public function getAwayMatches(): Collection
+    {
+        return $this->awayMatches;
     }
 }
