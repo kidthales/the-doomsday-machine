@@ -136,6 +136,11 @@ final class DeleteCommand extends Command
                     $io->warning(sprintf('%d football competition team entries will also be deleted!', $numEntries));
                 }
 
+                $numMatches = $team->getHomeMatches()->count() + $team->getAwayMatches()->count();
+                if ($numMatches > 0) {
+                    $io->warning(sprintf('%d football matches will also be deleted!', $numMatches));
+                }
+
                 if (!$io->confirm('Delete football team?')) {
                     return Command::SUCCESS;
                 }
