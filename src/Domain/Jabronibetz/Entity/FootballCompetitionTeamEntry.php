@@ -52,7 +52,7 @@ class FootballCompetitionTeamEntry
     /**
      * @var FootballCompetition|null
      */
-    #[ORM\ManyToOne(targetEntity: FootballCompetition::class, inversedBy: 'football_competition_entry')]
+    #[ORM\ManyToOne(targetEntity: FootballCompetition::class, inversedBy: 'football_competition_team_entry')]
     #[ORM\JoinColumn(name: 'competition_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
@@ -61,7 +61,7 @@ class FootballCompetitionTeamEntry
     /**
      * @var FootballTeam|null
      */
-    #[ORM\ManyToOne(targetEntity: FootballTeam::class, inversedBy: 'football_competition_entry')]
+    #[ORM\ManyToOne(targetEntity: FootballTeam::class, inversedBy: 'football_competition_team_entry')]
     #[ORM\JoinColumn(name: 'team_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
