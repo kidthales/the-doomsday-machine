@@ -79,7 +79,6 @@ class FootballMatch
      * @var string|null
      */
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    #[Assert\Positive]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $timestamp = null;
 
