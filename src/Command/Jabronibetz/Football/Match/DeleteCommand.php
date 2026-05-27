@@ -19,9 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Organization;
+namespace App\Command\Jabronibetz\Football\Match;
 
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballMatch;
+use App\Domain\Jabronibetz\Entity\FootballTeam;
+use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -30,29 +33,25 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:organization:create',
-    description: 'Create a football organization',
-    aliases: ['app:jbetz:footy:org:create'],
+    name: 'app:jabronibetz:football:match:delete',
+    description: 'Delete a football match',
+    aliases: ['app:jbetz:footy:match:delete'],
 )]
-final class CreateCommand extends Command
+final class DeleteCommand extends Command
 {
     /**
-     * @param ValidatorInterface $validator
      * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly ValidatorInterface      $validator,
         private readonly EntityManagerInterface  $jabronibetzEntityManager,
         private readonly DefinitionListConverter $definitionListConverter
     )
@@ -67,27 +66,22 @@ final class CreateCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'name',
+                name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the football organization'
-            )
-            ->addArgument(
-                name: 'short-name',
-                mode: InputArgument::REQUIRED,
-                description: 'The short name of the football organization'
+                description: 'The id of the football match'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>football organization</comment>
-                in the <comment>Jabronibetz</comment> db.
+                The <info>%command.name%</info> command allows you to delete a
+                <comment>football match</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name></info>
+                  <info>%command.full_name% <id></info>
 
                 Examples:
-                  <info>%command.full_name% "International Federation of Association Football" FIFA</info>
+                  <info>%command.full_name% 1</info>
 
-                If no name or short name is specified, you'll be prompted interactively.
+                If no id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -102,12 +96,15 @@ final class CreateCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('name') === null) {
-            $input->setArgument('name', $helper->ask($input, $output, new Question('Football organization name: ')));
-        }
+        if ($input->getArgument('id') === null) {
+            /** @var FootballMatchRepository $repo */
+            $repo = $this->jabronibetzEntityManager->getRepository(FootballMatch::class);
+            $choices = $repo->findAllChoices();
 
-        if ($input->getArgument('short-name') === null) {
-            $input->setArgument('short-name', $helper->ask($input, $output, new Question('Football organization short name: ')));
+            if (!empty($choices)) {
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football match id: ', $choices));
+                $input->setArgument('id', array_search($choice, $choices, true));
+            }
         }
     }
 
@@ -119,39 +116,41 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Create');
+        $io->title('Jabronibetz: Football Match Delete');
 
         try {
-            $org = (new FootballOrganization())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')));
-
-            $errors = $this->validator->validate($org);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
+            $match = $this->jabronibetzEntityManager->find(FootballMatch::class, $input->getArgument('id'));
+            if ($match === null) {
+                $io->error('Football match not found');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $match,
                     [
-                        AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
+                        AbstractNormalizer::GROUPS => [
+                            FootballMatch::GROUP_DETAIL,
+                            FootballCompetition::GROUP_LIST,
+                            FootballTeam::GROUP_LIST
+                        ]
                     ]
                 ));
 
-                if (!$io->confirm('Create football organization?')) {
+                if (!$io->confirm('Delete football match?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($org);
+            $id = $match->getId();
+
+            $this->jabronibetzEntityManager->remove($match);
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football organization %s has been created with id %d.',
-                $org->getChoiceValue(),
-                $org->getId()
+                'Football match %s with id %d has been deleted.',
+                $match->getChoiceValue(),
+                $id
             ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

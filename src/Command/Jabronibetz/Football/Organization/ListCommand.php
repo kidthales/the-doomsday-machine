@@ -86,7 +86,6 @@ final class ListCommand extends Command
 
         try {
             $orgs = $this->footballOrganizationRepository->findAll();
-
             foreach ($orgs as $org) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $org,
@@ -95,7 +94,6 @@ final class ListCommand extends Command
                     ]
                 ));
             }
-
             $io->info(sprintf('Found %d football organizations.', count($orgs)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

@@ -19,10 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Team;
+namespace App\Command\Jabronibetz\Football\Match;
 
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
+use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,18 +38,18 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:team:list',
-    description: 'List football teams',
-    aliases: ['app:jbetz:footy:team:list'],
+    name: 'app:jabronibetz:football:match:list',
+    description: 'List football matches',
+    aliases: ['app:jbetz:footy:match:list'],
 )]
 final class ListCommand extends Command
 {
     /**
-     * @param FootballTeamRepository $footballTeamRepository
+     * @param FootballMatchRepository $footballMatchRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly FootballTeamRepository  $footballTeamRepository,
+        private readonly FootballMatchRepository $footballMatchRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -63,7 +65,7 @@ final class ListCommand extends Command
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to list
-                <comment>football team</comment>s in the <comment>Jabronibetz</comment> db.
+                <comment>football match</comment> entities in the <comment>Jabronibetz</comment> db.
 
                 Usage:
                   <info>%command.full_name%</info>
@@ -82,19 +84,23 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Team List');
+        $io->title('Jabronibetz: Football Match List');
 
         try {
-            $teams = $this->footballTeamRepository->findAll();
-            foreach ($teams as $team) {
+            $matches = $this->footballMatchRepository->findAll();
+            foreach ($matches as $match) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $team,
+                    $match,
                     [
-                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_LIST
+                        AbstractNormalizer::GROUPS => [
+                            FootballMatch::GROUP_LIST,
+                            FootballCompetition::GROUP_LIST,
+                            FootballTeam::GROUP_LIST
+                        ]
                     ]
                 ));
             }
-            $io->info(sprintf('Found %d football teams.', count($teams)));
+            $io->info(sprintf('Found %d football matches.', count($matches)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

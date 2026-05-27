@@ -19,11 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Team;
+namespace App\Command\Jabronibetz\Football\CompetitionTeamEntry;
 
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\Enum\FootballGender;
+use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,11 +45,11 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:team:update',
-    description: 'Update a football team',
-    aliases: ['app:jbetz:footy:team:update'],
+    name: 'app:jabronibetz:football:competition-team-entry:create',
+    description: 'Create a football competition team entry',
+    aliases: ['app:jbetz:footy:cmp-team-entry:create'],
 )]
-final class UpdateCommand extends Command
+final class CreateCommand extends Command
 {
     /**
      * @param ValidatorInterface $validator
@@ -69,47 +70,39 @@ final class UpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $availableGenders = '<info>' . implode('</info>, <info>', array_column(FootballGender::cases(), 'value')) . '</info>';
-
         $this
             ->addArgument(
-                name: 'id',
+                name: 'competition-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the football team'
+                description: 'The id of the football competition that a team is entering'
+            )
+            ->addArgument(
+                name: 'team-id',
+                mode: InputArgument::REQUIRED,
+                description: 'The id of the football team entering the competition'
             )
             ->addOption(
-                name: 'name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The name of the football team'
+                name: 'group',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The group in which the football team begins the competition'
             )
             ->addOption(
-                name: 'short-name',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The short name of the football team'
-            )
-            ->addOption(
-                name: 'organization-id',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The id of the football organization managing this team'
-            )
-            ->addOption(
-                name: 'gender',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The gender of the football team'
+                name: 'result',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The result of the football team in the competition'
             )
             ->setHelp(
-                <<<HELP
-                The <info>%command.name%</info> command allows you to update a <comment>football team</comment>
-                in the <comment>Jabronibetz</comment> db.
+                <<<'HELP'
+                The <info>%command.name%</info> command allows you to create a
+                <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>] [--gender <gender>]</info>
+                  <info>%command.full_name% <competition-id> <team-id> [--group [<group>]] [--result [<result>]]</info>
 
                 Examples:
-                  <info>%command.full_name% 1 --short-name THIEFA</info>
+                  <info>%command.full_name% 1 1 --group A</info>
 
-                If no id is specified, you'll be prompted interactively.
-                Gender may be one of $availableGenders.
+                If no competition id or team id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -124,14 +117,25 @@ final class UpdateCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('id') === null) {
+        if ($input->getArgument('competition-id') === null) {
+            /** @var FootballCompetitionRepository $repo */
+            $repo = $this->jabronibetzEntityManager->getRepository(FootballCompetition::class);
+            $choices = $repo->findAllChoices();
+
+            if (!empty($choices)) {
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football competition id: ', $choices));
+                $input->setArgument('competition-id', array_search($choice, $choices, true));
+            }
+        }
+
+        if ($input->getArgument('team-id') === null) {
             /** @var FootballTeamRepository $repo */
             $repo = $this->jabronibetzEntityManager->getRepository(FootballTeam::class);
             $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
                 $choice = $helper->ask($input, $output, new ChoiceQuestion('Football team id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
+                $input->setArgument('team-id', array_search($choice, $choices, true));
             }
         }
     }
@@ -144,36 +148,38 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Team Update');
+        $io->title('Jabronibetz: Football Competition Team Entry Create');
 
         try {
-            $team = $this->jabronibetzEntityManager->find(FootballTeam::class, $input->getArgument('id'));
+            $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
+            if ($cmp === null) {
+                $io->error('Football competition not found');
+                return Command::FAILURE;
+            }
+
+            $team = $this->jabronibetzEntityManager->find(FootballTeam::class, $input->getArgument('team-id'));
             if ($team === null) {
                 $io->error('Football team not found');
                 return Command::FAILURE;
             }
 
-            $team->setName(trim($input->getOption('name') ?? $team->getName()));
-            $team->setShortName(trim($input->getOption('short-name') ?? $team->getShortName()));
-
-            $orgId = $input->getOption('organization-id');
-            if ($orgId !== null) {
-                $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $orgId);
-                if ($org === null) {
-                    $io->error('Football organization not found');
-                    return Command::FAILURE;
-                }
-            } else {
-                $org = $team->getManagingOrganization();
-            }
-            $team->setManagingOrganization($org);
-
-            $gender = $input->getOption('gender');
-            if ($gender !== null) {
-                $team->setGender(FootballGender::from($gender));
+            $group = $input->getOption('group');
+            if ($group !== null) {
+                $group = trim($group);
             }
 
-            $errors = $this->validator->validate($team);
+            $result = $input->getOption('result');
+            if ($result !== null) {
+                $result = trim($result);
+            }
+
+            $entry = (new FootballCompetitionTeamEntry())
+                ->setCompetition($cmp)
+                ->setTeam($team)
+                ->setGroup($group)
+                ->setResult($result);
+
+            $errors = $this->validator->validate($entry);
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -181,24 +187,28 @@ final class UpdateCommand extends Command
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $team,
+                    $entry,
                     [
-                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
+                        AbstractNormalizer::GROUPS => [
+                            FootballCompetitionTeamEntry::GROUP_DETAIL,
+                            FootballCompetition::GROUP_LIST,
+                            FootballTeam::GROUP_LIST
+                        ]
                     ]
                 ));
 
-                if (!$io->confirm('Update football team?')) {
+                if (!$io->confirm('Create football competition team entry?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($team);
+            $this->jabronibetzEntityManager->persist($entry);
             $this->jabronibetzEntityManager->flush();
 
             $io->success(sprintf(
-                'Football team %s with id %d has been updated.',
-                $team->getChoiceValue(),
-                $team->getId()
+                'Football competition team entry %s has been created with id %d.',
+                $entry->getChoiceValue(),
+                $entry->getId()
             ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

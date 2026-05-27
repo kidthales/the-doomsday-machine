@@ -118,7 +118,6 @@ final class ReadCommand extends Command
 
         try {
             $org = $this->footballOrganizationRepository->find($input->getArgument('id'));
-
             if ($org === null) {
                 $io->error('Football organization not found');
                 return Command::FAILURE;

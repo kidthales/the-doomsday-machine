@@ -19,10 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Team;
+namespace App\Command\Jabronibetz\Football\CompetitionTeamEntry;
 
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
+use App\Domain\Jabronibetz\Repository\FootballCompetitionTeamEntryRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,19 +38,19 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:team:list',
-    description: 'List football teams',
-    aliases: ['app:jbetz:footy:team:list'],
+    name: 'app:jabronibetz:football:competition-team-entry:list',
+    description: 'List football competition team entries',
+    aliases: ['app:jbetz:footy:cmp-team-entry:list'],
 )]
 final class ListCommand extends Command
 {
     /**
-     * @param FootballTeamRepository $footballTeamRepository
+     * @param FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly FootballTeamRepository  $footballTeamRepository,
-        private readonly DefinitionListConverter $definitionListConverter
+        private readonly FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository,
+        private readonly DefinitionListConverter                $definitionListConverter
     )
     {
         parent::__construct();
@@ -63,7 +65,7 @@ final class ListCommand extends Command
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to list
-                <comment>football team</comment>s in the <comment>Jabronibetz</comment> db.
+                <comment>football competition team entry</comment> entities in the <comment>Jabronibetz</comment> db.
 
                 Usage:
                   <info>%command.full_name%</info>
@@ -82,19 +84,23 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Team List');
+        $io->title('Jabronibetz: Football Competition Team Entry List');
 
         try {
-            $teams = $this->footballTeamRepository->findAll();
-            foreach ($teams as $team) {
+            $entries = $this->footballCompetitionTeamEntryRepository->findAll();
+            foreach ($entries as $entry) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $team,
+                    $entry,
                     [
-                        AbstractNormalizer::GROUPS => FootballTeam::GROUP_LIST
+                        AbstractNormalizer::GROUPS => [
+                            FootballCompetitionTeamEntry::GROUP_LIST,
+                            FootballCompetition::GROUP_LIST,
+                            FootballTeam::GROUP_LIST
+                        ]
                     ]
                 ));
             }
-            $io->info(sprintf('Found %d football teams.', count($teams)));
+            $io->info(sprintf('Found %d football competition team entries.', count($entries)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

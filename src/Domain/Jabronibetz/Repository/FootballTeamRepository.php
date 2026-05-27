@@ -46,12 +46,7 @@ final class FootballTeamRepository extends ServiceEntityRepository
         return array_reduce(
             $this->findAll(),
             function (array $teams, FootballTeam $team) {
-                $teams[(string)$team->getId()] = sprintf(
-                    '%s (%s) [%s]',
-                    $team->getName(),
-                    $team->getShortName(),
-                    $team->getGender()->value
-                );
+                $teams[(string)$team->getId()] = $team->getChoiceValue();
                 return $teams;
             },
             []

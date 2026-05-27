@@ -46,7 +46,7 @@ final class FootballCompetitionRepository extends ServiceEntityRepository
         return array_reduce(
             $this->findAll(),
             function (array $cmps, FootballCompetition $cmp) {
-                $cmps[(string)$cmp->getId()] = sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName());
+                $cmps[(string)$cmp->getId()] = $cmp->getChoiceValue();
                 return $cmps;
             },
             []

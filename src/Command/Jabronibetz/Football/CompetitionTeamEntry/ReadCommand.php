@@ -19,11 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Jabronibetz\Football\Competition;
+namespace App\Command\Jabronibetz\Football\CompetitionTeamEntry;
 
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
+use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
+use App\Domain\Jabronibetz\Entity\FootballTeam;
+use App\Domain\Jabronibetz\Repository\FootballCompetitionTeamEntryRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -40,19 +41,19 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:read',
-    description: 'Read a football competition',
-    aliases: ['app:jbetz:footy:cmp:read'],
+    name: 'app:jabronibetz:football:competition-team-entry:read',
+    description: 'Read a football competition team entry',
+    aliases: ['app:jbetz:footy:cmp-team-entry:read'],
 )]
 final class ReadCommand extends Command
 {
     /**
-     * @param FootballCompetitionRepository $footballCompetitionRepository
+     * @param FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly FootballCompetitionRepository $footballCompetitionRepository,
-        private readonly DefinitionListConverter       $definitionListConverter
+        private readonly FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository,
+        private readonly DefinitionListConverter                $definitionListConverter
     )
     {
         parent::__construct();
@@ -67,12 +68,12 @@ final class ReadCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the football competition'
+                description: 'The id of the football competition team entry'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>football competition</comment>
-                in the <comment>Jabronibetz</comment> db.
+                The <info>%command.name%</info> command allows you to read a
+                <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
                   <info>%command.full_name% <id></info>
@@ -96,10 +97,10 @@ final class ReadCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = $this->footballCompetitionRepository->findAllChoices();
+            $choices = $this->footballCompetitionTeamEntryRepository->findAllChoices();
 
             if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football competition id: ', $choices));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football competition team entry id: ', $choices));
                 $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
@@ -113,19 +114,23 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Competition Read');
+        $io->title('Jabronibetz: Football Competition Team Entry Read');
 
         try {
-            $cmp = $this->footballCompetitionRepository->find($input->getArgument('id'));
-            if ($cmp === null) {
-                $io->error('Football competition not found');
+            $entry = $this->footballCompetitionTeamEntryRepository->find($input->getArgument('id'));
+            if ($entry === null) {
+                $io->error('Football competition team entry not found');
                 return Command::FAILURE;
             }
 
             $io->definitionList(...$this->definitionListConverter->convert(
-                $cmp,
+                $entry,
                 [
-                    AbstractNormalizer::GROUPS => [FootballCompetition::GROUP_DETAIL, FootballOrganization::GROUP_LIST]
+                    AbstractNormalizer::GROUPS => [
+                        FootballCompetitionTeamEntry::GROUP_DETAIL,
+                        FootballCompetition::GROUP_LIST,
+                        FootballTeam::GROUP_LIST
+                    ]
                 ]
             ));
         } catch (Throwable $e) {

@@ -23,6 +23,8 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -81,6 +83,50 @@ class FootballTeam
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?FootballOrganization $managingOrganization = null;
+
+    /**
+     * @var Collection<int, FootballCompetitionTeamEntry>
+     */
+    #[ORM\OneToMany(targetEntity: FootballCompetitionTeamEntry::class, mappedBy: 'team')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $competitionEntries;
+
+    /**
+     * @var Collection<int, FootballMatch>
+     */
+    #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'homeTeam')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $homeMatches;
+
+    /**
+     * @var Collection<int, FootballMatch>
+     */
+    #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'awayTeam')]
+    #[Groups([self::GROUP_DETAIL])]
+    private Collection $awayMatches;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->competitionEntries = new ArrayCollection();
+        $this->homeMatches = new ArrayCollection();
+        $this->awayMatches = new ArrayCollection();
+    }
+
+    /**
+     * @return string
+     */
+    public function getChoiceValue(): string
+    {
+        return sprintf(
+            '%s (%s) [%s]',
+            $this->getName() ?? 'Unknown',
+            $this->getShortName() ?? 'UNK',
+            $this->getGender()?->value ?? 'unknown'
+        );
+    }
 
     /**
      * @return int|null
@@ -160,5 +206,29 @@ class FootballTeam
     {
         $this->managingOrganization = $organization;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, FootballCompetitionTeamEntry>
+     */
+    public function getCompetitionEntries(): Collection
+    {
+        return $this->competitionEntries;
+    }
+
+    /**
+     * @return Collection<int, FootballMatch>
+     */
+    public function getHomeMatches(): Collection
+    {
+        return $this->homeMatches;
+    }
+
+    /**
+     * @return Collection<int, FootballMatch>
+     */
+    public function getAwayMatches(): Collection
+    {
+        return $this->awayMatches;
     }
 }
