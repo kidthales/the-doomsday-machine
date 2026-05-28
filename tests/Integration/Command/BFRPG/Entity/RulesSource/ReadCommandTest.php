@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
-use App\Command\BFRPG\Rules\Source\DeleteCommand;
+use App\Command\BFRPG\Entity\RulesSource\ReadCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,8 +16,8 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('bfrpg')]
-#[CoversClass(DeleteCommand::class)]
-final class DeleteCommandTest extends KernelTestCase
+#[CoversClass(ReadCommand::class)]
+final class ReadCommandTest extends KernelTestCase
 {
     #[Test]
     public function it_fails_when_rules_source_id_not_found(): void
@@ -30,7 +30,7 @@ final class DeleteCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:delete',
+                'command' => 'app:bfrpg:entity:rules-source:read',
                 'id' => -1,
             ]
         );

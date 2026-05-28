@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
-use App\Command\BFRPG\Rules\Source\UpdateCommand;
+use App\Command\BFRPG\Entity\RulesSource\ListCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('bfrpg')]
-#[CoversClass(UpdateCommand::class)]
-final class UpdateCommandTest extends KernelTestCase
+#[CoversClass(ListCommand::class)]
+final class ListCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_fails_when_rules_source_id_not_found(): void
+    public function it_displays_a_count_of_rules_sources_found(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,12 @@ final class UpdateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:update',
-                'id' => -1,
+                'command' => 'app:bfrpg:entity:rules-source:list',
             ]
         );
 
-        $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Rules source not found', $appTester->getDisplay());
+        $appTester->assertCommandIsSuccessful();
+
+        $this->assertStringContainsString('Found 0 rules sources.', $appTester->getDisplay());
     }
 }

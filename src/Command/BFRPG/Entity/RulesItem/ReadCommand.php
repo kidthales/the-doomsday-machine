@@ -19,12 +19,12 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Source;
+namespace App\Command\BFRPG\Entity\RulesItem;
 
+use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -40,18 +40,18 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:source:delete',
-    description: 'Delete a rules source',
-    aliases: ['app:bf:rls:src:delete'],
+    name: 'app:bfrpg:entity:rules-item:read',
+    description: 'Read a rules item'
 )]
-final class DeleteCommand extends Command
+final class ReadCommand extends Command
 {
     /**
-     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
+     * @param RulesItemRepository $rulesItemRepository
+     * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly EntityManagerInterface  $bfrpgEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter,
+        private readonly RulesItemRepository     $rulesItemRepository,
+        private readonly DefinitionListConverter $definitionListConverter
     )
     {
         parent::__construct();
@@ -66,11 +66,11 @@ final class DeleteCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules source'
+                description: 'The id of the rules item'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to delete a <comment>rules source</comment>
+                The <info>%command.name%</info> command allows you to read a <comment>rules item</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
@@ -95,12 +95,10 @@ final class DeleteCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            /** @var RulesSourceRepository $repo */
-            $repo = $this->bfrpgEntityManager->getRepository(RulesSource::class);
-            $choices = $repo->findAllChoices();
+            $choices = $this->rulesItemRepository->findAllChoices();
 
             if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
                 $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
@@ -114,40 +112,22 @@ final class DeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Delete');
+        $io->title('BFRPG: Rules Item Read');
 
         try {
-            $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));
+            $item = $this->rulesItemRepository->find($input->getArgument('id'));
 
-            if ($source === null) {
-                $io->error('Rules source not found');
+            if ($item === null) {
+                $io->error('Rules item not found');
                 return Command::FAILURE;
             }
 
-            if ($input->isInteractive()) {
-                $io->definitionList(...$this->definitionListConverter->convert(
-                    $source,
-                    [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
-                    ]
-                ));
-
-                $numItems = $source->getItems()->count();
-                if ($numItems > 0) {
-                    $io->warning(sprintf('%d rules items will also be deleted!', $numItems));
-                }
-
-                if (!$io->confirm('Delete rules source?')) {
-                    return Command::SUCCESS;
-                }
-            }
-
-            $id = $source->getId();
-
-            $this->bfrpgEntityManager->remove($source);
-            $this->bfrpgEntityManager->flush();
-
-            $io->success(sprintf('Rules source %s with id %d has been deleted.', $source->getName(), $id));
+            $io->definitionList(...$this->definitionListConverter->convert(
+                $item,
+                [
+                    AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                ]
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

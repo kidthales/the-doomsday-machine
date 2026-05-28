@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Item;
+namespace App\Command\BFRPG\Entity\RulesItem;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
@@ -43,9 +43,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:item:create',
-    description: 'Create a rules item',
-    aliases: ['app:bf:rls:itm:create'],
+    name: 'app:bfrpg:entity:rules-item:create',
+    description: 'Create a rules item'
 )]
 final class CreateCommand extends Command
 {

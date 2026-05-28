@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
-use App\Command\BFRPG\Rules\Source\ListCommand;
+use App\Command\BFRPG\Entity\RulesSource\CreateCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('bfrpg')]
-#[CoversClass(ListCommand::class)]
-final class ListCommandTest extends KernelTestCase
+#[CoversClass(CreateCommand::class)]
+final class CreateCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_count_of_rules_sources_found(): void
+    public function it_creates_rules_source_non_interactively(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,14 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:list',
+                'command' => 'app:bfrpg:entity:rules-source:create',
+                'name' => 'Test Source'
+            ],
+            [
+                'interactive' => false
             ]
         );
 
-        $appTester->assertCommandIsSuccessful();
-
-        $this->assertStringContainsString('Found 0 rules sources.', $appTester->getDisplay());
+        $appTester->assertCommandIsSuccessful('Rules source Test Source has been created with id 1.');
     }
 }

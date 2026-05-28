@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Item;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesItem;
 
-use App\Command\BFRPG\Rules\Item\DeleteCommand;
+use App\Command\BFRPG\Entity\RulesItem\DeleteCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,7 +30,7 @@ final class DeleteCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:item:delete',
+                'command' => 'app:bfrpg:entity:rules-item:delete',
                 'id' => -1,
             ]
         );

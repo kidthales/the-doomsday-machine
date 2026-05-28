@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Item;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesItem;
 
-use App\Command\BFRPG\Rules\Item\ListCommand;
+use App\Command\BFRPG\Entity\RulesItem\ListCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,7 +30,7 @@ final class ListCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:item:list',
+                'command' => 'app:bfrpg:entity:rules-item:list',
             ]
         );
 

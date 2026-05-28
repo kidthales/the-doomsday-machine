@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Source;
+namespace App\Command\BFRPG\Entity\RulesItem;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Repository\RulesItemRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,18 +36,17 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:source:list',
-    description: 'List rules sources',
-    aliases: ['app:bf:rls:src:list'],
+    name: 'app:bfrpg:entity:rules-item:list',
+    description: 'List rules items'
 )]
 final class ListCommand extends Command
 {
     /**
-     * @param RulesSourceRepository $rulesSourceRepository
+     * @param RulesItemRepository $rulesItemRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RulesSourceRepository   $rulesSourceRepository,
+        private readonly RulesItemRepository     $rulesItemRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -63,7 +62,7 @@ final class ListCommand extends Command
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to list
-                <comment>rules source</comment>s in the <comment>BFRPG</comment> db.
+                <comment>rules item</comment>s in the <comment>BFRPG</comment> db.
 
                 Usage:
                   <info>%command.full_name%</info>
@@ -82,21 +81,21 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source List');
+        $io->title('BFRPG: Rules Item List');
 
         try {
-            $sources = $this->rulesSourceRepository->findAll();
+            $items = $this->rulesItemRepository->findAll();
 
-            foreach ($sources as $source) {
+            foreach ($items as $item) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $source,
+                    $item,
                     [
-                        AbstractNormalizer::GROUPS => RulesSource::GROUP_LIST
+                        AbstractNormalizer::GROUPS => RulesItem::GROUP_LIST
                     ]
                 ));
             }
 
-            $io->info(sprintf('Found %d rules sources.', count($sources)));
+            $io->info(sprintf('Found %d rules items.', count($items)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Item;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
-use App\Command\BFRPG\Rules\Item\CreateCommand;
+use App\Command\BFRPG\Entity\RulesSource\DeleteCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('bfrpg')]
-#[CoversClass(CreateCommand::class)]
-final class CreateCommandTest extends KernelTestCase
+#[CoversClass(DeleteCommand::class)]
+final class DeleteCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_fails_creating_rules_item_if_source_does_not_exist(): void
+    public function it_fails_when_rules_source_id_not_found(): void
     {
         $this->bootKernel();
 
@@ -30,11 +30,8 @@ final class CreateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:item:create',
-                'name' => 'Test Item',
-                'price' => 1.0,
-                'weight' => 1.0,
-                'source-id' => -1
+                'command' => 'app:bfrpg:entity:rules-source:delete',
+                'id' => -1,
             ]
         );
 

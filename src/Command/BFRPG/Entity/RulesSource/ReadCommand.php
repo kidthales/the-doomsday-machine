@@ -19,11 +19,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Item;
+namespace App\Command\BFRPG\Entity\RulesSource;
 
-use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesItemRepository;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -32,7 +31,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -41,18 +39,17 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:item:read',
-    description: 'Read a rules item',
-    aliases: ['app:bf:rls:itm:read'],
+    name: 'app:bfrpg:entity:rules-source:read',
+    description: 'Read a rules source'
 )]
 final class ReadCommand extends Command
 {
     /**
-     * @param RulesItemRepository $rulesItemRepository
+     * @param RulesSourceRepository $rulesSourceRepository
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RulesItemRepository     $rulesItemRepository,
+        private readonly RulesSourceRepository   $rulesSourceRepository,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -68,11 +65,11 @@ final class ReadCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules item'
+                description: 'The id of the rules source'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules item</comment>
+                The <info>%command.name%</info> command allows you to read a <comment>rules source</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
@@ -97,10 +94,10 @@ final class ReadCommand extends Command
         $helper = $this->getHelper('question');
 
         if ($input->getArgument('id') === null) {
-            $choices = $this->rulesItemRepository->findAllChoices();
+            $choices = $this->rulesSourceRepository->findAllChoices();
 
             if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
                 $input->setArgument('id', array_search($choice, $choices, true));
             }
         }
@@ -114,20 +111,20 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Item Read');
+        $io->title('BFRPG: Rules Source Read');
 
         try {
-            $item = $this->rulesItemRepository->find($input->getArgument('id'));
+            $source = $this->rulesSourceRepository->find($input->getArgument('id'));
 
-            if ($item === null) {
-                $io->error('Rules item not found');
+            if ($source === null) {
+                $io->error('Rules source not found');
                 return Command::FAILURE;
             }
 
             $io->definitionList(...$this->definitionListConverter->convert(
-                $item,
+                $source,
                 [
-                    AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                    AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                 ]
             ));
         } catch (Throwable $e) {

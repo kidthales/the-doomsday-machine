@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesItem;
 
-use App\Command\BFRPG\Rules\Source\ReadCommand;
+use App\Command\BFRPG\Entity\RulesItem\ReadCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 final class ReadCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_fails_when_rules_source_id_not_found(): void
+    public function it_fails_when_rules_item_id_not_found(): void
     {
         $this->bootKernel();
 
@@ -30,12 +30,12 @@ final class ReadCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:read',
+                'command' => 'app:bfrpg:entity:rules-item:read',
                 'id' => -1,
             ]
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Rules source not found', $appTester->getDisplay());
+        $this->assertStringContainsString('Rules item not found', $appTester->getDisplay());
     }
 }

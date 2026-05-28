@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Command\BFRPG\Rules\Source;
+namespace App\Tests\Integration\Command\BFRPG\Entity\RulesItem;
 
-use App\Command\BFRPG\Rules\Source\CreateCommand;
+use App\Command\BFRPG\Entity\RulesItem\UpdateCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,11 +16,11 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[Group('bfrpg')]
-#[CoversClass(CreateCommand::class)]
-final class CreateCommandTest extends KernelTestCase
+#[CoversClass(UpdateCommand::class)]
+final class UpdateCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_creates_rules_source_non_interactively(): void
+    public function it_fails_when_rules_item_id_not_found(): void
     {
         $this->bootKernel();
 
@@ -30,14 +30,12 @@ final class CreateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:bfrpg:rules:source:create',
-                'name' => 'Test Source'
-            ],
-            [
-                'interactive' => false
+                'command' => 'app:bfrpg:entity:rules-item:update',
+                'id' => -1,
             ]
         );
 
-        $appTester->assertCommandIsSuccessful('Rules source Test Source has been created with id 1.');
+        $this->assertSame(1, $appTester->getStatusCode());
+        $this->assertStringContainsString('Rules item not found', $appTester->getDisplay());
     }
 }

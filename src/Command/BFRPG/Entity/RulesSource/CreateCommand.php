@@ -19,38 +19,40 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Rules\Source;
+namespace App\Command\BFRPG\Entity\RulesSource;
 
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:rules:source:read',
-    description: 'Read a rules source',
-    aliases: ['app:bf:rls:src:read'],
+    name: 'app:bfrpg:entity:rules-source:create',
+    description: 'Create a rules source'
 )]
-final class ReadCommand extends Command
+final class CreateCommand extends Command
 {
     /**
-     * @param RulesSourceRepository $rulesSourceRepository
+     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
      * @param DefinitionListConverter $definitionListConverter
      */
     public function __construct(
-        private readonly RulesSourceRepository   $rulesSourceRepository,
+        private readonly ValidatorInterface      $validator,
+        private readonly EntityManagerInterface  $bfrpgEntityManager,
         private readonly DefinitionListConverter $definitionListConverter
     )
     {
@@ -64,22 +66,22 @@ final class ReadCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'id',
+                name: 'name',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules source'
+                description: 'The name of the rules source'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules source</comment>
+                The <info>%command.name%</info> command allows you to create a <comment>rules source</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id></info>
+                  <info>%command.full_name% <name></info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
+                  <info>%command.full_name% "Core Rules 4th Edition"</info>
 
-                If no id is specified, you'll be prompted interactively.
+                If no name is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -94,13 +96,8 @@ final class ReadCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        if ($input->getArgument('id') === null) {
-            $choices = $this->rulesSourceRepository->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
+        if ($input->getArgument('name') === null) {
+            $input->setArgument('name', $helper->ask($input, $output, new Question('Rules source name: ')));
         }
     }
 
@@ -112,22 +109,36 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Read');
+        $io->title('BFRPG: Rules Source Create');
 
         try {
-            $source = $this->rulesSourceRepository->find($input->getArgument('id'));
+            $source = (new RulesSource())
+                ->setName(trim($input->getArgument('name')));
 
-            if ($source === null) {
-                $io->error('Rules source not found');
+            $errors = $this->validator->validate($source);
+
+            if (count($errors) > 0) {
+                $io->error((string)$errors);
                 return Command::FAILURE;
             }
 
-            $io->definitionList(...$this->definitionListConverter->convert(
-                $source,
-                [
-                    AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
-                ]
-            ));
+            if ($input->isInteractive()) {
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $source,
+                    [
+                        AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
+                    ]
+                ));
+
+                if (!$io->confirm('Create rules source?')) {
+                    return Command::SUCCESS;
+                }
+            }
+
+            $this->bfrpgEntityManager->persist($source);
+            $this->bfrpgEntityManager->flush();
+
+            $io->success(sprintf('Rules source %s has been created with id %d.', $source->getName(), $source->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
