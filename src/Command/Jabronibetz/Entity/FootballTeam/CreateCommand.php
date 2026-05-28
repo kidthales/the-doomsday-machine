@@ -45,8 +45,7 @@ use Throwable;
  */
 #[AsCommand(
     name: 'app:jabronibetz:entity:football-team:create',
-    description: 'Create a football team',
-    aliases: ['app:jbetz:footy:team:create'],
+    description: 'Create a football team'
 )]
 final class CreateCommand extends Command
 {
@@ -139,14 +138,8 @@ final class CreateCommand extends Command
         }
 
         if ($input->getArgument('gender') === null) {
-            $input->setArgument(
-                'gender',
-                $helper->ask(
-                    $input,
-                    $output,
-                    new ChoiceQuestion('Football team gender: ', array_column(FootballGender::cases(), 'value'))
-                )
-            );
+            $question = new ChoiceQuestion('Football team gender: ', array_column(FootballGender::cases(), 'value'));
+            $input->setArgument('gender', $helper->ask($input, $output, $question));
         }
     }
 
