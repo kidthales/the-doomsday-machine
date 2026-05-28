@@ -152,7 +152,7 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Item Create');
+        $io->title('BFRPG: Create Rules Item');
 
         try {
             $price = $input->getArgument('price');

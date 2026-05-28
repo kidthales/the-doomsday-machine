@@ -81,7 +81,7 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source List');
+        $io->title('BFRPG: List Rules Sources');
 
         try {
             $sources = $this->rulesSourceRepository->findAll();

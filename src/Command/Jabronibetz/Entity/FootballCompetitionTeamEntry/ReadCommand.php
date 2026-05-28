@@ -113,7 +113,7 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Competition Team Entry Read');
+        $io->title('Jabronibetz: Read Football Competition Team Entry');
 
         try {
             $entry = $this->footballCompetitionTeamEntryRepository->find($input->getArgument('id'));

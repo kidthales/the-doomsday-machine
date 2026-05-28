@@ -112,7 +112,7 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Item Read');
+        $io->title('BFRPG: Read Rules Item');
 
         try {
             $item = $this->rulesItemRepository->find($input->getArgument('id'));

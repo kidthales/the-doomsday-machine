@@ -142,7 +142,7 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Competition Team Entry Update');
+        $io->title('Jabronibetz: Update Football Competition Team Entry');
 
         try {
             $entry = $this->jabronibetzEntityManager->find(FootballCompetitionTeamEntry::class, $input->getArgument('id'));

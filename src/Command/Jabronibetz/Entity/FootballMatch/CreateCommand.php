@@ -198,7 +198,7 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Match Create');
+        $io->title('Jabronibetz: Create Football Match');
 
         try {
             $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));

@@ -146,7 +146,7 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Item Update');
+        $io->title('BFRPG: Update Rules Item');
 
         try {
             $item = $this->bfrpgEntityManager->find(RulesItem::class, $input->getArgument('id'));

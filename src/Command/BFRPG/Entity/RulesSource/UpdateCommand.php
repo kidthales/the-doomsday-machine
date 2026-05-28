@@ -123,7 +123,7 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Update');
+        $io->title('BFRPG: Update Rules Source');
 
         try {
             $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));

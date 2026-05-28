@@ -109,7 +109,7 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Create');
+        $io->title('BFRPG: Create Rules Source');
 
         try {
             $source = (new RulesSource())

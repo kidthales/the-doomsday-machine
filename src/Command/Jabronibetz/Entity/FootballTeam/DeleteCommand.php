@@ -113,7 +113,7 @@ final class DeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Team Delete');
+        $io->title('Jabronibetz: Delete Football Team');
 
         try {
             $team = $this->jabronibetzEntityManager->find(FootballTeam::class, $input->getArgument('id'));

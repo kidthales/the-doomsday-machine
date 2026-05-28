@@ -118,7 +118,7 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Organization Create');
+        $io->title('Jabronibetz: Create Football Organization');
 
         try {
             $org = (new FootballOrganization())

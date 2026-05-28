@@ -83,7 +83,7 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: Football Competition Team Entry List');
+        $io->title('Jabronibetz: List Football Competition Team Entries');
 
         try {
             $entries = $this->footballCompetitionTeamEntryRepository->findAll();

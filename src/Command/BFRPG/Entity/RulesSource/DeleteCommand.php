@@ -113,7 +113,7 @@ final class DeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Rules Source Delete');
+        $io->title('BFRPG: Delete Rules Source');
 
         try {
             $source = $this->bfrpgEntityManager->find(RulesSource::class, $input->getArgument('id'));
