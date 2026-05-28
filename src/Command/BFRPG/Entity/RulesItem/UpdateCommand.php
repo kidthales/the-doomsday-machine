@@ -156,6 +156,8 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
+            $item->setName(trim($input->getOption('name') ?? $item->getName()));
+
             $price = $input->getOption('price');
             if ($price !== null) {
                 if (!is_numeric($price)) {
@@ -163,6 +165,7 @@ final class UpdateCommand extends Command
                 }
                 $price = floatval($price);
             }
+            $item->setPrice($price ?? $item->getPrice());
 
             $weight = $input->getOption('weight');
             if ($weight !== null) {
@@ -171,6 +174,7 @@ final class UpdateCommand extends Command
                 }
                 $weight = floatval($weight);
             }
+            $item->setWeight($weight ?? $item->getWeight());
 
             $source = null;
             $sourceId = $input->getOption('source-id');
@@ -181,6 +185,7 @@ final class UpdateCommand extends Command
                     return Command::FAILURE;
                 }
             }
+            $item->setSource($source ?? $item->getSource());
 
             $description = $input->getOption('description');
             if ($description === false) {
@@ -189,12 +194,7 @@ final class UpdateCommand extends Command
             if ($description !== null) {
                 $description = trim($description);
             }
-
-            $item->setName(trim($input->getOption('name') ?? $item->getName()));
-            $item->setPrice($price ?? $item->getPrice());
-            $item->setWeight($weight ?? $item->getWeight());
             $item->setDescription($description);
-            $item->setSource($source ?? $item->getSource());
 
             $errors = $this->validator->validate($item);
 
@@ -219,7 +219,7 @@ final class UpdateCommand extends Command
             $this->bfrpgEntityManager->persist($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules item with id %d has been updated.', $item->getId()));
+            $io->success(sprintf('Rules item %s with id %d has been updated.', $item->getChoiceValue(), $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

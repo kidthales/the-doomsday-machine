@@ -138,7 +138,11 @@ final class CreateCommand extends Command
             $this->bfrpgEntityManager->persist($source);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules source %s has been created with id %d.', $source->getName(), $source->getId()));
+            $io->success(sprintf(
+                'Rules source %s has been created with id %d.',
+                $source->getChoiceValue(),
+                $source->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

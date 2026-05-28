@@ -23,6 +23,7 @@ namespace App\Command\BFRPG\Entity\RulesItem;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Repository\RulesSourceRepository;
 use App\Domain\Shared\Console\Style\DefinitionListConverter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -132,24 +133,13 @@ final class CreateCommand extends Command
         }
 
         if ($input->getArgument('source-id') === null) {
-            $choices = array_reduce(
-                $this->bfrpgEntityManager->getRepository(RulesSource::class)->findAll(),
-                function (array $orgs, RulesSource $org) {
-                    $orgs[(string)$org->getId()] = $org->getName();
-                    return $orgs;
-                },
-                []
-            );
+            /** @var RulesSourceRepository $repo */
+            $repo = $this->bfrpgEntityManager->getRepository(RulesSource::class);
+            $choices = $repo->findAllChoices();
 
             if (!empty($choices)) {
-                $input->setArgument(
-                    'source-id',
-                    array_search(
-                        $helper->ask($input, $output, new ChoiceQuestion('Rules item sourced from: ', $choices)),
-                        $choices,
-                        true
-                    )
-                );
+                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item sourced from: ', $choices));
+                $input->setArgument('source-id', array_search($choice, $choices, true));
             }
         }
     }
@@ -218,7 +208,7 @@ final class CreateCommand extends Command
             $this->bfrpgEntityManager->persist($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getName(), $item->getId()));
+            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getChoiceValue(), $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -19,22 +19,31 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\Repository;
+namespace App\Domain\Shared\Repository;
 
-use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
-use App\Domain\Shared\Repository\ChoosableEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Domain\Shared\Entity\ChoosableEntityInterface;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
- * @extends ChoosableEntityRepository<FootballCompetitionTeamEntry>
+ * @template T of ChoosableEntityInterface
+ * @template-extends ServiceEntityRepository<T>
+ *
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class FootballCompetitionTeamEntryRepository extends ChoosableEntityRepository
+abstract class ChoosableEntityRepository extends ServiceEntityRepository
 {
     /**
-     * @param ManagerRegistry $registry
+     * @return array<string, string>
      */
-    public function __construct(ManagerRegistry $registry)
+    public function findAllChoices(): array
     {
-        parent::__construct($registry, FootballCompetitionTeamEntry::class);
+        return array_reduce(
+            $this->findAll(),
+            function (array $choices, ChoosableEntityInterface $choice) {
+                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
+                return $choices;
+            },
+            []
+        );
     }
 }

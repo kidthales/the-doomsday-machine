@@ -22,13 +22,13 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Repository;
 
 use App\Domain\BFRPG\Entity\RulesItem;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Domain\Shared\Repository\ChoosableEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<RulesItem>
+ * @extends ChoosableEntityRepository<RulesItem>
  */
-final class RulesItemRepository extends ServiceEntityRepository
+final class RulesItemRepository extends ChoosableEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
@@ -36,20 +36,5 @@ final class RulesItemRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RulesItem::class);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function findAllChoices(): array
-    {
-        return array_reduce(
-            $this->findAll(),
-            function (array $items, RulesItem $item) {
-                $items[(string)$item->getId()] = $item->getName();
-                return $items;
-            },
-            []
-        );
     }
 }

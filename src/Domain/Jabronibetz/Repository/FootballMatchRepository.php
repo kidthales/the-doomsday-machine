@@ -22,13 +22,13 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Repository;
 
 use App\Domain\Jabronibetz\Entity\FootballMatch;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Domain\Shared\Repository\ChoosableEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<FootballMatch>
+ * @extends ChoosableEntityRepository<FootballMatch>
  */
-final class FootballMatchRepository extends ServiceEntityRepository
+final class FootballMatchRepository extends ChoosableEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
@@ -36,20 +36,5 @@ final class FootballMatchRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FootballMatch::class);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function findAllChoices(): array
-    {
-        return array_reduce(
-            $this->findAll(),
-            function (array $matches, FootballMatch $match) {
-                $matches[(string)$match->getId()] = $match->getChoiceValue();
-                return $matches;
-            },
-            []
-        );
     }
 }

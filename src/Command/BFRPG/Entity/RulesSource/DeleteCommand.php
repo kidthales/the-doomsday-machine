@@ -146,7 +146,7 @@ final class DeleteCommand extends Command
             $this->bfrpgEntityManager->remove($source);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules source %s with id %d has been deleted.', $source->getName(), $id));
+            $io->success(sprintf('Rules source %s with id %d has been deleted.', $source->getChoiceValue(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

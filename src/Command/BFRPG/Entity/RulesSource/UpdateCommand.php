@@ -158,7 +158,11 @@ final class UpdateCommand extends Command
             $this->bfrpgEntityManager->persist($source);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules source with id %d has been updated.', $source->getId()));
+            $io->success(sprintf(
+                'Rules source %s with id %d has been updated.',
+                $source->getChoiceValue(),
+                $source->getId()
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -19,22 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\Repository;
-
-use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
-use App\Domain\Shared\Repository\ChoosableEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+namespace App\Domain\Shared\Entity;
 
 /**
- * @extends ChoosableEntityRepository<FootballCompetitionTeamEntry>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class FootballCompetitionTeamEntryRepository extends ChoosableEntityRepository
+interface ChoosableEntityInterface
 {
     /**
-     * @param ManagerRegistry $registry
+     * @return string
      */
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, FootballCompetitionTeamEntry::class);
-    }
+    public function getChoiceKey(): string;
+
+    /**
+     * @return string
+     */
+    public function getChoiceValue(): string;
 }

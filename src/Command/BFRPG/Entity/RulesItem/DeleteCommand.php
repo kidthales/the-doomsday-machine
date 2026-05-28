@@ -142,7 +142,7 @@ final class DeleteCommand extends Command
             $this->bfrpgEntityManager->remove($item);
             $this->bfrpgEntityManager->flush();
 
-            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getName(), $id));
+            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getChoiceValue(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
