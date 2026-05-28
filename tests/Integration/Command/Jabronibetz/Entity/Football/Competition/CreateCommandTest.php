@@ -30,7 +30,7 @@ final class CreateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:create',
+                'command' => 'app:jabronibetz:entity:football:competition:create',
                 'name' => 'Test Competition',
                 'short-name' => 'TC',
                 'organization-id' => -1

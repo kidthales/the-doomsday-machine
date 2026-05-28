@@ -40,9 +40,13 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:delete',
+    name: 'app:jabronibetz:entity:football:competition:delete',
     description: 'Delete a football competition',
-    aliases: ['app:jbetz:footy:cmp:delete'],
+    aliases: [
+        'app:jabronibetz:entity:football:competition:del',
+        'app:jbetz:ent:footy:cmp:delete',
+        'app:jbetz:ent:footy:cmp:del'
+    ],
 )]
 final class DeleteCommand extends Command
 {

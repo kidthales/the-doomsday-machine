@@ -43,9 +43,13 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:update',
+    name: 'app:jabronibetz:entity:football:competition:update',
     description: 'Update a football competition',
-    aliases: ['app:jbetz:footy:cmp:update'],
+    aliases: [
+        'app:jabronibetz:entity:football:competition:edit',
+        'app:jbetz:ent:footy:cmp:update',
+        'app:jbetz:ent:footy:cmp:edit'
+    ],
 )]
 final class UpdateCommand extends Command
 {

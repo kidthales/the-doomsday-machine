@@ -40,9 +40,9 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:read',
+    name: 'app:jabronibetz:entity:football:competition:read',
     description: 'Read a football competition',
-    aliases: ['app:jbetz:footy:cmp:read'],
+    aliases: ['app:jbetz:ent:footy:cmp:read'],
 )]
 final class ReadCommand extends Command
 {

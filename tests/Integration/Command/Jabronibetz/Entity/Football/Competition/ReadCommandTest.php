@@ -30,7 +30,7 @@ final class ReadCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:read',
+                'command' => 'app:jabronibetz:entity:football:competition:read',
                 'id' => -1,
             ]
         );

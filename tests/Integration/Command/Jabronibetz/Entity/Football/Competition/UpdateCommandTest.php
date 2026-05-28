@@ -30,7 +30,7 @@ final class UpdateCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:update',
+                'command' => 'app:jabronibetz:entity:football:competition:update',
                 'id' => -1,
             ]
         );

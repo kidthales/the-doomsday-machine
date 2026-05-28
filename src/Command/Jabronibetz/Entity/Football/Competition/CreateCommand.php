@@ -43,9 +43,13 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football:competition:create',
+    name: 'app:jabronibetz:entity:football:competition:create',
     description: 'Create a football competition',
-    aliases: ['app:jbetz:footy:cmp:create'],
+    aliases: [
+        'app:jabronibetz:entity:football:competition:new',
+        'app:jbetz:ent:footy:cmp:create',
+        'app:jbetz:ent:footy:cmp:new'
+    ],
 )]
 final class CreateCommand extends Command
 {

@@ -30,7 +30,7 @@ final class DeleteCommandTest extends KernelTestCase
         $appTester = new ApplicationTester($app);
         $appTester->run(
             [
-                'command' => 'app:jabronibetz:football:competition:delete',
+                'command' => 'app:jabronibetz:entity:football:competition:delete',
                 'id' => -1,
             ]
         );
