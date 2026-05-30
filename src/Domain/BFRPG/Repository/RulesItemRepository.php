@@ -22,13 +22,13 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Repository;
 
 use App\Domain\BFRPG\Entity\RulesItem;
-use App\Domain\Shared\Repository\ChoosableEntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ChoosableEntityRepository<RulesItem>
+ * @extends ServiceEntityRepository<RulesItem>
  */
-final class RulesItemRepository extends ChoosableEntityRepository
+final class RulesItemRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

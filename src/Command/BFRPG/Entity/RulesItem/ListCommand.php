@@ -22,10 +22,9 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Entity\RulesItem;
 
 use App\Domain\BFRPG\Entity\RulesItem;
-use App\Domain\BFRPG\Repository\RulesItemRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -41,17 +40,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    /**
-     * @param RulesItemRepository $rulesItemRepository
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly RulesItemRepository     $rulesItemRepository,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -84,8 +73,7 @@ final class ListCommand extends Command
         $io->title('BFRPG: List Rules Items');
 
         try {
-            $items = $this->rulesItemRepository->findAll();
-
+            $items = $this->entityManager->getRepository(RulesItem::class)->findAll();
             foreach ($items as $item) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $item,
@@ -94,7 +82,6 @@ final class ListCommand extends Command
                     ]
                 ));
             }
-
             $io->info(sprintf('Found %d rules items.', count($items)));
         } catch (Throwable $e) {
             $io->error($e->getMessage());

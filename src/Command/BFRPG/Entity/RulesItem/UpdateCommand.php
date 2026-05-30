@@ -23,20 +23,15 @@ namespace App\Command\BFRPG\Entity\RulesItem;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesItemRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 use UnexpectedValueException;
 
@@ -49,19 +44,7 @@ use UnexpectedValueException;
 )]
 final class UpdateCommand extends Command
 {
-    /**
-     * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $bfrpgEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -123,19 +106,14 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            /** @var RulesItemRepository $repo */
-            $repo = $this->bfrpgEntityManager->getRepository(RulesItem::class);
-            $choices = $repo->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules item id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
-        }
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Rules item id: ',
+            $this->entityManager->getRepository(RulesItem::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -149,8 +127,7 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Item');
 
         try {
-            $item = $this->bfrpgEntityManager->find(RulesItem::class, $input->getArgument('id'));
-
+            $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
             if ($item === null) {
                 $io->error('Rules item not found');
                 return Command::FAILURE;
@@ -179,7 +156,7 @@ final class UpdateCommand extends Command
             $source = null;
             $sourceId = $input->getOption('source-id');
             if ($sourceId !== null) {
-                $source = $this->bfrpgEntityManager->find(RulesSource::class, $sourceId);
+                $source = $this->entityManager->find(RulesSource::class, $sourceId);
                 if ($source === null) {
                     $io->error('Rules source not found');
                     return Command::FAILURE;
@@ -197,7 +174,6 @@ final class UpdateCommand extends Command
             $item->setDescription($description);
 
             $errors = $this->validator->validate($item);
-
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -216,8 +192,8 @@ final class UpdateCommand extends Command
                 }
             }
 
-            $this->bfrpgEntityManager->persist($item);
-            $this->bfrpgEntityManager->flush();
+            $this->entityManager->persist($item);
+            $this->entityManager->flush();
 
             $io->success(sprintf('Rules item %s with id %d has been updated.', $item->getChoiceValue(), $item->getId()));
         } catch (Throwable $e) {

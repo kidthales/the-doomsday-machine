@@ -22,7 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesItemRepository;
-use App\Domain\Shared\Entity\ChoosableEntityInterface;
+use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -34,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: RulesItemRepository::class)]
 #[ORM\Table(name: 'rules_item')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_ITEM_NAME', fields: ['name'])]
-class RulesItem implements ChoosableEntityInterface
+class RulesItem implements ChoosableInterface
 {
     public const string GROUP_LIST = 'rules_item_list';
     public const string GROUP_DETAIL = 'rules_item_detail';
