@@ -19,22 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\BFRPG\Repository;
+namespace App\Domain\Shared\Console\Question;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+trait ChoicesBuilderAwareTrait
 {
     /**
-     * @param ManagerRegistry $registry
+     * @var ChoicesBuilder|null
      */
-    public function __construct(ManagerRegistry $registry)
+    protected ?ChoicesBuilder $choicesBuilder = null;
+
+    /**
+     * @return ChoicesBuilder|null
+     */
+    public function getChoicesBuilder(): ?ChoicesBuilder
     {
-        parent::__construct($registry, RulesSource::class);
+        return $this->choicesBuilder;
+    }
+
+    /**
+     * @param ChoicesBuilder $choicesBuilder
+     * @return $this
+     */
+    #[Required]
+    public function setChoicesBuilder(ChoicesBuilder $choicesBuilder): static
+    {
+        $this->choicesBuilder = $choicesBuilder;
+        return $this;
     }
 }

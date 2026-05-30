@@ -19,22 +19,20 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\BFRPG\Repository;
-
-use App\Domain\BFRPG\Entity\RulesSource;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+namespace App\Domain\Shared\Console\Question;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+interface ChoosableInterface
 {
     /**
-     * @param ManagerRegistry $registry
+     * @return string
      */
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, RulesSource::class);
-    }
+    public function getChoiceKey(): string;
+
+    /**
+     * @return string
+     */
+    public function getChoiceValue(): string;
 }

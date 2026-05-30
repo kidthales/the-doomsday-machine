@@ -22,15 +22,12 @@ declare(strict_types=1);
 namespace App\Command\BFRPG\Entity\RulesSource;
 
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -44,17 +41,7 @@ use Throwable;
 )]
 final class ReadCommand extends Command
 {
-    /**
-     * @param RulesSourceRepository $rulesSourceRepository
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly RulesSourceRepository   $rulesSourceRepository,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -90,17 +77,14 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            $choices = $this->rulesSourceRepository->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Rules source id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
-        }
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Rules source id: ',
+            $this->entityManager->getRepository(RulesSource::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -114,8 +98,7 @@ final class ReadCommand extends Command
         $io->title('BFRPG: Read Rules Source');
 
         try {
-            $source = $this->rulesSourceRepository->find($input->getArgument('id'));
-
+            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('id'));
             if ($source === null) {
                 $io->error('Rules source not found');
                 return Command::FAILURE;

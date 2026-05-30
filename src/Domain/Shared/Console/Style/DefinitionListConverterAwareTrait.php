@@ -19,22 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\BFRPG\Repository;
+namespace App\Domain\Shared\Console\Style;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+trait DefinitionListConverterAwareTrait
 {
     /**
-     * @param ManagerRegistry $registry
+     * @var DefinitionListConverter|null
      */
-    public function __construct(ManagerRegistry $registry)
+    protected ?DefinitionListConverter $definitionListConverter = null;
+
+    /**
+     * @return DefinitionListConverter|null
+     */
+    public function getDefinitionListConverter(): ?DefinitionListConverter
     {
-        parent::__construct($registry, RulesSource::class);
+        return $this->definitionListConverter;
+    }
+
+    /**
+     * @param DefinitionListConverter $definitionListConverter
+     * @return $this
+     */
+    #[Required]
+    public function setDefinitionListConverter(DefinitionListConverter $definitionListConverter): static
+    {
+        $this->definitionListConverter = $definitionListConverter;
+        return $this;
     }
 }

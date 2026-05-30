@@ -19,22 +19,37 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\BFRPG\Repository;
+namespace App\Domain\BFRPG\ORM;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+trait EntityManagerAwareTrait
 {
     /**
-     * @param ManagerRegistry $registry
+     * @var EntityManagerInterface|null
      */
-    public function __construct(ManagerRegistry $registry)
+    protected ?EntityManagerInterface $entityManager = null;
+
+    /**
+     * @return EntityManagerInterface|null
+     */
+    public function getEntityManager(): ?EntityManagerInterface
     {
-        parent::__construct($registry, RulesSource::class);
+        return $this->entityManager;
+    }
+
+    /**
+     * @param EntityManagerInterface $bfrpgEntityManager Autowiring alias
+     * @return $this
+     */
+    #[Required]
+    public function setEntityManager(EntityManagerInterface $bfrpgEntityManager): static
+    {
+        $this->entityManager = $bfrpgEntityManager;
+        return $this;
     }
 }

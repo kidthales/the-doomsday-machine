@@ -19,22 +19,37 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\BFRPG\Repository;
+namespace App\Domain\Shared\Validator;
 
-use App\Domain\BFRPG\Entity\RulesSource;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @extends ServiceEntityRepository<RulesSource>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class RulesSourceRepository extends ServiceEntityRepository
+trait ValidatorAwareTrait
 {
     /**
-     * @param ManagerRegistry $registry
+     * @var ValidatorInterface|null
      */
-    public function __construct(ManagerRegistry $registry)
+    protected ?ValidatorInterface $validator = null;
+
+    /**
+     * @return ValidatorInterface|null
+     */
+    public function getValidator(): ?ValidatorInterface
     {
-        parent::__construct($registry, RulesSource::class);
+        return $this->validator;
+    }
+
+    /**
+     * @param ValidatorInterface $validator
+     * @return $this
+     */
+    #[Required]
+    public function setValidator(ValidatorInterface $validator): static
+    {
+        $this->validator = $validator;
+        return $this;
     }
 }
