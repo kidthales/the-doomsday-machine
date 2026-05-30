@@ -19,31 +19,37 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Shared\Repository;
+namespace App\Domain\Jabronibetz\ORM;
 
-use App\Domain\Shared\Entity\ChoosableEntityInterface;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @template T of ChoosableEntityInterface
- * @template-extends ServiceEntityRepository<T>
- *
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract class ChoosableEntityRepository extends ServiceEntityRepository
+trait EntityManagerAwareTrait
 {
     /**
-     * @return array<string, string>
+     * @var EntityManagerInterface|null
      */
-    public function findAllChoices(): array
+    protected ?EntityManagerInterface $entityManager = null;
+
+    /**
+     * @return EntityManagerInterface|null
+     */
+    public function getEntityManager(): ?EntityManagerInterface
     {
-        return array_reduce(
-            $this->findAll(),
-            function (array $choices, ChoosableEntityInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
-        );
+        return $this->entityManager;
+    }
+
+    /**
+     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
+     * @return $this
+     */
+    #[Required]
+    public function setEntityManager(EntityManagerInterface $jabronibetzEntityManager): static
+    {
+        $this->entityManager = $jabronibetzEntityManager;
+        return $this;
     }
 }

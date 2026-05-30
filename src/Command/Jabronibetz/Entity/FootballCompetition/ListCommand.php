@@ -22,10 +22,9 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Entity\FootballCompetition;
 
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -41,17 +40,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    /**
-     * @param FootballCompetitionRepository $footballCompetitionRepository
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly FootballCompetitionRepository $footballCompetitionRepository,
-        private readonly DefinitionListConverter       $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -84,7 +73,7 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: List Football Competitions');
 
         try {
-            $cmps = $this->footballCompetitionRepository->findAll();
+            $cmps = $this->entityManager->getRepository(FootballCompetition::class)->findAll();
             foreach ($cmps as $cmp) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $cmp,

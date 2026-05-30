@@ -22,10 +22,9 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Entity\FootballOrganization;
 
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -41,17 +40,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    /**
-     * @param FootballOrganizationRepository $footballOrganizationRepository
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly FootballOrganizationRepository $footballOrganizationRepository,
-        private readonly DefinitionListConverter        $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -84,7 +73,7 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: List Football Organizations');
 
         try {
-            $orgs = $this->footballOrganizationRepository->findAll();
+            $orgs = $this->entityManager->getRepository(FootballOrganization::class)->findAll();
             foreach ($orgs as $org) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $org,

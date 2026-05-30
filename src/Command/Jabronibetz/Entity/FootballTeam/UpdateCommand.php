@@ -24,20 +24,15 @@ namespace App\Command\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Enum\FootballGender;
-use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
@@ -49,19 +44,7 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    /**
-     * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -120,19 +103,14 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            /** @var FootballTeamRepository $repo */
-            $repo = $this->jabronibetzEntityManager->getRepository(FootballTeam::class);
-            $choices = $repo->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football team id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
-        }
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Football team id: ',
+            $this->entityManager->getRepository(FootballTeam::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -146,7 +124,7 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Team');
 
         try {
-            $team = $this->jabronibetzEntityManager->find(FootballTeam::class, $input->getArgument('id'));
+            $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('id'));
             if ($team === null) {
                 $io->error('Football team not found');
                 return Command::FAILURE;
@@ -157,7 +135,7 @@ final class UpdateCommand extends Command
 
             $orgId = $input->getOption('organization-id');
             if ($orgId !== null) {
-                $org = $this->jabronibetzEntityManager->find(FootballOrganization::class, $orgId);
+                $org = $this->entityManager->find(FootballOrganization::class, $orgId);
                 if ($org === null) {
                     $io->error('Football organization not found');
                     return Command::FAILURE;
@@ -191,8 +169,8 @@ final class UpdateCommand extends Command
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($team);
-            $this->jabronibetzEntityManager->flush();
+            $this->entityManager->persist($team);
+            $this->entityManager->flush();
 
             $io->success(sprintf(
                 'Football team %s with id %d has been updated.',

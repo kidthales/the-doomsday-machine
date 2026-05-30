@@ -24,10 +24,9 @@ namespace App\Command\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\Repository\FootballCompetitionTeamEntryRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -43,17 +42,7 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    /**
-     * @param FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly FootballCompetitionTeamEntryRepository $footballCompetitionTeamEntryRepository,
-        private readonly DefinitionListConverter                $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -86,7 +75,7 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: List Football Competition Team Entries');
 
         try {
-            $entries = $this->footballCompetitionTeamEntryRepository->findAll();
+            $entries = $this->entityManager->getRepository(FootballCompetitionTeamEntry::class)->findAll();
             foreach ($entries as $entry) {
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $entry,

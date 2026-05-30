@@ -22,16 +22,12 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Entity\FootballCompetition;
 
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -45,16 +41,7 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    /**
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     */
-    public function __construct(
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -90,19 +77,14 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            /** @var FootballCompetitionRepository $repo */
-            $repo = $this->jabronibetzEntityManager->getRepository(FootballCompetition::class);
-            $choices = $repo->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football competition id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
-        }
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Football competition id: ',
+            $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -116,7 +98,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Competition');
 
         try {
-            $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $input->getArgument('id'));
+            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('id'));
             if ($cmp === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
@@ -147,8 +129,8 @@ final class DeleteCommand extends Command
 
             $id = $cmp->getId();
 
-            $this->jabronibetzEntityManager->remove($cmp);
-            $this->jabronibetzEntityManager->flush();
+            $this->entityManager->remove($cmp);
+            $this->entityManager->flush();
 
             $io->success(sprintf('Football competition %s with id %d has been deleted.', $cmp->getChoiceValue(), $id));
         } catch (Throwable $e) {

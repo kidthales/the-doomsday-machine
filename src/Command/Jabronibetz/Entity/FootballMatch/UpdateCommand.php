@@ -25,20 +25,15 @@ use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
-use App\Domain\Shared\Console\Style\DefinitionListConverter;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
+use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 /**
@@ -50,19 +45,7 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    /**
-     * @param ValidatorInterface $validator
-     * @param EntityManagerInterface $jabronibetzEntityManager Autowiring alias
-     * @param DefinitionListConverter $definitionListConverter
-     */
-    public function __construct(
-        private readonly ValidatorInterface      $validator,
-        private readonly EntityManagerInterface  $jabronibetzEntityManager,
-        private readonly DefinitionListConverter $definitionListConverter
-    )
-    {
-        parent::__construct();
-    }
+    use EntityManagerAwareTrait;
 
     /**
      * @return void
@@ -195,19 +178,14 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        if ($input->getArgument('id') === null) {
-            /** @var FootballMatchRepository $repo */
-            $repo = $this->jabronibetzEntityManager->getRepository(FootballMatch::class);
-            $choices = $repo->findAllChoices();
-
-            if (!empty($choices)) {
-                $choice = $helper->ask($input, $output, new ChoiceQuestion('Football match id: ', $choices));
-                $input->setArgument('id', array_search($choice, $choices, true));
-            }
-        }
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Football match id: ',
+            $this->entityManager->getRepository(FootballMatch::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -221,7 +199,7 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Match');
 
         try {
-            $match = $this->jabronibetzEntityManager->find(FootballMatch::class, $input->getArgument('id'));
+            $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
             if ($match === null) {
                 $io->error('Football match not found');
                 return Command::FAILURE;
@@ -229,7 +207,7 @@ final class UpdateCommand extends Command
 
             $cmpId = $input->getOption('competition-id');
             if ($cmpId !== null) {
-                $cmp = $this->jabronibetzEntityManager->find(FootballCompetition::class, $cmpId);
+                $cmp = $this->entityManager->find(FootballCompetition::class, $cmpId);
                 if ($cmp === null) {
                     $io->error('Football competition not found');
                     return Command::FAILURE;
@@ -241,7 +219,7 @@ final class UpdateCommand extends Command
 
             $homeTeamId = $input->getOption('home-team-id');
             if ($homeTeamId !== null) {
-                $homeTeam = $this->jabronibetzEntityManager->find(FootballTeam::class, $homeTeamId);
+                $homeTeam = $this->entityManager->find(FootballTeam::class, $homeTeamId);
                 if ($homeTeam === null) {
                     $io->error('Home football team not found');
                     return Command::FAILURE;
@@ -250,7 +228,7 @@ final class UpdateCommand extends Command
                 $homeTeam = $match->getTeam();
             }
             if ($homeTeam !== null) {
-                $count = $this->jabronibetzEntityManager
+                $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
                     ->count(['competition' => $cmp, 'team' => $homeTeam]);
                 if ($count !== 1) {
@@ -262,7 +240,7 @@ final class UpdateCommand extends Command
 
             $awayTeamId = $input->getOption('away-team-id');
             if ($awayTeamId !== null) {
-                $awayTeam = $this->jabronibetzEntityManager->find(FootballTeam::class, $awayTeamId);
+                $awayTeam = $this->entityManager->find(FootballTeam::class, $awayTeamId);
                 if ($awayTeam === null) {
                     $io->error('Away football team not found');
                     return Command::FAILURE;
@@ -271,7 +249,7 @@ final class UpdateCommand extends Command
                 $awayTeam = $match->getTeam();
             }
             if ($awayTeam !== null) {
-                $count = $this->jabronibetzEntityManager
+                $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
                     ->count(['competition' => $cmp, 'team' => $awayTeam]);
                 if ($count !== 1) {
@@ -465,8 +443,8 @@ final class UpdateCommand extends Command
                 }
             }
 
-            $this->jabronibetzEntityManager->persist($match);
-            $this->jabronibetzEntityManager->flush();
+            $this->entityManager->persist($match);
+            $this->entityManager->flush();
 
             $io->success(sprintf(
                 'Football match %s with id %d has been updated.',

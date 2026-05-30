@@ -22,13 +22,13 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Repository;
 
 use App\Domain\Jabronibetz\Entity\FootballMatch;
-use App\Domain\Shared\Repository\ChoosableEntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ChoosableEntityRepository<FootballMatch>
+ * @extends ServiceEntityRepository<FootballMatch>
  */
-final class FootballMatchRepository extends ChoosableEntityRepository
+final class FootballMatchRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

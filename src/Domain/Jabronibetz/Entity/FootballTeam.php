@@ -23,7 +23,7 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
-use App\Domain\Shared\Entity\ChoosableEntityInterface;
+use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,7 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: FootballTeamRepository::class)]
 #[ORM\Table(name: 'football_team')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME_GENDER', fields: ['name', 'gender'])]
-class FootballTeam implements ChoosableEntityInterface
+class FootballTeam implements ChoosableInterface
 {
     public const string GROUP_LIST = 'football_team_list';
     public const string GROUP_DETAIL = 'football_team_detail';
