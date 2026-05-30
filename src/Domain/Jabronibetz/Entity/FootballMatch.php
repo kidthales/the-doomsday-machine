@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
+use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -36,7 +37,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     name: 'UNIQ_IDENTIFIER_FOOTBALL_MATCH_COMPETITION_ID_HOME_TEAM_ID_AWAY_TEAM_ID_ROUND',
     columns: ['competition_id', 'home_team_id', 'away_team_id', 'round']
 )]
-class FootballMatch
+class FootballMatch implements ChoosableInterface
 {
     public const string GROUP_LIST = 'football_match_list';
     public const string GROUP_DETAIL = 'football_match_detail';
@@ -169,6 +170,14 @@ class FootballMatch
     #[Assert\PositiveOrZero]
     #[Groups([self::GROUP_DETAIL])]
     private ?int $awayTeamShootoutScore = null;
+
+    /**
+     * @return string
+     */
+    public function getChoiceKey(): string
+    {
+        return (string)$this->getId();
+    }
 
     /**
      * @return string

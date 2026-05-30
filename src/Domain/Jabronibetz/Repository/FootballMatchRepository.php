@@ -37,19 +37,4 @@ final class FootballMatchRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, FootballMatch::class);
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function findAllChoices(): array
-    {
-        return array_reduce(
-            $this->findAll(),
-            function (array $matches, FootballMatch $match) {
-                $matches[(string)$match->getId()] = $match->getChoiceValue();
-                return $matches;
-            },
-            []
-        );
-    }
 }
