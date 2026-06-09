@@ -46,6 +46,14 @@ class FootballMatchTeamReferenceFrame
     private ?int $id = null;
 
     /**
+     * @var FootballMatch|null
+     */
+    #[ORM\ManyToOne(targetEntity: FootballMatch::class)]
+    #[ORM\JoinColumn(name: 'match_id')]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
+    private ?FootballMatch $sourceMatch = null;
+
+    /**
      * @var FootballCompetition|null
      */
     #[ORM\ManyToOne(targetEntity: FootballCompetition::class)]
@@ -166,6 +174,14 @@ class FootballMatchTeamReferenceFrame
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return FootballMatch|null
+     */
+    public function getSourceMatch(): ?FootballMatch
+    {
+        return $this->sourceMatch;
     }
 
     /**
