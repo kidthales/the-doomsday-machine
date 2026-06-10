@@ -71,13 +71,27 @@ final class UpdateCommand extends Command
                 mode: InputOption::VALUE_REQUIRED,
                 description: 'The id of the football organization managing this competition'
             )
+            ->addOption(
+                name: 'rounds',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The total football match rounds for this competition',
+                default: false
+            )
+            ->addOption(
+                name: 'group-rounds',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The total football match rounds for this competition\'s group phase',
+                default: false
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to update a <comment>football competition</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>]</info>
+                  <info>%command.full_name% <id>
+                    [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>]
+                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]</info>
 
                 Examples:
                   <info>%command.full_name% 1 --short-name THIEFA</info>
@@ -135,6 +149,32 @@ final class UpdateCommand extends Command
                 $org = $cmp->getManagingOrganization();
             }
             $cmp->setManagingOrganization($org);
+
+            $rounds = $input->getOption('rounds');
+            if ($rounds === false) {
+                $rounds = $cmp->getRounds();
+            }
+            if ($rounds !== null) {
+                if (!is_numeric($rounds)) {
+                    $io->error('The rounds option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $rounds = intval($rounds);
+            }
+            $cmp->setRounds($rounds);
+
+            $groupRounds = $input->getOption('group-rounds');
+            if ($groupRounds === false) {
+                $groupRounds = $cmp->getGroupRounds();
+            }
+            if ($groupRounds !== null) {
+                if (!is_numeric($groupRounds)) {
+                    $io->error('The groupRounds option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $groupRounds = intval($groupRounds);
+            }
+            $cmp->setGroupRounds($groupRounds);
 
             $errors = $this->validator->validate($cmp);
             if (count($errors) > 0) {
