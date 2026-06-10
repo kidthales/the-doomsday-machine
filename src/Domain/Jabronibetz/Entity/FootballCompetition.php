@@ -25,6 +25,7 @@ use App\Domain\Jabronibetz\Repository\FootballCompetitionRepository;
 use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -89,6 +90,22 @@ class FootballCompetition implements ChoosableInterface
     #[ORM\OneToMany(targetEntity: FootballMatch::class, mappedBy: 'competition')]
     #[Groups([self::GROUP_DETAIL])]
     private Collection $matches;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive]
+    #[Groups([self::GROUP_DETAIL])]
+    private ?int $rounds = null;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(name: 'group_rounds', type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive]
+    #[Groups([self::GROUP_DETAIL])]
+    private ?int $groupRounds = null;
 
     /**
      *
@@ -191,5 +208,41 @@ class FootballCompetition implements ChoosableInterface
     public function getMatches(): Collection
     {
         return $this->matches;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRounds(): ?int
+    {
+        return $this->rounds;
+    }
+
+    /**
+     * @param int|null $rounds
+     * @return $this
+     */
+    public function setRounds(?int $rounds): static
+    {
+        $this->rounds = $rounds;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getGroupRounds(): ?int
+    {
+        return $this->groupRounds;
+    }
+
+    /**
+     * @param int|null $rounds
+     * @return $this
+     */
+    public function setGroupRounds(?int $rounds): static
+    {
+        $this->groupRounds = $rounds;
+        return $this;
     }
 }
