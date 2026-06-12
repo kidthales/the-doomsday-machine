@@ -19,23 +19,23 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\Repository;
-
-use App\Domain\Jabronibetz\Entity\FootballMatchTeamReferenceFrame;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+namespace App\Domain\Jabronibetz\DTO;
 
 /**
- * @extends ServiceEntityRepository<FootballMatchTeamReferenceFrame>
+ * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final class FootballMatchTeamReferenceFrameRepository extends ServiceEntityRepository
+readonly class FootballTeamStrength
 {
     /**
-     * @param ManagerRegistry $registry
+     * @param int $teamId
+     * @param float $attack
+     * @param float $defense
      */
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(
+        public int   $teamId,
+        public float $attack,
+        public float $defense
+    )
     {
-        parent::__construct($registry, FootballMatchTeamReferenceFrame::class);
     }
 }

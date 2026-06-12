@@ -218,14 +218,16 @@ final class UpdateCommand extends Command
             $match->setCompetition($cmp);
 
             $homeTeamId = $input->getOption('home-team-id');
-            if ($homeTeamId !== null) {
+            if ($homeTeamId === false) {
+                $homeTeam = $match->getHomeTeam();
+            } else if ($homeTeamId === null) {
+                $homeTeam = null;
+            } else {
                 $homeTeam = $this->entityManager->find(FootballTeam::class, $homeTeamId);
                 if ($homeTeam === null) {
                     $io->error('Home football team not found');
                     return Command::FAILURE;
                 }
-            } else {
-                $homeTeam = $match->getTeam();
             }
             if ($homeTeam !== null) {
                 $count = $this->entityManager
@@ -239,14 +241,16 @@ final class UpdateCommand extends Command
             $match->setHomeTeam($homeTeam);
 
             $awayTeamId = $input->getOption('away-team-id');
-            if ($awayTeamId !== null) {
+            if ($awayTeamId === false) {
+                $awayTeam = $match->getAwayTeam();
+            } else if ($awayTeamId === null) {
+                $awayTeam = null;
+            } else {
                 $awayTeam = $this->entityManager->find(FootballTeam::class, $awayTeamId);
                 if ($awayTeam === null) {
                     $io->error('Away football team not found');
                     return Command::FAILURE;
                 }
-            } else {
-                $awayTeam = $match->getTeam();
             }
             if ($awayTeam !== null) {
                 $count = $this->entityManager
