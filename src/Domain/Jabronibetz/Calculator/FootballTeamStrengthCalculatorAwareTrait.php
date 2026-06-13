@@ -19,19 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\DTO;
+namespace App\Domain\Jabronibetz\Calculator;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class FootballTeamStrength
+trait FootballTeamStrengthCalculatorAwareTrait
 {
     /**
-     * @param int $teamId
-     * @param float $attack
-     * @param float $defense
+     * @var FootballTeamStrengthCalculator|null
      */
-    public function __construct(public int $teamId, public float $attack, public float $defense)
+    protected ?FootballTeamStrengthCalculator $footballTeamStrengthCalculator = null;
+
+    /**
+     * @return FootballTeamStrengthCalculator|null
+     */
+    public function getFootballTeamStrengthCalculator(): ?FootballTeamStrengthCalculator
     {
+        return $this->footballTeamStrengthCalculator;
+    }
+
+    /**
+     * @param FootballTeamStrengthCalculator $calculator
+     * @return $this
+     */
+    #[Required]
+    public function setFootballTeamStrengthCalculator(FootballTeamStrengthCalculator $calculator): static
+    {
+        $this->footballTeamStrengthCalculator = $calculator;
+        return $this;
     }
 }

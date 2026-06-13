@@ -24,7 +24,6 @@ namespace App\Domain\Jabronibetz\Repository;
 use App\Domain\Jabronibetz\Entity\FootballMatchTeamReferenceFrame;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * @extends ServiceEntityRepository<FootballMatchTeamReferenceFrame>

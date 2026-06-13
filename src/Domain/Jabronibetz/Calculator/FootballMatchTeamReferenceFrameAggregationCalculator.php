@@ -46,7 +46,6 @@ final readonly class FootballMatchTeamReferenceFrameAggregationCalculator
     public function calculate(array $matches): array
     {
         $aggregations = [];
-
         foreach ($matches as $match) {
             $teamId = (string)$match->getTeam()->getId();
 
@@ -152,17 +151,17 @@ final readonly class FootballMatchTeamReferenceFrameAggregationCalculator
         }
 
         foreach ($aggregations as &$aggregation) {
-            $aggregation['goalsForPerHalftime'] = $aggregation['halftimesPlayed'] === 0 ? 0.0 : ($aggregation['halftimeGoalsFor'] / $aggregation['halftimesPlayed']);
-            $aggregation['goalsForPerFulltime'] = $aggregation['fulltimesPlayed'] === 0 ? 0.0 : ($aggregation['fulltimeGoalsFor'] / $aggregation['fulltimesPlayed']);
-            $aggregation['goalsForPerExtraHalftime'] = $aggregation['extraHalftimesPlayed'] === 0 ? 0.0 : ($aggregation['extraHalftimeGoalsFor'] / $aggregation['extraHalftimesPlayed']);
-            $aggregation['goalsForPerExtraFulltime'] = $aggregation['extraFulltimesPlayed'] === 0 ? 0.0 : ($aggregation['extraFulltimeGoalsFor'] / $aggregation['extraFulltimesPlayed']);
-            $aggregation['goalsForPerShootout'] = $aggregation['shootoutsPlayed'] === 0 ? 0.0 : ($aggregation['shootoutGoalsFor'] / $aggregation['shootoutsPlayed']);
+            $aggregation['goalsForPerHalftime'] = (float)($aggregation['halftimesPlayed'] === 0 ? 0 : ($aggregation['halftimeGoalsFor'] / $aggregation['halftimesPlayed']));
+            $aggregation['goalsForPerFulltime'] = (float)($aggregation['fulltimesPlayed'] === 0 ? 0 : ($aggregation['fulltimeGoalsFor'] / $aggregation['fulltimesPlayed']));
+            $aggregation['goalsForPerExtraHalftime'] = (float)($aggregation['extraHalftimesPlayed'] === 0 ? 0 : ($aggregation['extraHalftimeGoalsFor'] / $aggregation['extraHalftimesPlayed']));
+            $aggregation['goalsForPerExtraFulltime'] = (float)($aggregation['extraFulltimesPlayed'] === 0 ? 0 : ($aggregation['extraFulltimeGoalsFor'] / $aggregation['extraFulltimesPlayed']));
+            $aggregation['goalsForPerShootout'] = (float)($aggregation['shootoutsPlayed'] === 0 ? 0 : ($aggregation['shootoutGoalsFor'] / $aggregation['shootoutsPlayed']));
 
-            $aggregation['goalsAgainstPerHalftime'] = $aggregation['halftimesPlayed'] === 0 ? 0.0 : ($aggregation['halftimeGoalsAgainst'] / $aggregation['halftimesPlayed']);
-            $aggregation['goalsAgainstPerFulltime'] = $aggregation['fulltimesPlayed'] === 0 ? 0.0 : ($aggregation['fulltimeGoalsAgainst'] / $aggregation['fulltimesPlayed']);
-            $aggregation['goalsAgainstPerExtraHalftime'] = $aggregation['extraHalftimesPlayed'] === 0 ? 0.0 : ($aggregation['extraHalftimeGoalsAgainst'] / $aggregation['extraHalftimesPlayed']);
-            $aggregation['goalsAgainstPerExtraFulltime'] = $aggregation['extraFulltimesPlayed'] === 0 ? 0.0 : ($aggregation['extraFulltimeGoalsAgainst'] / $aggregation['extraFulltimesPlayed']);
-            $aggregation['goalsAgainstPerShootout'] = $aggregation['shootoutsPlayed'] === 0 ? 0.0 : ($aggregation['shootoutGoalsAgainst'] / $aggregation['shootoutsPlayed']);
+            $aggregation['goalsAgainstPerHalftime'] = (float)($aggregation['halftimesPlayed'] === 0 ? 0 : ($aggregation['halftimeGoalsAgainst'] / $aggregation['halftimesPlayed']));
+            $aggregation['goalsAgainstPerFulltime'] = (float)($aggregation['fulltimesPlayed'] === 0 ? 0 : ($aggregation['fulltimeGoalsAgainst'] / $aggregation['fulltimesPlayed']));
+            $aggregation['goalsAgainstPerExtraHalftime'] = (float)($aggregation['extraHalftimesPlayed'] === 0 ? 0 : ($aggregation['extraHalftimeGoalsAgainst'] / $aggregation['extraHalftimesPlayed']));
+            $aggregation['goalsAgainstPerExtraFulltime'] = (float)($aggregation['extraFulltimesPlayed'] === 0 ? 0 : ($aggregation['extraFulltimeGoalsAgainst'] / $aggregation['extraFulltimesPlayed']));
+            $aggregation['goalsAgainstPerShootout'] = (float)($aggregation['shootoutsPlayed'] === 0 ? 0 : ($aggregation['shootoutGoalsAgainst'] / $aggregation['shootoutsPlayed']));
 
             $aggregation['halftimeGoalDifference'] = $aggregation['halftimeGoalsFor'] - $aggregation['halftimeGoalsAgainst'];
             $aggregation['fulltimeGoalDifference'] = $aggregation['fulltimeGoalsFor'] - $aggregation['fulltimeGoalsAgainst'];

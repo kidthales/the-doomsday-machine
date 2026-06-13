@@ -24,7 +24,7 @@ namespace App\Domain\Jabronibetz\DTO;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-readonly class FootballMatchTeamReferenceFrameAggregation
+final readonly class FootballMatchTeamReferenceFrameAggregation
 {
     /**
      * @param int[] $matchIds

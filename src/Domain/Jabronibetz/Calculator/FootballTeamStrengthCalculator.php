@@ -31,32 +31,32 @@ final class FootballTeamStrengthCalculator
 {
     /**
      * @param FootballMatchTeamReferenceFrameAggregation[] $aggregations
-     * @return FootballTeamStrength[]
+     * @return array<string, FootballTeamStrength>
      */
     public function calculate(array $aggregations): array
     {
-        $totalGoalsFor = 0;
-        $totalGoalsAgainst = 0;
-
-        foreach ($aggregations as $aggregation) {
-            $totalGoalsFor += $aggregation->fulltimeGoalsFor;
-            $totalGoalsAgainst += $aggregation->fulltimeGoalsAgainst;
+        $numTeams = count($aggregations);
+        if ($numTeams === 0) {
+            return [];
         }
 
-        $numTeams = count($aggregations);
-        $averageGoalsFor = $numTeams === 0 ? 0 : ($totalGoalsFor / $numTeams);
-        $averageGoalsAgainst = $numTeams === 0 ? 0 : ($totalGoalsAgainst / $numTeams);
+        $totalGoalsForPerFulltime = 0;
+        $totalGoalsAgainstPerFulltime = 0;
+        foreach ($aggregations as $aggregation) {
+            $totalGoalsForPerFulltime += $aggregation->goalsForPerFulltime;
+            $totalGoalsAgainstPerFulltime += $aggregation->goalsAgainstPerFulltime;
+        }
+        $averageGoalsForPerFulltime = $totalGoalsForPerFulltime / $numTeams;
+        $averageGoalsAgainstPerFulltime = $totalGoalsAgainstPerFulltime / $numTeams;
 
         $teamStrengths = [];
-
         foreach ($aggregations as $aggregation) {
-            $teamStrengths[] = new FootballTeamStrength(
+            $teamStrengths[(string)$aggregation->teamId] = new FootballTeamStrength(
                 teamId: $aggregation->teamId,
-                attack: $averageGoalsFor === 0 ? 0 : ($aggregation->fulltimeGoalsFor / $averageGoalsFor),
-                defense: $averageGoalsAgainst === 0 ? 0 : ($aggregation->fulltimeGoalsAgainst / $averageGoalsAgainst)
+                attack: (float)(empty($averageGoalsForPerFulltime) ? 0 : ($aggregation->goalsForPerFulltime / $averageGoalsForPerFulltime)),
+                defense: (float)(empty($averageGoalsAgainstPerFulltime) ? 0 : ($aggregation->goalsAgainstPerFulltime / $averageGoalsAgainstPerFulltime))
             );
         }
-
         return $teamStrengths;
     }
 }
