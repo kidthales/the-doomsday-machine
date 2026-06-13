@@ -288,7 +288,7 @@ class FootballMatch implements ChoosableInterface
      */
     public function setRound(?int $round): static
     {
-        $this->round = $round === null ? null : $round;
+        $this->round = $round;
         return $this;
     }
 

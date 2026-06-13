@@ -13,6 +13,7 @@ doctrine:
                 url: '%env(resolve:JABRONIBETZ_DATABASE_URL)%'
                 profiling_collect_backtrace: '%kernel.debug%'
                 use_savepoints: true
+                schema_filter: '~^(?!view_).*$~'
             bfrpg:
                 url: '%env(resolve:BFRPG_DATABASE_URL)%'
                 profiling_collect_backtrace: '%kernel.debug%'

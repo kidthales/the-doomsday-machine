@@ -28,6 +28,7 @@ use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -65,16 +66,27 @@ final class CreateCommand extends Command
                 mode: InputArgument::REQUIRED,
                 description: 'The id of the football organization that manages the competition'
             )
+            ->addOption(
+                name: 'rounds',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The total football match rounds for the competition'
+            )
+            ->addOption(
+                name: 'group-rounds',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The total football match rounds for the competition\'s group phase'
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to create a <comment>football competition</comment>
                 in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name> <organization-id></info>
+                  <info>%command.full_name% <name> <short-name> <organization-id>
+                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]</info>
 
                 Examples:
-                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1</info>
+                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1 --rounds 9 --group-rounds 3</info>
 
                 If no name, short name, or organization id is specified, you'll be prompted interactively.
                 HELP
@@ -117,10 +129,30 @@ final class CreateCommand extends Command
                 return Command::FAILURE;
             }
 
+            $rounds = $input->getOption('rounds');
+            if ($rounds !== null) {
+                if (!is_numeric($rounds)) {
+                    $io->error('The rounds option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $rounds = intval($rounds);
+            }
+
+            $groupRounds = $input->getOption('group-rounds');
+            if ($groupRounds !== null) {
+                if (!is_numeric($groupRounds)) {
+                    $io->error('The group-rounds option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $groupRounds = intval($groupRounds);
+            }
+
             $cmp = (new FootballCompetition())
                 ->setName(trim($input->getArgument('name')))
                 ->setShortName(trim($input->getArgument('short-name')))
-                ->setManagingOrganization($org);
+                ->setManagingOrganization($org)
+                ->setRounds($rounds)
+                ->setGroupRounds($groupRounds);
 
             $errors = $this->validator->validate($cmp);
             if (count($errors) > 0) {
