@@ -223,7 +223,7 @@ final class FootballTeamStrengthListCommand extends Command
      */
     private function formatTeamStrengths(array $teamStrengths): array
     {
-        return array_reduce(
+        $formattedTeamStrengths = array_reduce(
             $teamStrengths,
             function (array $rows, FootballTeamStrength $teamStrength) {
                 $rows[] = [
@@ -235,5 +235,8 @@ final class FootballTeamStrengthListCommand extends Command
             },
             []
         );
+
+        usort($formattedTeamStrengths, fn (array $a, array $b) => strcmp($a[0], $b[0]));
+        return $formattedTeamStrengths;
     }
 }
