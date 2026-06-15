@@ -36,8 +36,6 @@ use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -48,6 +46,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
+use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -67,11 +66,29 @@ final class FootballMatchXGListCommand extends Command
 
     /**
      * @param FootballCompetition $cmp
-     * @param array $teams
-     * @param int $groupRounds
      * @return Criteria
      */
-    private static function createCriteria(FootballCompetition $cmp, array $teams = [], int $groupRounds = 0): Criteria
+    private static function createCompetitionTeamEntryCriteria(FootballCompetition $cmp): Criteria
+    {
+        return Criteria::create()
+            ->where(Criteria::expr()->eq('competition', $cmp));
+    }
+
+    /**
+     * @param FootballCompetition $cmp
+     * @param array $teams
+     * @param int $groupRounds
+     * @param bool|null $homeTeam
+     * @param bool|null $awayTeam
+     * @return Criteria
+     */
+    private static function createMatchTeamReferenceFrameCriteria(
+        FootballCompetition $cmp,
+        array               $teams = [],
+        int                 $groupRounds = 0,
+        ?bool               $homeTeam = null,
+        ?bool               $awayTeam = null
+    ): Criteria
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('competition', $cmp))
@@ -84,6 +101,14 @@ final class FootballMatchXGListCommand extends Command
 
         if ($groupRounds > 0) {
             $criteria->andWhere(Criteria::expr()->lte('round', $groupRounds));
+        }
+
+        if ($homeTeam !== null) {
+            $criteria->andWhere(Criteria::expr()->eq('homeTeam', $homeTeam));
+        }
+
+        if ($awayTeam !== null) {
+            $criteria->andWhere(Criteria::expr()->eq('awayTeam', $awayTeam));
         }
 
         return $criteria;
@@ -164,35 +189,35 @@ final class FootballMatchXGListCommand extends Command
                     return Command::FAILURE;
                 }
 
-                $groups = [];
-                $entries = $this->entityManager
-                    ->getRepository(FootballCompetitionTeamEntry::class)
-                    ->findBy(['competition' => $cmp]);
-                foreach ($entries as $entry) {
-                    $group = $entry->getGroup();
-                    if ($group === null) {
-                        $io->error('Football competition team entry missing group assignment');
-                        return Command::FAILURE;
-                    }
-                    if (!isset($groups[$group])) {
-                        $groups[$group] = [];
-                    }
-                    $groups[$group][] = $entry->getTeam();
-                }
-
+                $groups = $this->groupTeams(self::createCompetitionTeamEntryCriteria($cmp));
                 foreach ($groups as $group => $teams) {
-                    $criteria = self::createCriteria($cmp, $teams, $groupRounds);
-
-                    $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
-                        $this->calculateMatchTeamReferenceFrameAggregations($criteria)
+                    $aggregations = $this->calculateMatchTeamReferenceFrameAggregations(
+                        self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds)
                     );
-
+                    if ($cmp->getSeparateMatchXgHomeAway()) {
+                        $homeAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                            $this->calculateMatchTeamReferenceFrameAggregations(
+                                self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds, true, false)
+                            )
+                        );
+                        $awayAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                            $this->calculateMatchTeamReferenceFrameAggregations(
+                                self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds, false, true)
+                            )
+                        );
+                        $competitionAverageGoalsForPerFulltime = [$homeAverage->goalsForPerFulltime, $awayAverage->goalsForPerFulltime];
+                    } else {
+                        $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                            $aggregations
+                        );
+                        $competitionAverageGoalsForPerFulltime = array_fill(0, 2, $aggregationAverage->goalsForPerFulltime);
+                    }
                     $matchXGs = $this->footballMatchXGCalculator->calculate(
                         $cmp->getMatches()
-                            ->filter(fn (FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
+                            ->filter(fn(FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
                             ->toArray(),
-                        $aggregationAverage->goalsForPerFulltime,
-                        $this->calculateTeamStrengths($criteria)
+                        $competitionAverageGoalsForPerFulltime,
+                        $this->footballTeamStrengthCalculator->calculate($aggregations)
                     );
                     if (empty($matchXGs)) {
                         continue;
@@ -222,36 +247,51 @@ final class FootballMatchXGListCommand extends Command
                     $io->definitionList(...$definitionList);
                 }
             } else {
-                $criteria = self::createCriteria($cmp);
-
-                $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
-                    $this->calculateMatchTeamReferenceFrameAggregations($criteria)
+                $aggregations = $this->calculateMatchTeamReferenceFrameAggregations(
+                    self::createMatchTeamReferenceFrameCriteria($cmp)
                 );
-
+                if ($cmp->getSeparateMatchXgHomeAway()) {
+                    $homeAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                        $this->calculateMatchTeamReferenceFrameAggregations(
+                            self::createMatchTeamReferenceFrameCriteria($cmp, homeTeam: true, awayTeam: false)
+                        )
+                    );
+                    $awayAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                        $this->calculateMatchTeamReferenceFrameAggregations(
+                            self::createMatchTeamReferenceFrameCriteria($cmp, homeTeam: false, awayTeam: true)
+                        )
+                    );
+                    $competitionAverageGoalsForPerFulltime = [$homeAverage->goalsForPerFulltime, $awayAverage->goalsForPerFulltime];
+                } else {
+                    $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                        $aggregations
+                    );
+                    $competitionAverageGoalsForPerFulltime = array_fill(0, 2, $aggregationAverage->goalsForPerFulltime);
+                }
                 $matchXGs = $this->footballMatchXGCalculator->calculate(
                     $cmp->getMatches()
-                        ->filter(fn (FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
+                        ->filter(fn(FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
                         ->toArray(),
-                    $aggregationAverage->goalsForPerFulltime,
-                    $this->calculateTeamStrengths($criteria)
+                    $competitionAverageGoalsForPerFulltime,
+                    $this->footballTeamStrengthCalculator->calculate($aggregations)
                 );
                 foreach ($matchXGs as $matchXG) {
                     $io->definitionList(
                         ...$this->definitionListConverter->convert(
-                            [
-                                'match' => $this->entityManager->find(FootballMatch::class, $matchXG->matchId),
-                                'xg' => [
-                                    'homeTeam' => $matchXG->homeTeam,
-                                    'awayTeam' => $matchXG->awayTeam,
-                                ]
-                            ],
-                            [
-                                AbstractNormalizer::GROUPS => [
-                                    FootballMatch::GROUP_LIST,
-                                    FootballTeam::GROUP_LIST
-                                ]
+                        [
+                            'match' => $this->entityManager->find(FootballMatch::class, $matchXG->matchId),
+                            'xg' => [
+                                'homeTeam' => $matchXG->homeTeam,
+                                'awayTeam' => $matchXG->awayTeam,
                             ]
-                        )
+                        ],
+                        [
+                            AbstractNormalizer::GROUPS => [
+                                FootballMatch::GROUP_LIST,
+                                FootballTeam::GROUP_LIST
+                            ]
+                        ]
+                    )
                     );
                 }
             }
@@ -261,6 +301,29 @@ final class FootballMatchXGListCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param Criteria $criteria
+     * @return array<string, FootballTeam[]>
+     */
+    private function groupTeams(Criteria $criteria): array
+    {
+        $groups = [];
+        $entries = $this->entityManager
+            ->getRepository(FootballCompetitionTeamEntry::class)
+            ->matching($criteria);
+        foreach ($entries->toArray() as $entry) {
+            $group = $entry->getGroup();
+            if ($group === null) {
+                throw new ValueError('Football competition team entry missing group assignment');
+            }
+            if (!isset($groups[$group])) {
+                $groups[$group] = [];
+            }
+            $groups[$group][] = $entry->getTeam();
+        }
+        return $groups;
     }
 
     /**
@@ -276,42 +339,5 @@ final class FootballMatchXGListCommand extends Command
                 ->matching($criteria)
                 ->toArray()
         );
-    }
-
-    /**
-     * @param Criteria $criteria
-     * @return FootballTeamStrength[]
-     * @throws SerializerExceptionInterface
-     */
-    private function calculateTeamStrengths(Criteria $criteria): array
-    {
-        return $this->footballTeamStrengthCalculator->calculate(
-            $this->calculateMatchTeamReferenceFrameAggregations($criteria)
-        );
-    }
-
-    /**
-     * @param FootballTeamStrength[] $teamStrengths
-     * @return array
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    private function formatTeamStrengths(array $teamStrengths): array
-    {
-        $formattedTeamStrengths = array_reduce(
-            $teamStrengths,
-            function (array $rows, FootballTeamStrength $teamStrength) {
-                $rows[] = [
-                    $this->entityManager->find(FootballTeam::class, $teamStrength->teamId)?->getName() ?? 'Unknown',
-                    $teamStrength->attack,
-                    $teamStrength->defense
-                ];
-                return $rows;
-            },
-            []
-        );
-
-        usort($formattedTeamStrengths, fn (array $a, array $b) => strcmp($a[0], $b[0]));
-        return $formattedTeamStrengths;
     }
 }

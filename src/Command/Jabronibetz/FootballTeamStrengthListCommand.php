@@ -42,6 +42,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Throwable;
+use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -60,11 +61,25 @@ final class FootballTeamStrengthListCommand extends Command
 
     /**
      * @param FootballCompetition $cmp
+     * @return Criteria
+     */
+    private static function createCompetitionTeamEntryCriteria(FootballCompetition $cmp): Criteria
+    {
+        return Criteria::create()
+            ->where(Criteria::expr()->eq('competition', $cmp));
+    }
+
+    /**
+     * @param FootballCompetition $cmp
      * @param array $teams
      * @param int $groupRounds
      * @return Criteria
      */
-    private static function createCriteria(FootballCompetition $cmp, array $teams = [], int $groupRounds = 0): Criteria
+    private static function createMatchTeamReferenceFrameCriteria(
+        FootballCompetition $cmp,
+        array               $teams = [],
+        int                 $groupRounds = 0
+    ): Criteria
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('competition', $cmp))
@@ -157,24 +172,11 @@ final class FootballTeamStrengthListCommand extends Command
                     return Command::FAILURE;
                 }
 
-                $groups = [];
-                $entries = $this->entityManager
-                    ->getRepository(FootballCompetitionTeamEntry::class)
-                    ->findBy(['competition' => $cmp]);
-                foreach ($entries as $entry) {
-                    $group = $entry->getGroup();
-                    if ($group === null) {
-                        $io->error('Football competition team entry missing group assignment');
-                        return Command::FAILURE;
-                    }
-                    if (!isset($groups[$group])) {
-                        $groups[$group] = [];
-                    }
-                    $groups[$group][] = $entry->getTeam();
-                }
-
+                $groups = $this->groupTeams(self::createCompetitionTeamEntryCriteria($cmp));
                 foreach ($groups as $group => $teams) {
-                    $teamStrengths = $this->calculateTeamStrengths(self::createCriteria($cmp, $teams, $groupRounds));
+                    $teamStrengths = $this->calculateTeamStrengths(
+                        self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds)
+                    );
                     if (empty($teamStrengths)) {
                         continue;
                     }
@@ -187,7 +189,9 @@ final class FootballTeamStrengthListCommand extends Command
             } else {
                 $io->table(
                     self::HEADERS,
-                    $this->formatTeamStrengths($this->calculateTeamStrengths(self::createCriteria($cmp)))
+                    $this->formatTeamStrengths(
+                        $this->calculateTeamStrengths(self::createMatchTeamReferenceFrameCriteria($cmp))
+                    )
                 );
             }
         } catch (Throwable $e) {
@@ -196,6 +200,29 @@ final class FootballTeamStrengthListCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param Criteria $criteria
+     * @return array<string, FootballTeam[]>
+     */
+    private function groupTeams(Criteria $criteria): array
+    {
+        $groups = [];
+        $entries = $this->entityManager
+            ->getRepository(FootballCompetitionTeamEntry::class)
+            ->matching($criteria);
+        foreach ($entries->toArray() as $entry) {
+            $group = $entry->getGroup();
+            if ($group === null) {
+                throw new ValueError('Football competition team entry missing group assignment');
+            }
+            if (!isset($groups[$group])) {
+                $groups[$group] = [];
+            }
+            $groups[$group][] = $entry->getTeam();
+        }
+        return $groups;
     }
 
     /**
@@ -235,8 +262,7 @@ final class FootballTeamStrengthListCommand extends Command
             },
             []
         );
-
-        usort($formattedTeamStrengths, fn (array $a, array $b) => strcmp($a[0], $b[0]));
+        usort($formattedTeamStrengths, fn(array $a, array $b) => strcmp($a[0], $b[0]));
         return $formattedTeamStrengths;
     }
 }

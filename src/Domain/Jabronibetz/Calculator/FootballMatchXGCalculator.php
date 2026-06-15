@@ -32,29 +32,25 @@ final class FootballMatchXGCalculator
 {
     /**
      * @param FootballMatch[] $matches
-     * @param float|float[] $competitionAverageGoalsForPerFulltime
+     * @param float[] $competitionAverageGoalsForPerFulltime
      * @param array<string, FootballTeamStrength> $teamStrengths
      * @return array<string, FootballMatchXG>
      */
-    public function calculate(array $matches, float|array $competitionAverageGoalsForPerFulltime, array $teamStrengths): array
+    public function calculate(array $matches, array $competitionAverageGoalsForPerFulltime, array $teamStrengths): array
     {
         if (count($matches) === 0) {
             return [];
         }
 
-        if (is_float($competitionAverageGoalsForPerFulltime)) {
-            $competitionAverageGoalsForPerFulltime = array_fill(0, 2, $competitionAverageGoalsForPerFulltime);
-        } else {
-            $competitionAverageGoalsForPerFulltimeCount = count($competitionAverageGoalsForPerFulltime);
-            switch ($competitionAverageGoalsForPerFulltimeCount) {
-                case 0:
-                    return [];
-                case 1:
-                    $competitionAverageGoalsForPerFulltime[] = $competitionAverageGoalsForPerFulltime[0];
-                    break;
-                default:
-                    break;
-            }
+        $competitionAverageGoalsForPerFulltimeCount = count($competitionAverageGoalsForPerFulltime);
+        switch ($competitionAverageGoalsForPerFulltimeCount) {
+            case 0:
+                return [];
+            case 1:
+                $competitionAverageGoalsForPerFulltime[] = $competitionAverageGoalsForPerFulltime[0];
+                break;
+            default:
+                break;
         }
 
         if (count($teamStrengths) === 0) {
