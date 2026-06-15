@@ -23,15 +23,19 @@ namespace App\Domain\Jabronibetz\Calculator;
 
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregation;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
+use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 final class FootballTeamStrengthCalculator
 {
+    use FootballMatchTeamReferenceFrameAggregationAverageCalculatorAwareTrait;
+
     /**
      * @param FootballMatchTeamReferenceFrameAggregation[] $aggregations
      * @return array<string, FootballTeamStrength>
+     * @throws SerializerExceptionInterface
      */
     public function calculate(array $aggregations): array
     {
@@ -40,21 +44,22 @@ final class FootballTeamStrengthCalculator
             return [];
         }
 
-        $totalGoalsForPerFulltime = 0;
-        $totalGoalsAgainstPerFulltime = 0;
-        foreach ($aggregations as $aggregation) {
-            $totalGoalsForPerFulltime += $aggregation->goalsForPerFulltime;
-            $totalGoalsAgainstPerFulltime += $aggregation->goalsAgainstPerFulltime;
-        }
-        $averageGoalsForPerFulltime = $totalGoalsForPerFulltime / $numTeams;
-        $averageGoalsAgainstPerFulltime = $totalGoalsAgainstPerFulltime / $numTeams;
+        $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate($aggregations);
 
         $teamStrengths = [];
         foreach ($aggregations as $aggregation) {
             $teamStrengths[(string)$aggregation->teamId] = new FootballTeamStrength(
                 teamId: $aggregation->teamId,
-                attack: (float)(empty($averageGoalsForPerFulltime) ? 0 : ($aggregation->goalsForPerFulltime / $averageGoalsForPerFulltime)),
-                defense: (float)(empty($averageGoalsAgainstPerFulltime) ? 0 : ($aggregation->goalsAgainstPerFulltime / $averageGoalsAgainstPerFulltime))
+                attack: (float)(
+                    empty($aggregationAverage->goalsForPerFulltime)
+                        ? 0.0
+                        : ($aggregation->goalsForPerFulltime / $aggregationAverage->goalsForPerFulltime)
+                ),
+                defense: (float)(
+                    empty($aggregationAverage->goalsAgainstPerFulltime)
+                        ? 0.0
+                        : ($aggregation->goalsAgainstPerFulltime / $aggregationAverage->goalsAgainstPerFulltime)
+                )
             );
         }
         return $teamStrengths;

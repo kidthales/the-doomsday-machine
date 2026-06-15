@@ -19,8 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Jabronibetz;
 
+use App\Domain\Jabronibetz\Calculator\FootballMatchTeamReferenceFrameAggregationAverageCalculatorAwareTrait;
 use App\Domain\Jabronibetz\Calculator\FootballMatchTeamReferenceFrameAggregationCalculatorAwareTrait;
 use App\Domain\Jabronibetz\Calculator\FootballMatchXGCalculatorAwareTrait;
 use App\Domain\Jabronibetz\Calculator\FootballTeamStrengthCalculatorAwareTrait;
@@ -38,7 +39,6 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,6 +60,7 @@ final class FootballMatchXGListCommand extends Command
 {
     use DefinitionListConverterAwareTrait,
         EntityManagerAwareTrait,
+        FootballMatchTeamReferenceFrameAggregationAverageCalculatorAwareTrait,
         FootballMatchTeamReferenceFrameAggregationCalculatorAwareTrait,
         FootballMatchXGCalculatorAwareTrait,
         FootballTeamStrengthCalculatorAwareTrait;
@@ -182,18 +183,15 @@ final class FootballMatchXGListCommand extends Command
                 foreach ($groups as $group => $teams) {
                     $criteria = self::createCriteria($cmp, $teams, $groupRounds);
 
-                    $totalGoalsForPerFulltime = 0;
-                    $aggregations = $this->calculateMatchTeamReferenceFrameAggregations($criteria);
-                    foreach ($aggregations as $aggregation) {
-                        $totalGoalsForPerFulltime += $aggregation->goalsForPerFulltime;
-                    }
+                    $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                        $this->calculateMatchTeamReferenceFrameAggregations($criteria)
+                    );
 
-                    $numTeams = count($aggregations);
                     $matchXGs = $this->footballMatchXGCalculator->calculate(
                         $cmp->getMatches()
                             ->filter(fn (FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
                             ->toArray(),
-                        (float)($numTeams === 0 ? 0 : ($totalGoalsForPerFulltime / $numTeams)),
+                        $aggregationAverage->goalsForPerFulltime,
                         $this->calculateTeamStrengths($criteria)
                     );
                     if (empty($matchXGs)) {
@@ -223,23 +221,18 @@ final class FootballMatchXGListCommand extends Command
                     }
                     $io->definitionList(...$definitionList);
                 }
-
-                // TODO
             } else {
                 $criteria = self::createCriteria($cmp);
 
-                $totalGoalsForPerFulltime = 0;
-                $aggregations = $this->calculateMatchTeamReferenceFrameAggregations($criteria);
-                foreach ($aggregations as $aggregation) {
-                    $totalGoalsForPerFulltime += $aggregation->goalsForPerFulltime;
-                }
+                $aggregationAverage = $this->footballMatchTeamReferenceFrameAggregationAverageCalculator->calculate(
+                    $this->calculateMatchTeamReferenceFrameAggregations($criteria)
+                );
 
-                $numTeams = count($aggregations);
                 $matchXGs = $this->footballMatchXGCalculator->calculate(
                     $cmp->getMatches()
                         ->filter(fn (FootballMatch $match) => $match->getHomeTeamFulltimeScore() === null && $match->getAwayTeamFulltimeScore() === null)
                         ->toArray(),
-                    (float)($numTeams === 0 ? 0 : ($totalGoalsForPerFulltime / $numTeams)),
+                    $aggregationAverage->goalsForPerFulltime,
                     $this->calculateTeamStrengths($criteria)
                 );
                 foreach ($matchXGs as $matchXG) {
