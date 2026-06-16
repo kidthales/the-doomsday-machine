@@ -79,13 +79,20 @@ final class UpdateCommand extends Command
                 description: 'The result of the football team in the competition',
                 default: false
             )
+            ->addOption(
+                name: 'seed',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The seed of the football team in the competition',
+                default: false
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to update a
                 <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id> [--competition-id <competition-id>] [--team-id <team-id>] [--group [<group>] [--result [<result>]]</info>
+                  <info>%command.full_name% <id> [--competition-id <competition-id>] [--team-id <team-id>]
+                    [--group [<group>] [--result [<result>]] [--seed [<seed>]]</info>
 
                 Examples:
                   <info>%command.full_name% 1 --result Winners</info>
@@ -170,6 +177,19 @@ final class UpdateCommand extends Command
                 $result = trim($result);
             }
             $entry->setResult($result);
+
+            $seed = $input->getOption('seed');
+            if ($seed === false) {
+                $seed = $entry->getSeed();
+            }
+            if ($seed !== null) {
+                if (!is_numeric($seed)) {
+                    $io->error('The seed option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $seed = intval($seed);
+            }
+            $entry->setSeed($seed);
 
             $errors = $this->validator->validate($entry);
             if (count($errors) > 0) {
