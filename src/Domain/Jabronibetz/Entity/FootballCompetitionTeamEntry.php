@@ -23,6 +23,7 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballCompetitionTeamEntryRepository;
 use App\Domain\Shared\Console\Question\ChoosableInterface;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -85,6 +86,14 @@ class FootballCompetitionTeamEntry implements ChoosableInterface
     #[Assert\Length(min: 1, max: 128)]
     #[Groups([self::GROUP_DETAIL])]
     private ?string $result = null;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive]
+    #[Groups([self::GROUP_DETAIL])]
+    private ?int $seed = null;
 
     /**
      * @return string
@@ -183,6 +192,24 @@ class FootballCompetitionTeamEntry implements ChoosableInterface
     public function setResult(?string $result): static
     {
         $this->result = $result;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getSeed(): ?int
+    {
+        return $this->seed;
+    }
+
+    /**
+     * @param int|null $seed
+     * @return $this
+     */
+    public function setSeed(?int $seed): static
+    {
+        $this->seed = $seed;
         return $this;
     }
 }

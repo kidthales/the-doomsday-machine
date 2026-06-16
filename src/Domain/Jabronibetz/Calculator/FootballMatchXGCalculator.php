@@ -57,6 +57,7 @@ final class FootballMatchXGCalculator
             return [];
         }
 
+        $defaultTeamStrength = new FootballTeamStrength(0, 0, 0);
         $matchXGs = [];
         foreach ($matches as $match) {
             $matchId = $match->getId();
@@ -67,12 +68,8 @@ final class FootballMatchXGCalculator
                 continue;
             }
 
-            $homeTeamStrength = $teamStrengths[$homeTeamId] ?? null;
-            $awayTeamStrength = $teamStrengths[$awayTeamId] ?? null;
-
-            if ($homeTeamStrength === null || $awayTeamStrength === null) {
-                continue;
-            }
+            $homeTeamStrength = $teamStrengths[$homeTeamId] ?? $defaultTeamStrength;
+            $awayTeamStrength = $teamStrengths[$awayTeamId] ?? $defaultTeamStrength;
 
             $matchXGs[(string)$matchId] = new FootballMatchXG(
                 matchId: $matchId,
