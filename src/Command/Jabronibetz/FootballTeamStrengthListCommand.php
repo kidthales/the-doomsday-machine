@@ -21,8 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz;
 
-use App\Domain\Jabronibetz\Calculator\FootballMatchTeamReferenceFrameAggregationCalculatorAwareTrait;
-use App\Domain\Jabronibetz\Calculator\FootballTeamStrengthCalculatorAwareTrait;
+use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
@@ -53,9 +52,7 @@ use ValueError;
 )]
 final class FootballTeamStrengthListCommand extends Command
 {
-    use EntityManagerAwareTrait,
-        FootballMatchTeamReferenceFrameAggregationCalculatorAwareTrait,
-        FootballTeamStrengthCalculatorAwareTrait;
+    use EntityManagerAwareTrait, FootballCalculatorAwareTrait;
 
     private const array HEADERS = ['Team', 'Attack', 'Defense'];
 
@@ -177,8 +174,11 @@ final class FootballTeamStrengthListCommand extends Command
                     $teamStrengths = $this->calculateTeamStrengths(
                         self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds)
                     );
-                    if (empty($teamStrengths)) {
-                        continue;
+                    foreach ($teams as $team) {
+                        $teamId = (string)$team->getId();
+                        if (!isset($teamStrengths[$teamId])) {
+                            $teamStrengths[$teamId] = new FootballTeamStrength((int)$teamId, 0, 0);
+                        }
                     }
                     $table = new Table($output);
                     $table->setHeaderTitle(sprintf('Group %s', $group));
@@ -187,12 +187,14 @@ final class FootballTeamStrengthListCommand extends Command
                     $table->render();
                 }
             } else {
-                $io->table(
-                    self::HEADERS,
-                    $this->formatTeamStrengths(
-                        $this->calculateTeamStrengths(self::createMatchTeamReferenceFrameCriteria($cmp))
-                    )
-                );
+                $teamStrengths = $this->calculateTeamStrengths(self::createMatchTeamReferenceFrameCriteria($cmp));
+                foreach ($cmp->getTeamEntries() as $entry) {
+                    $teamId = (string)$entry->getTeam()->getId();
+                    if (!isset($teamStrengths[$teamId])) {
+                        $teamStrengths[$teamId] = new FootballTeamStrength((int)$teamId, 0, 0);
+                    }
+                }
+                $io->table(self::HEADERS, $this->formatTeamStrengths($teamStrengths));
             }
         } catch (Throwable $e) {
             $io->error($e->getMessage());
@@ -227,18 +229,20 @@ final class FootballTeamStrengthListCommand extends Command
 
     /**
      * @param Criteria $criteria
-     * @return FootballTeamStrength[]
+     * @return array<string, FootballTeamStrength>
      * @throws SerializerExceptionInterface
      */
     private function calculateTeamStrengths(Criteria $criteria): array
     {
-        return $this->footballTeamStrengthCalculator->calculate(
-            $this->footballMatchTeamReferenceFrameAggregationCalculator->calculate(
-                $this->entityManager
-                    ->getRepository(FootballMatchTeamReferenceFrame::class)
-                    ->matching($criteria)
-                    ->toArray()
-            )
+        $aggregations = $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
+            $this->entityManager
+                ->getRepository(FootballMatchTeamReferenceFrame::class)
+                ->matching($criteria)
+                ->toArray()
+        );
+        return $this->footballCalculator->calculateTeamStrengths(
+            $aggregations,
+            $this->footballCalculator->calculateMatchTeamReferenceFrameAggregationAverage($aggregations)
         );
     }
 

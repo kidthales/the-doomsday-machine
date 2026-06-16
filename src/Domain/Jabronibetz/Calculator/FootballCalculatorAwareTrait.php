@@ -26,29 +26,29 @@ use Symfony\Contracts\Service\Attribute\Required;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait FootballMatchTeamReferenceFrameAggregationCalculatorAwareTrait
+trait FootballCalculatorAwareTrait
 {
     /**
-     * @var FootballMatchTeamReferenceFrameAggregationCalculator|null
+     * @var FootballCalculator|null
      */
-    protected ?FootballMatchTeamReferenceFrameAggregationCalculator $footballMatchTeamReferenceFrameAggregationCalculator = null;
+    protected ?FootballCalculator $footballCalculator = null;
 
     /**
-     * @return FootballMatchTeamReferenceFrameAggregationCalculator|null
+     * @return FootballCalculator|null
      */
-    public function getFootballMatchTeamReferenceFrameAggregationCalculator(): ?FootballMatchTeamReferenceFrameAggregationCalculator
+    public function getFootballCalculator(): ?FootballCalculator
     {
-        return $this->footballMatchTeamReferenceFrameAggregationCalculator;
+        return $this->footballCalculator;
     }
 
     /**
-     * @param FootballMatchTeamReferenceFrameAggregationCalculator $calculator
+     * @param FootballCalculator $calculator
      * @return $this
      */
     #[Required]
-    public function setFootballMatchTeamReferenceFrameAggregationCalculator(FootballMatchTeamReferenceFrameAggregationCalculator $calculator): static
+    public function setFootballCalculator(FootballCalculator $calculator): static
     {
-        $this->footballMatchTeamReferenceFrameAggregationCalculator = $calculator;
+        $this->footballCalculator = $calculator;
         return $this;
     }
 }
