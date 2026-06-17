@@ -177,7 +177,7 @@ final class FootballTeamStrengthListCommand extends Command
                     foreach ($teams as $team) {
                         $teamId = (string)$team->getId();
                         if (!isset($teamStrengths[$teamId])) {
-                            $teamStrengths[$teamId] = new FootballTeamStrength((int)$teamId, 0, 0);
+                            $teamStrengths[$teamId] = new FootballTeamStrength([], [$cmp->getId()], (int)$teamId, 0, 0);
                         }
                     }
                     $table = new Table($output);
@@ -191,7 +191,7 @@ final class FootballTeamStrengthListCommand extends Command
                 foreach ($cmp->getTeamEntries() as $entry) {
                     $teamId = (string)$entry->getTeam()->getId();
                     if (!isset($teamStrengths[$teamId])) {
-                        $teamStrengths[$teamId] = new FootballTeamStrength((int)$teamId, 0, 0);
+                        $teamStrengths[$teamId] = new FootballTeamStrength([], [$cmp->getId()], (int)$teamId, 0, 0);
                     }
                 }
                 $io->table(self::HEADERS, $this->formatTeamStrengths($teamStrengths));

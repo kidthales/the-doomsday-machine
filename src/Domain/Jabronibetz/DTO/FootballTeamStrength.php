@@ -27,11 +27,19 @@ namespace App\Domain\Jabronibetz\DTO;
 final readonly class FootballTeamStrength
 {
     /**
+     * @param array $matchIds
+     * @param array $competitionIds
      * @param int $teamId
      * @param float $attack
      * @param float $defense
      */
-    public function __construct(public int $teamId, public float $attack, public float $defense)
+    public function __construct(
+        public array $matchIds,
+        public array $competitionIds,
+        public int   $teamId,
+        public float $attack,
+        public float $defense
+    )
     {
     }
 }

@@ -265,6 +265,8 @@ final readonly class FootballCalculator
         $teamStrengths = [];
         foreach ($aggregations as $aggregation) {
             $teamStrengths[(string)$aggregation->teamId] = new FootballTeamStrength(
+                matchIds: $aggregation->matchIds,
+                competitionIds: $aggregation->competitionIds,
                 teamId: $aggregation->teamId,
                 attack: (float)(
                 empty($aggregationAverage->goalsForPerFulltime)
@@ -305,7 +307,7 @@ final readonly class FootballCalculator
                 break;
         }
 
-        $defaultTeamStrength = new FootballTeamStrength(0, 0, 0);
+        $defaultTeamStrength = new FootballTeamStrength([], [], 0, 0, 0);
         $matchXGs = [];
         foreach ($matches as $match) {
             $matchId = $match->getId();
@@ -382,6 +384,12 @@ final readonly class FootballCalculator
         return $matchXGs;
     }
 
+    /**
+     * @param FootballMatchXG $a
+     * @param FootballMatchXG $b
+     * @param float $t
+     * @return FootballMatchXG
+     */
     public function calculateMatchGXLerp(FootballMatchXG $a, FootballMatchXG $b, float $t): FootballMatchXG
     {
         $t = max(0.0, min(1.0, $t));
