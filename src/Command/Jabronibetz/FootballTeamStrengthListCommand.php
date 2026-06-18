@@ -24,7 +24,6 @@ namespace App\Command\Jabronibetz;
 use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballMatchTeamReferenceFrame;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
@@ -41,7 +40,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Throwable;
-use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -55,16 +53,6 @@ final class FootballTeamStrengthListCommand extends Command
     use EntityManagerAwareTrait, FootballCalculatorAwareTrait;
 
     private const array HEADERS = ['Team', 'Attack', 'Defense'];
-
-    /**
-     * @param FootballCompetition $cmp
-     * @return Criteria
-     */
-    private static function createCompetitionTeamEntryCriteria(FootballCompetition $cmp): Criteria
-    {
-        return Criteria::create()
-            ->where(Criteria::expr()->eq('competition', $cmp));
-    }
 
     /**
      * @param FootballCompetition $cmp
@@ -169,10 +157,9 @@ final class FootballTeamStrengthListCommand extends Command
                     return Command::FAILURE;
                 }
 
-                $groups = $this->groupTeams(self::createCompetitionTeamEntryCriteria($cmp));
-                foreach ($groups as $group => $teams) {
+                foreach ($cmp->getTeamsByGroup() as $group => $teams) {
                     $teamStrengths = $this->calculateTeamStrengths(
-                        self::createMatchTeamReferenceFrameCriteria($cmp, $teams, $groupRounds)
+                        self::createMatchTeamReferenceFrameCriteria($cmp, $teams->toArray(), $groupRounds)
                     );
                     foreach ($teams as $team) {
                         $teamId = (string)$team->getId();
@@ -202,29 +189,6 @@ final class FootballTeamStrengthListCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @param Criteria $criteria
-     * @return array<string, FootballTeam[]>
-     */
-    private function groupTeams(Criteria $criteria): array
-    {
-        $groups = [];
-        $entries = $this->entityManager
-            ->getRepository(FootballCompetitionTeamEntry::class)
-            ->matching($criteria);
-        foreach ($entries->toArray() as $entry) {
-            $group = $entry->getGroup();
-            if ($group === null) {
-                throw new ValueError('Football competition team entry missing group assignment');
-            }
-            if (!isset($groups[$group])) {
-                $groups[$group] = [];
-            }
-            $groups[$group][] = $entry->getTeam();
-        }
-        return $groups;
     }
 
     /**

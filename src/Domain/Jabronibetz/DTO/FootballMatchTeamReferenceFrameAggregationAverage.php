@@ -29,7 +29,7 @@ final readonly class FootballMatchTeamReferenceFrameAggregationAverage
     /**
      * @param int[] $matchIds
      * @param int[] $competitionIds
-     * @param array $teamIds
+     * @param int[] $teamIds
      * @param float $matches
      * @param float $halftimesPlayed
      * @param float $fulltimesPlayed

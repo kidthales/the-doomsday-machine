@@ -140,6 +140,28 @@ class FootballCompetition implements ChoosableInterface
     }
 
     /**
+     * @return array<string, Collection<int, FootballTeam>>
+     */
+    public function getTeamsByGroup(): array
+    {
+        $teamsByGroup = [];
+        foreach ($this->teamEntries as $teamEntry) {
+            $group = $teamEntry->getGroup();
+
+            if ($group === null) {
+                continue;
+            }
+
+            if (!isset($teamsByGroup[$group])) {
+                $teamsByGroup[$group] = new ArrayCollection();
+            }
+
+            $teamsByGroup[$group]->add($teamEntry->getTeam());
+        }
+        return $teamsByGroup;
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int

@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Calculator;
 
+use App\Domain\Jabronibetz\DTO\FootballCompetitionAverageGoalsForPerFulltime;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregation;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregationAverage;
 use App\Domain\Jabronibetz\DTO\FootballMatchXG;
@@ -142,7 +143,7 @@ final readonly class FootballCalculator
                 $aggregations[$teamId]['sequence'][] = $extraHalftimeGoalsFor > $extraHalftimeGoalsAgainst
                     ? 'W'
                     : ($extraHalftimeGoalsFor < $extraHalftimeGoalsAgainst ? 'L' : 'D');
-            }else if ($fulltimeGoalsFor !== null && $fulltimeGoalsAgainst !== null) {
+            } else if ($fulltimeGoalsFor !== null && $fulltimeGoalsAgainst !== null) {
                 $aggregations[$teamId]['sequence'][] = $fulltimeGoalsFor > $fulltimeGoalsAgainst
                     ? 'W'
                     : ($fulltimeGoalsFor < $fulltimeGoalsAgainst ? 'L' : 'D');
@@ -156,6 +157,12 @@ final readonly class FootballCalculator
         }
 
         foreach ($aggregations as &$aggregation) {
+            $aggregation['matchIds'] = array_unique($aggregation['matchIds']);
+            sort($aggregation['matchIds']);
+
+            $aggregation['competitionIds'] = array_unique($aggregation['competitionIds']);
+            sort($aggregation['competitionIds']);
+
             $aggregation['goalsForPerHalftime'] = (float)($aggregation['halftimesPlayed'] === 0 ? 0 : ($aggregation['halftimeGoalsFor'] / $aggregation['halftimesPlayed']));
             $aggregation['goalsForPerFulltime'] = (float)($aggregation['fulltimesPlayed'] === 0 ? 0 : ($aggregation['fulltimeGoalsFor'] / $aggregation['fulltimesPlayed']));
             $aggregation['goalsForPerExtraHalftime'] = (float)($aggregation['extraHalftimesPlayed'] === 0 ? 0 : ($aggregation['extraHalftimeGoalsFor'] / $aggregation['extraHalftimesPlayed']));
@@ -183,7 +190,9 @@ final readonly class FootballCalculator
      * @return FootballMatchTeamReferenceFrameAggregationAverage
      * @throws SerializerExceptionInterface
      */
-    public function calculateMatchTeamReferenceFrameAggregationAverage(array $aggregations): FootballMatchTeamReferenceFrameAggregationAverage
+    public function calculateMatchTeamReferenceFrameAggregationAverage(
+        array $aggregations
+    ): FootballMatchTeamReferenceFrameAggregationAverage
     {
         $matchIds = [];
         $competitionIds = [];
@@ -238,10 +247,19 @@ final readonly class FootballCalculator
             }
         }
 
+        $matchIds = array_unique($matchIds);
+        sort($matchIds);
+
+        $competitionIds = array_unique($competitionIds);
+        sort($competitionIds);
+
+        $teamIds = array_unique($teamIds);
+        sort($teamIds);
+
         $numTeams = count($teamIds);
         $data = [
-            'matchIds' => array_unique($matchIds),
-            'competitionIds' => array_unique($competitionIds),
+            'matchIds' => $matchIds,
+            'competitionIds' => $competitionIds,
             'teamIds' => $teamIds
         ];
         foreach ($totals as $field => $total) {
@@ -255,7 +273,10 @@ final readonly class FootballCalculator
      * @param FootballMatchTeamReferenceFrameAggregation[] $aggregations
      * @return array<string, FootballTeamStrength>
      */
-    public function calculateTeamStrengths(array $aggregations, FootballMatchTeamReferenceFrameAggregationAverage $aggregationAverage): array
+    public function calculateTeamStrengths(
+        array                                             $aggregations,
+        FootballMatchTeamReferenceFrameAggregationAverage $aggregationAverage
+    ): array
     {
         $numTeams = count($aggregations);
         if ($numTeams === 0) {
@@ -268,16 +289,12 @@ final readonly class FootballCalculator
                 matchIds: $aggregation->matchIds,
                 competitionIds: $aggregation->competitionIds,
                 teamId: $aggregation->teamId,
-                attack: (float)(
-                empty($aggregationAverage->goalsForPerFulltime)
+                attack: (float)(empty($aggregationAverage->goalsForPerFulltime)
                     ? 0.0
-                    : ($aggregation->goalsForPerFulltime / $aggregationAverage->goalsForPerFulltime)
-                ),
-                defense: (float)(
-                empty($aggregationAverage->goalsAgainstPerFulltime)
+                    : ($aggregation->goalsForPerFulltime / $aggregationAverage->goalsForPerFulltime)),
+                defense: (float)(empty($aggregationAverage->goalsAgainstPerFulltime)
                     ? 0.0
-                    : ($aggregation->goalsAgainstPerFulltime / $aggregationAverage->goalsAgainstPerFulltime)
-                )
+                    : ($aggregation->goalsAgainstPerFulltime / $aggregationAverage->goalsAgainstPerFulltime))
             );
         }
         return $teamStrengths;
@@ -285,26 +302,18 @@ final readonly class FootballCalculator
 
     /**
      * @param FootballMatch[] $matches
-     * @param float[] $competitionAverageGoalsForPerFulltime
+     * @param FootballCompetitionAverageGoalsForPerFulltime $competitionAverageGoalsForPerFulltime
      * @param array<string, FootballTeamStrength> $teamStrengths
      * @return array<string, FootballMatchXG>
      */
-    public function calculateMatchXGsFromTeamStrengths(array $matches, array $competitionAverageGoalsForPerFulltime, array $teamStrengths): array
+    public function calculateMatchXGsFromTeamStrengths(
+        array                                         $matches,
+        FootballCompetitionAverageGoalsForPerFulltime $competitionAverageGoalsForPerFulltime,
+        array                                         $teamStrengths
+    ): array
     {
         if (count($matches) === 0) {
             return [];
-        }
-
-        $competitionAverageGoalsForPerFulltimeCount = count($competitionAverageGoalsForPerFulltime);
-        switch ($competitionAverageGoalsForPerFulltimeCount) {
-            case 0:
-                $competitionAverageGoalsForPerFulltime = [0.0, 0.0];
-                break;
-            case 1:
-                $competitionAverageGoalsForPerFulltime[] = $competitionAverageGoalsForPerFulltime[0];
-                break;
-            default:
-                break;
         }
 
         $defaultTeamStrength = new FootballTeamStrength([], [], 0, 0, 0);
@@ -323,8 +332,8 @@ final readonly class FootballCalculator
 
             $matchXGs[(string)$matchId] = new FootballMatchXG(
                 matchId: $matchId,
-                homeTeam: $competitionAverageGoalsForPerFulltime[0] * $homeTeamStrength->attack * $awayTeamStrength->defense,
-                awayTeam: $competitionAverageGoalsForPerFulltime[1] * $awayTeamStrength->attack * $homeTeamStrength->defense,
+                homeTeam: $competitionAverageGoalsForPerFulltime->homeTeam * $homeTeamStrength->attack * $awayTeamStrength->defense,
+                awayTeam: $competitionAverageGoalsForPerFulltime->awayTeam * $awayTeamStrength->attack * $homeTeamStrength->defense,
             );
         }
 
