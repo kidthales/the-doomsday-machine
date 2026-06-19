@@ -140,6 +140,14 @@ class FootballCompetition implements ChoosableInterface
     }
 
     /**
+     * @return Collection<int, FootballTeam>
+     */
+    public function getTeams(): Collection
+    {
+        return $this->teamEntries->map(fn($entry) => $entry->getTeam());
+    }
+
+    /**
      * @return array<string, Collection<int, FootballTeam>>
      */
     public function getTeamsByGroup(): array

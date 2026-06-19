@@ -45,15 +45,15 @@ final readonly class FootballCalculator
     }
 
     /**
-     * @param FootballMatchTeamReferenceFrame[] $matches
+     * @param FootballMatchTeamReferenceFrame[] $matchTeamReferenceFrames
      * @return FootballMatchTeamReferenceFrameAggregation[]
      * @throws SerializerExceptionInterface
      */
-    public function calculateMatchTeamReferenceFrameAggregations(array $matches): array
+    public function calculateMatchTeamReferenceFrameAggregations(array $matchTeamReferenceFrames): array
     {
         $aggregations = [];
-        foreach ($matches as $match) {
-            $teamId = (string)$match->getTeam()->getId();
+        foreach ($matchTeamReferenceFrames as $matchTeamReferenceFrame) {
+            $teamId = (string)$matchTeamReferenceFrame->getTeam()->getId();
 
             if (!isset($aggregations[$teamId])) {
                 $aggregations[$teamId] = [
@@ -86,32 +86,32 @@ final readonly class FootballCalculator
                 ];
             }
 
-            $aggregations[$teamId]['matchIds'][] = $match->getSourceMatch()->getId();
-            $aggregations[$teamId]['competitionIds'][] = $match->getCompetition()->getId();
+            $aggregations[$teamId]['matchIds'][] = $matchTeamReferenceFrame->getSourceMatch()->getId();
+            $aggregations[$teamId]['competitionIds'][] = $matchTeamReferenceFrame->getCompetition()->getId();
 
             $aggregations[$teamId]['matches']++;
 
-            if ($match->getHalftimeGoalsFor() !== null && $match->getHalftimeGoalsAgainst() !== null) {
+            if ($matchTeamReferenceFrame->getHalftimeGoalsFor() !== null && $matchTeamReferenceFrame->getHalftimeGoalsAgainst() !== null) {
                 $aggregations[$teamId]['halftimesPlayed']++;
             }
-            if ($match->getFulltimeGoalsFor() !== null && $match->getFulltimeGoalsAgainst() !== null) {
+            if ($matchTeamReferenceFrame->getFulltimeGoalsFor() !== null && $matchTeamReferenceFrame->getFulltimeGoalsAgainst() !== null) {
                 $aggregations[$teamId]['fulltimesPlayed']++;
             }
-            if ($match->getExtraHalftimeGoalsFor() !== null && $match->getExtraHalftimeGoalsAgainst() !== null) {
+            if ($matchTeamReferenceFrame->getExtraHalftimeGoalsFor() !== null && $matchTeamReferenceFrame->getExtraHalftimeGoalsAgainst() !== null) {
                 $aggregations[$teamId]['extraHalftimesPlayed']++;
             }
-            if ($match->getExtraFulltimeGoalsFor() !== null && $match->getExtraFulltimeGoalsAgainst() !== null) {
+            if ($matchTeamReferenceFrame->getExtraFulltimeGoalsFor() !== null && $matchTeamReferenceFrame->getExtraFulltimeGoalsAgainst() !== null) {
                 $aggregations[$teamId]['extraFulltimesPlayed']++;
             }
-            if ($match->getShootoutGoalsFor() !== null && $match->getShootoutGoalsAgainst() !== null) {
+            if ($matchTeamReferenceFrame->getShootoutGoalsFor() !== null && $matchTeamReferenceFrame->getShootoutGoalsAgainst() !== null) {
                 $aggregations[$teamId]['shootoutsPlayed']++;
             }
 
-            $halftimeGoalsFor = $match->getHalftimeGoalsFor();
-            $fulltimeGoalsFor = $match->getFulltimeGoalsFor();
-            $extraHalftimeGoalsFor = $match->getExtraHalftimeGoalsFor();
-            $extraFulltimeGoalsFor = $match->getExtraFulltimeGoalsFor();
-            $shootoutGoalsFor = $match->getShootoutGoalsFor();
+            $halftimeGoalsFor = $matchTeamReferenceFrame->getHalftimeGoalsFor();
+            $fulltimeGoalsFor = $matchTeamReferenceFrame->getFulltimeGoalsFor();
+            $extraHalftimeGoalsFor = $matchTeamReferenceFrame->getExtraHalftimeGoalsFor();
+            $extraFulltimeGoalsFor = $matchTeamReferenceFrame->getExtraFulltimeGoalsFor();
+            $shootoutGoalsFor = $matchTeamReferenceFrame->getShootoutGoalsFor();
 
             $aggregations[$teamId]['halftimeGoalsFor'] += $halftimeGoalsFor ?? 0;
             $aggregations[$teamId]['fulltimeGoalsFor'] += $fulltimeGoalsFor ?? 0;
@@ -119,11 +119,11 @@ final readonly class FootballCalculator
             $aggregations[$teamId]['extraFulltimeGoalsFor'] += $extraFulltimeGoalsFor ?? 0;
             $aggregations[$teamId]['shootoutGoalsFor'] += $shootoutGoalsFor ?? 0;
 
-            $halftimeGoalsAgainst = $match->getHalftimeGoalsAgainst();
-            $fulltimeGoalsAgainst = $match->getFulltimeGoalsAgainst();
-            $extraHalftimeGoalsAgainst = $match->getExtraHalftimeGoalsAgainst();
-            $extraFulltimeGoalsAgainst = $match->getExtraFulltimeGoalsAgainst();
-            $shootoutGoalsAgainst = $match->getShootoutGoalsAgainst();
+            $halftimeGoalsAgainst = $matchTeamReferenceFrame->getHalftimeGoalsAgainst();
+            $fulltimeGoalsAgainst = $matchTeamReferenceFrame->getFulltimeGoalsAgainst();
+            $extraHalftimeGoalsAgainst = $matchTeamReferenceFrame->getExtraHalftimeGoalsAgainst();
+            $extraFulltimeGoalsAgainst = $matchTeamReferenceFrame->getExtraFulltimeGoalsAgainst();
+            $shootoutGoalsAgainst = $matchTeamReferenceFrame->getShootoutGoalsAgainst();
 
             $aggregations[$teamId]['halftimeGoalsAgainst'] += $halftimeGoalsAgainst ?? 0;
             $aggregations[$teamId]['fulltimeGoalsAgainst'] += $fulltimeGoalsAgainst ?? 0;
@@ -278,11 +278,6 @@ final readonly class FootballCalculator
         FootballMatchTeamReferenceFrameAggregationAverage $aggregationAverage
     ): array
     {
-        $numTeams = count($aggregations);
-        if ($numTeams === 0) {
-            return [];
-        }
-
         $teamStrengths = [];
         foreach ($aggregations as $aggregation) {
             $teamStrengths[(string)$aggregation->teamId] = new FootballTeamStrength(
@@ -312,10 +307,6 @@ final readonly class FootballCalculator
         array                                         $teamStrengths
     ): array
     {
-        if (count($matches) === 0) {
-            return [];
-        }
-
         $defaultTeamStrength = new FootballTeamStrength([], [], 0, 0, 0);
         $matchXGs = [];
         foreach ($matches as $match) {

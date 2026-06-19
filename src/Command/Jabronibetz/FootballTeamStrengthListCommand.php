@@ -21,14 +21,12 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz;
 
-use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
+use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballMatchTeamReferenceFrame;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -38,7 +36,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Throwable;
 
 /**
@@ -50,37 +47,9 @@ use Throwable;
 )]
 final class FootballTeamStrengthListCommand extends Command
 {
-    use EntityManagerAwareTrait, FootballCalculatorAwareTrait;
+    use EntityManagerAwareTrait, FootballCompetitionDataProviderAwareTrait;
 
     private const array HEADERS = ['Team', 'Attack', 'Defense'];
-
-    /**
-     * @param FootballCompetition $cmp
-     * @param array $teams
-     * @param int $groupRounds
-     * @return Criteria
-     */
-    private static function createMatchTeamReferenceFrameCriteria(
-        FootballCompetition $cmp,
-        array               $teams = [],
-        int                 $groupRounds = 0
-    ): Criteria
-    {
-        $criteria = Criteria::create()
-            ->where(Criteria::expr()->eq('competition', $cmp))
-            ->andWhere(Criteria::expr()->isNotNull('fulltimeGoalsFor'))
-            ->andWhere(Criteria::expr()->isNotNull('fulltimeGoalsAgainst'));
-
-        if (!empty($teams)) {
-            $criteria->andWhere(Criteria::expr()->in('team', $teams));
-        }
-
-        if ($groupRounds > 0) {
-            $criteria->andWhere(Criteria::expr()->lte('round', $groupRounds));
-        }
-
-        return $criteria;
-    }
 
     /**
      * @return void
@@ -142,45 +111,25 @@ final class FootballTeamStrengthListCommand extends Command
         $io->title('Jabronibetz: List Football Team Strengths');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($cmp === null) {
+            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
+            if ($competition === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
-            $io->section($cmp->getName());
+            $io->section($competition->getName());
 
-            if ($input->getOption('group')) {
-                $groupRounds = $cmp->getGroupRounds();
-                if ($groupRounds === null) {
-                    $io->error('Football competition does not have a group phase');
-                    return Command::FAILURE;
-                }
-
-                foreach ($cmp->getTeamsByGroup() as $group => $teams) {
-                    $teamStrengths = $this->calculateTeamStrengths(
-                        self::createMatchTeamReferenceFrameCriteria($cmp, $teams->toArray(), $groupRounds)
-                    );
-                    foreach ($teams as $team) {
-                        $teamId = (string)$team->getId();
-                        if (!isset($teamStrengths[$teamId])) {
-                            $teamStrengths[$teamId] = new FootballTeamStrength([], [$cmp->getId()], (int)$teamId, 0, 0);
-                        }
-                    }
+            $group = $input->getOption('group');
+            $teamStrengths = $this->footballCompetitionDataProvider->getTeamStrengths($competition, $group);
+            if ($group) {
+                foreach ($teamStrengths as $teamGroup => $teamGroupStrengths) {
                     $table = new Table($output);
-                    $table->setHeaderTitle(sprintf('Group %s', $group));
+                    $table->setHeaderTitle(sprintf('Group %s', $teamGroup));
                     $table->setHeaders(self::HEADERS);
-                    $table->setRows($this->formatTeamStrengths($teamStrengths));
+                    $table->setRows($this->formatTeamStrengths($teamGroupStrengths));
                     $table->render();
                 }
             } else {
-                $teamStrengths = $this->calculateTeamStrengths(self::createMatchTeamReferenceFrameCriteria($cmp));
-                foreach ($cmp->getTeamEntries() as $entry) {
-                    $teamId = (string)$entry->getTeam()->getId();
-                    if (!isset($teamStrengths[$teamId])) {
-                        $teamStrengths[$teamId] = new FootballTeamStrength([], [$cmp->getId()], (int)$teamId, 0, 0);
-                    }
-                }
                 $io->table(self::HEADERS, $this->formatTeamStrengths($teamStrengths));
             }
         } catch (Throwable $e) {
@@ -189,25 +138,6 @@ final class FootballTeamStrengthListCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @param Criteria $criteria
-     * @return array<string, FootballTeamStrength>
-     * @throws SerializerExceptionInterface
-     */
-    private function calculateTeamStrengths(Criteria $criteria): array
-    {
-        $aggregations = $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-            $this->entityManager
-                ->getRepository(FootballMatchTeamReferenceFrame::class)
-                ->matching($criteria)
-                ->toArray()
-        );
-        return $this->footballCalculator->calculateTeamStrengths(
-            $aggregations,
-            $this->footballCalculator->calculateMatchTeamReferenceFrameAggregationAverage($aggregations)
-        );
     }
 
     /**
