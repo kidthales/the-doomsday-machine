@@ -355,7 +355,7 @@ final readonly class FootballCalculator
             }
         }
 
-        if ($topSeed === null || $bottomSeed === null) {
+        if ($topSeed === null || $bottomSeed === null || $topSeed === $bottomSeed) {
             return [];
         }
 

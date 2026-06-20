@@ -116,7 +116,7 @@ final class FootballCompetitionDataProvider
     public function getMatchTeamReferenceFrameAggregationAverage(
         FootballCompetition $competition,
         bool                $group = false
-    ): FootballMatchTeamReferenceFrameAggregationAverage | array
+    ): FootballMatchTeamReferenceFrameAggregationAverage|array
     {
         $matchTeamReferenceFrameAggregations = $this->getMatchTeamReferenceFrameAggregations($competition, $group);
         return $group
@@ -140,7 +140,7 @@ final class FootballCompetitionDataProvider
     public function getTeamStrengths(FootballCompetition $competition, bool $group = false): array
     {
         $matchTeamReferenceFrameAggregations = $this->getMatchTeamReferenceFrameAggregations($competition, $group);
-        $defaultTeamStrength = fn (mixed $teamId) => new FootballTeamStrength(
+        $defaultTeamStrength = fn(mixed $teamId) => new FootballTeamStrength(
             matchIds: [],
             competitionIds: [$competition->getId()],
             teamId: (int)$teamId,
@@ -244,7 +244,7 @@ final class FootballCompetitionDataProvider
         $entries = $competition->getTeamEntries()->toArray();
         return $group
             ? array_map(
-                fn ($groupMatches) => $this->footballCalculator->calculateMatchXGsFromCompetitionTeamEntries(
+                fn($groupMatches) => $this->footballCalculator->calculateMatchXGsFromCompetitionTeamEntries(
                     $groupMatches,
                     $entries
                 ),
@@ -264,171 +264,144 @@ final class FootballCompetitionDataProvider
     {
         $matches = $this->getNonFulltimeMatches($competition, $group, $limit);
         $teamStrengths = $this->getTeamStrengths($competition, $group);
+        $competitionAverageGoalsForPerFulltime = $this->getAverageGoalsForPerFulltime($competition, $group);
+
+        if ($group) {
+            $matchXGsByGroup = [];
+            foreach ($matches as $matchGroup => $groupMatches) {
+                $matchXGsByGroup[$matchGroup] = $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
+                    $groupMatches,
+                    $competitionAverageGoalsForPerFulltime[$matchGroup],
+                    $teamStrengths[$matchGroup]
+                );
+            }
+            return $matchXGsByGroup;
+        }
+
+        return $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
+            $matches,
+            $competitionAverageGoalsForPerFulltime,
+            $teamStrengths
+        );
+    }
+
+    /**
+     * @param FootballCompetition $competition
+     * @param bool $group
+     * @return FootballCompetitionAverageGoalsForPerFulltime|array<string, FootballCompetitionAverageGoalsForPerFulltime>
+     * @throws SerializerExceptionInterface
+     */
+    public function getAverageGoalsForPerFulltime(
+        FootballCompetition $competition,
+        bool                $group = false
+    ): FootballCompetitionAverageGoalsForPerFulltime|array
+    {
         $matchTeamReferenceFrames = $this->getFulltimeMatchTeamReferenceFrames($competition, $group);
-
-        if ($competition->getSeparateMatchXgHomeAway()) {
-            /** @var FootballMatchTeamReferenceFrame[] $homeMatchTeamReferenceFrames */
-            $homeMatchTeamReferenceFrames = [];
-            /** @var FootballMatchTeamReferenceFrame[] $awayMatchTeamReferenceFrames */
-            $awayMatchTeamReferenceFrames = [];
-
-            if ($group) {
-                $matchXGs = [];
-                foreach ($matchTeamReferenceFrames as $matchGroup => $groupMatchTeamReferenceFrames) {
-                    foreach ($groupMatchTeamReferenceFrames as $groupMatchTeamReferenceFrame) {
-                        if ($groupMatchTeamReferenceFrame->isHomeTeam()) {
-                            $homeMatchTeamReferenceFrames[] = $groupMatchTeamReferenceFrame;
-                        }
-                        if ($groupMatchTeamReferenceFrame->isAwayTeam()) {
-                            $awayMatchTeamReferenceFrames[] = $groupMatchTeamReferenceFrame;
-                        }
-                    }
-
-                    $homeMatchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-                        ->calculateMatchTeamReferenceFrameAggregationAverage(
-                            $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                                $homeMatchTeamReferenceFrames
-                            )
-                        );
-                    $awayMatchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-                        ->calculateMatchTeamReferenceFrameAggregationAverage(
-                            $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                                $awayMatchTeamReferenceFrames
-                            )
-                        );
-
-                    $matchIds = array_unique([
-                        ...$homeMatchTeamReferenceFrameAggregationAverage->matchIds,
-                        ...$awayMatchTeamReferenceFrameAggregationAverage->matchIds
-                    ]);
-                    sort($matchIds);
-                    $competitionIds = array_unique([
-                        ...$homeMatchTeamReferenceFrameAggregationAverage->competitionIds,
-                        ...$awayMatchTeamReferenceFrameAggregationAverage->competitionIds
-                    ]);
-                    sort($competitionIds);
-                    $teamIds = array_unique([
-                        ...$homeMatchTeamReferenceFrameAggregationAverage->teamIds,
-                        ...$awayMatchTeamReferenceFrameAggregationAverage->teamIds
-                    ]);
-                    sort($teamIds);
-
-                    $groupCompetitionAverageGoalsForPerFulltime = new FootballCompetitionAverageGoalsForPerFulltime(
-                        matchIds: $matchIds,
-                        competitionIds: $competitionIds,
-                        teamIds: $teamIds,
-                        homeTeam: $homeMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime,
-                        awayTeam: $awayMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime
-                    );
-
-                    $matchXGs[$matchGroup] = $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-                        $matches[$matchGroup],
-                        $groupCompetitionAverageGoalsForPerFulltime,
-                        $teamStrengths
-                    );
-                }
-                return $matchXGs;
-            }
-
-            foreach ($matchTeamReferenceFrames as $matchTeamReferenceFrame) {
-                if ($matchTeamReferenceFrame->isHomeTeam()) {
-                    $homeMatchTeamReferenceFrames[] = $matchTeamReferenceFrame;
-                }
-                if ($matchTeamReferenceFrame->isAwayTeam()) {
-                    $awayMatchTeamReferenceFrames[] = $matchTeamReferenceFrame;
-                }
-            }
-
-            $homeMatchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-                ->calculateMatchTeamReferenceFrameAggregationAverage(
-                    $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                        $homeMatchTeamReferenceFrames
-                    )
-                );
-            $awayMatchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-                ->calculateMatchTeamReferenceFrameAggregationAverage(
-                    $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                        $awayMatchTeamReferenceFrames
-                    )
-                );
-
+        $calculateMatchTeamReferenceFrameAggregationAverage
+            = fn(array $matchTeamReferenceFrames) => $this->footballCalculator
+            ->calculateMatchTeamReferenceFrameAggregationAverage(
+                $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
+                    $matchTeamReferenceFrames
+                )
+            );
+        $createCompetitionAverageGoalsForPerFulltime = function (
+            FootballMatchTeamReferenceFrameAggregationAverage $homeMatchTeamReferenceFrameAggregationAverage,
+            FootballMatchTeamReferenceFrameAggregationAverage $awayMatchTeamReferenceFrameAggregationAverage
+        ) {
+            /** @var int[] $matchIds */
             $matchIds = array_unique([
                 ...$homeMatchTeamReferenceFrameAggregationAverage->matchIds,
                 ...$awayMatchTeamReferenceFrameAggregationAverage->matchIds
             ]);
             sort($matchIds);
+            /** @var int[] $competitionIds */
             $competitionIds = array_unique([
                 ...$homeMatchTeamReferenceFrameAggregationAverage->competitionIds,
                 ...$awayMatchTeamReferenceFrameAggregationAverage->competitionIds
             ]);
             sort($competitionIds);
+            /** @var int[] $teamIds */
             $teamIds = array_unique([
                 ...$homeMatchTeamReferenceFrameAggregationAverage->teamIds,
                 ...$awayMatchTeamReferenceFrameAggregationAverage->teamIds
             ]);
             sort($teamIds);
-
-            $competitionAverageGoalsForPerFulltime = new FootballCompetitionAverageGoalsForPerFulltime(
+            return new FootballCompetitionAverageGoalsForPerFulltime(
                 matchIds: $matchIds,
                 competitionIds: $competitionIds,
                 teamIds: $teamIds,
                 homeTeam: $homeMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime,
                 awayTeam: $awayMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime
             );
+        };
 
-            return $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-                $matches,
-                $competitionAverageGoalsForPerFulltime,
-                $teamStrengths
+        if ($competition->getSeparateMatchXgHomeAway()) {
+            /** @var FootballMatchTeamReferenceFrame[] $homeMatchTeamReferenceFrames */
+            $homeMatchTeamReferenceFrames = [];
+            /** @var FootballMatchTeamReferenceFrame[] $awayMatchTeamReferenceFrames */
+            $awayMatchTeamReferenceFrames = [];
+            $processMatchTeamReferenceFrames = function (array $matchTeamReferenceFrames) use (&$homeMatchTeamReferenceFrames, &$awayMatchTeamReferenceFrames) {
+                foreach ($matchTeamReferenceFrames as $matchTeamReferenceFrame) {
+                    if ($matchTeamReferenceFrame->isHomeTeam()) {
+                        $homeMatchTeamReferenceFrames[] = $matchTeamReferenceFrame;
+                    }
+                    if ($matchTeamReferenceFrame->isAwayTeam()) {
+                        $awayMatchTeamReferenceFrames[] = $matchTeamReferenceFrame;
+                    }
+                }
+            };
+
+            if ($group) {
+                $competitionAverageGoalsForPerFulltimeByGroup = [];
+                foreach ($matchTeamReferenceFrames as $matchGroup => $groupMatchTeamReferenceFrames) {
+                    $processMatchTeamReferenceFrames($groupMatchTeamReferenceFrames);
+                    $homeMatchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+                        $homeMatchTeamReferenceFrames
+                    );
+                    $awayMatchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+                        $awayMatchTeamReferenceFrames
+                    );
+                    $competitionAverageGoalsForPerFulltimeByGroup[$matchGroup] = $createCompetitionAverageGoalsForPerFulltime(
+                        $homeMatchTeamReferenceFrameAggregationAverage,
+                        $awayMatchTeamReferenceFrameAggregationAverage
+                    );
+                }
+                return $competitionAverageGoalsForPerFulltimeByGroup;
+            }
+
+            $processMatchTeamReferenceFrames($matchTeamReferenceFrames);
+            $homeMatchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+                $homeMatchTeamReferenceFrames
+            );
+            $awayMatchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+                $awayMatchTeamReferenceFrames
+            );
+            return $createCompetitionAverageGoalsForPerFulltime(
+                $homeMatchTeamReferenceFrameAggregationAverage,
+                $awayMatchTeamReferenceFrameAggregationAverage
             );
         }
 
         if ($group) {
-            $matchXGs = [];
+            $competitionAverageGoalsForPerFulltimeByGroup = [];
             foreach ($matchTeamReferenceFrames as $matchGroup => $groupMatchTeamReferenceFrames) {
-                $groupMatchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-                    ->calculateMatchTeamReferenceFrameAggregationAverage(
-                        $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                            $groupMatchTeamReferenceFrames
-                        )
-                    );
-
-                $groupCompetitionAverageGoalsForPerFulltime = new FootballCompetitionAverageGoalsForPerFulltime(
-                    matchIds: $groupMatchTeamReferenceFrameAggregationAverage->matchIds,
-                    competitionIds: $groupMatchTeamReferenceFrameAggregationAverage->competitionIds,
-                    teamIds: $groupMatchTeamReferenceFrameAggregationAverage->teamIds,
-                    homeTeam: $groupMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime,
-                    awayTeam: $groupMatchTeamReferenceFrameAggregationAverage->goalsForPerFulltime
+                $matchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+                    $groupMatchTeamReferenceFrames
                 );
-
-                $matchXGs[$matchGroup] = $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-                    $matches[$matchGroup],
-                    $groupCompetitionAverageGoalsForPerFulltime,
-                    $teamStrengths[$matchGroup]
+                $competitionAverageGoalsForPerFulltimeByGroup[$matchGroup] = $createCompetitionAverageGoalsForPerFulltime(
+                    $matchTeamReferenceFrameAggregationAverage,
+                    $matchTeamReferenceFrameAggregationAverage
                 );
             }
-            return $matchXGs;
+            return $competitionAverageGoalsForPerFulltimeByGroup;
         }
 
-        $matchTeamReferenceFrameAggregationAverage = $this->footballCalculator
-            ->calculateMatchTeamReferenceFrameAggregationAverage(
-                $this->footballCalculator->calculateMatchTeamReferenceFrameAggregations(
-                    $matchTeamReferenceFrames
-                )
-            );
-
-        $competitionAverageGoalsForPerFulltime = new FootballCompetitionAverageGoalsForPerFulltime(
-            matchIds: $matchTeamReferenceFrameAggregationAverage->matchIds,
-            competitionIds: $matchTeamReferenceFrameAggregationAverage->competitionIds,
-            teamIds: $matchTeamReferenceFrameAggregationAverage->teamIds,
-            homeTeam: $matchTeamReferenceFrameAggregationAverage->goalsForPerFulltime,
-            awayTeam: $matchTeamReferenceFrameAggregationAverage->goalsForPerFulltime
+        $matchTeamReferenceFrameAggregationAverage = $calculateMatchTeamReferenceFrameAggregationAverage(
+            $matchTeamReferenceFrames
         );
-
-        return $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-            $matches,
-            $competitionAverageGoalsForPerFulltime,
-            $teamStrengths
+        return $createCompetitionAverageGoalsForPerFulltime(
+            $matchTeamReferenceFrameAggregationAverage,
+            $matchTeamReferenceFrameAggregationAverage
         );
     }
 }
