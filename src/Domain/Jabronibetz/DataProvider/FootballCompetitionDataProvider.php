@@ -34,6 +34,7 @@ use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
 use App\Domain\Jabronibetz\Repository\FootballMatchTeamReferenceFrameRepository;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Order;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use ValueError;
 
@@ -56,8 +57,11 @@ final class FootballCompetitionDataProvider
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('competition', $competition))
             ->andWhere(Criteria::expr()->isNotNull('fulltimeGoalsFor'))
-            ->andWhere(Criteria::expr()->isNotNull('fulltimeGoalsAgainst'));
-            //->orderBy(['round', 'timestamp']);
+            ->andWhere(Criteria::expr()->isNotNull('fulltimeGoalsAgainst'))
+            ->orderBy([
+                'round' => Order::Ascending,
+                'timestamp' => Order::Ascending
+            ]);
 
         if ($group) {
             $groupRounds = $competition->getGroupRounds();
@@ -193,9 +197,12 @@ final class FootballCompetitionDataProvider
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('competition', $competition))
             ->andWhere(Criteria::expr()->isNull('homeTeamFulltimeScore'))
-            ->andWhere(Criteria::expr()->isNull('awayTeamFulltimeScore'));
-            //->orderBy(['round', 'timestamp'])
-            //->setMaxResults($limit);
+            ->andWhere(Criteria::expr()->isNull('awayTeamFulltimeScore'))
+            ->orderBy([
+                'round' => Order::Ascending,
+                'timestamp' => Order::Ascending
+            ])
+            ->setMaxResults($limit);
 
         if ($group) {
             $groupRounds = $competition->getGroupRounds();
