@@ -68,16 +68,21 @@ final class FootballMatchXGListCommand extends Command
                 mode: InputOption::VALUE_NONE,
                 description: 'List & calculate football match xg by competition group'
             )
+            ->addOption(
+                name: 'limit',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'Limit quantity the of football match xg displayed'
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to list the <comment>football team strength</comment>s
                 for a <comment>football competition</comment> that exists in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <competition-id> [--group]</info>
+                  <info>%command.full_name% <competition-id> [--group] [--limit <limit>]</info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
+                  <info>%command.full_name% 1 --limit 32</info>
 
                 If no competition-id is specified, you'll be prompted interactively.
                 HELP
@@ -121,11 +126,20 @@ final class FootballMatchXGListCommand extends Command
             $io->section($cmp->getName());
 
             $group = $input->getOption('group');
-            $teamEntryMatchXGs = $this->footballCompetitionDataProvider->getTeamEntryMatchXGs($cmp, $group);
-            $teamStrengthMatchXGs = $this->footballCompetitionDataProvider->getTeamStrengthMatchXGs($cmp, $group);
+            $limit = $input->getOption('limit');
+            if ($limit !== null) {
+                if (!is_numeric($limit)) {
+                    $io->error('Limit quantity must be a numeric value');
+                    return Command::FAILURE;
+                }
+                $limit = intval($limit);
+            }
+
+            $teamEntryMatchXGs = $this->footballCompetitionDataProvider->getTeamEntryMatchXGs($cmp, $group, $limit);
+            $teamStrengthMatchXGs = $this->footballCompetitionDataProvider->getTeamStrengthMatchXGs($cmp, $group, $limit);
 
             if ($group) {
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $matchGroup => $groupMatches) {
+                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group, $limit) as $matchGroup => $groupMatches) {
                     $rows = [];
                     foreach ($groupMatches as $groupMatch) {
                         $matchId = (string)$groupMatch->getId();
@@ -154,7 +168,7 @@ final class FootballMatchXGListCommand extends Command
                 }
             } else {
                 $rows = [];
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $match) {
+                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group, $limit) as $match) {
                     $matchId = (string)$match->getId();
                     $teamEntryMatchXG = $teamEntryMatchXGs[$matchId];
                     $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchId];
