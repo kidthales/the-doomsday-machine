@@ -83,6 +83,12 @@ final class UpdateCommand extends Command
                 description: 'The total football match rounds for this competition\'s group phase',
                 default: false
             )
+            ->addOption(
+                name: 'separate-match-xg-home-away',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Flag if separate football match xg calculations are used for home and away teams',
+                default: '_'
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to update a <comment>football competition</comment>
@@ -91,7 +97,8 @@ final class UpdateCommand extends Command
                 Usage:
                   <info>%command.full_name% <id>
                     [--name <name>] [--short-name <short-name>] [--organization-id <organization-id>]
-                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]</info>
+                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]
+                    [--separate-match-xg-home-away [<separate-match-xg-home-away>]]</info>
 
                 Examples:
                   <info>%command.full_name% 1 --short-name THIEFA</info>
@@ -169,12 +176,25 @@ final class UpdateCommand extends Command
             }
             if ($groupRounds !== null) {
                 if (!is_numeric($groupRounds)) {
-                    $io->error('The groupRounds option must be a numeric value.');
+                    $io->error('The group-rounds option must be a numeric value.');
                     return Command::FAILURE;
                 }
                 $groupRounds = intval($groupRounds);
             }
             $cmp->setGroupRounds($groupRounds);
+
+            $separateMatchXGHomeAway = $input->getOption('separate-match-xg-home-away');
+            if ($separateMatchXGHomeAway === '_') {
+                $separateMatchXGHomeAway = $cmp->getSeparateMatchXgHomeAway();
+            }
+            if ($separateMatchXGHomeAway !== null) {
+                $separateMatchXGHomeAway = filter_var($separateMatchXGHomeAway, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($separateMatchXGHomeAway === null) {
+                    $io->error('The separate-match-xg-home-away option must be a boolean value.');
+                    return Command::FAILURE;
+                }
+            }
+            $cmp->setSeparateMatchXgHomeAway($separateMatchXGHomeAway);
 
             $errors = $this->validator->validate($cmp);
             if (count($errors) > 0) {

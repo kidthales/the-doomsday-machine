@@ -24,22 +24,14 @@ namespace App\Domain\Jabronibetz\DTO;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class FootballTeamStrength
+final readonly class FootballMatchXG
 {
     /**
-     * @param int[] $matchIds
-     * @param int[] $competitionIds
-     * @param int $teamId
-     * @param float $attack
-     * @param float $defense
+     * @param int $matchId
+     * @param float $homeTeam
+     * @param float $awayTeam
      */
-    public function __construct(
-        public array $matchIds,
-        public array $competitionIds,
-        public int   $teamId,
-        public float $attack,
-        public float $defense
-    )
+    public function __construct(public int $matchId, public float $homeTeam, public float $awayTeam)
     {
     }
 }

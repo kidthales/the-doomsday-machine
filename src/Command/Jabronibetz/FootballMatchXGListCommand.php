@@ -21,14 +21,12 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz;
 
+use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
-use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -42,14 +40,17 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:jabronibetz:football-team-strength:list',
-    description: 'List football team strengths for given competition'
+    name: 'app:jabronibetz:football-match-xg:list',
+    description: 'List football match xg for given competition'
 )]
-final class FootballTeamStrengthListCommand extends Command
+final class FootballMatchXGListCommand extends Command
 {
-    use EntityManagerAwareTrait, FootballCompetitionDataProviderAwareTrait;
+    use DefinitionListConverterAwareTrait,
+        EntityManagerAwareTrait,
+        FootballCalculatorAwareTrait,
+        FootballCompetitionDataProviderAwareTrait;
 
-    private const array HEADERS = ['Team', 'Attack', 'Defense'];
+    private const array HEADERS = ['Match', 'Home XG (Seed)', 'Away XG (Seed)', 'Home XG (Strength)', 'Away XG (Strength)', 'Home XG (Lerp)', 'Away XG (Lerp)'];
 
     /**
      * @return void
@@ -65,7 +66,7 @@ final class FootballTeamStrengthListCommand extends Command
             ->addOption(
                 name: 'group',
                 mode: InputOption::VALUE_NONE,
-                description: 'List & calculate football team strengths by competition group'
+                description: 'List & calculate football match xg by competition group'
             )
             ->setHelp(
                 <<<'HELP'
@@ -108,29 +109,71 @@ final class FootballTeamStrengthListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: List Football Team Strengths');
+        $io->title('Jabronibetz: List Football Match XGs');
 
         try {
-            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($competition === null) {
+            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
+            if ($cmp === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
-            $io->section($competition->getName());
+            $io->section($cmp->getName());
 
             $group = $input->getOption('group');
-            $teamStrengths = $this->footballCompetitionDataProvider->getTeamStrengths($competition, $group);
+            $teamEntryMatchXGs = $this->footballCompetitionDataProvider->getTeamEntryMatchXGs($cmp, $group);
+            $teamStrengthMatchXGs = $this->footballCompetitionDataProvider->getTeamStrengthMatchXGs($cmp, $group);
+
             if ($group) {
-                foreach ($teamStrengths as $teamGroup => $teamGroupStrengths) {
+                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $matchGroup => $groupMatches) {
+                    $rows = [];
+                    foreach ($groupMatches as $groupMatch) {
+                        $matchId = (string)$groupMatch->getId();
+                        $teamEntryMatchXG = $teamEntryMatchXGs[$matchGroup][$matchId];
+                        $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchGroup][$matchId];
+                        $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
+                            $teamEntryMatchXG,
+                            $teamStrengthMatchXG,
+                            ($groupMatch->getRound() - 1) / $cmp->getRounds()
+                        );
+                        $rows[] = [
+                            $groupMatch->getChoiceValue(),
+                            $teamEntryMatchXG->homeTeam,
+                            $teamEntryMatchXG->awayTeam,
+                            $teamStrengthMatchXG->homeTeam,
+                            $teamStrengthMatchXG->awayTeam,
+                            $lerpMatchXG->homeTeam,
+                            $lerpMatchXG->awayTeam
+                        ];
+                    }
                     $table = new Table($output);
-                    $table->setHeaderTitle(sprintf('Group %s', $teamGroup));
+                    $table->setHeaderTitle(sprintf('Group %s', $matchGroup));
                     $table->setHeaders(self::HEADERS);
-                    $table->setRows($this->formatTeamStrengths($teamGroupStrengths));
+                    $table->setRows($rows);
                     $table->render();
                 }
             } else {
-                $io->table(self::HEADERS, $this->formatTeamStrengths($teamStrengths));
+                $rows = [];
+                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $match) {
+                    $matchId = (string)$match->getId();
+                    $teamEntryMatchXG = $teamEntryMatchXGs[$matchId];
+                    $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchId];
+                    $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
+                        $teamEntryMatchXG,
+                        $teamStrengthMatchXG,
+                        ($match->getRound() - 1) / $cmp->getRounds()
+                    );
+                    $rows[] = [
+                        $match->getChoiceValue(),
+                        $teamEntryMatchXG->homeTeam,
+                        $teamEntryMatchXG->awayTeam,
+                        $teamStrengthMatchXG->homeTeam,
+                        $teamStrengthMatchXG->awayTeam,
+                        $lerpMatchXG->homeTeam,
+                        $lerpMatchXG->awayTeam
+                    ];
+                }
+                $io->table(self::HEADERS, $rows);
             }
         } catch (Throwable $e) {
             $io->error($e->getMessage());
@@ -138,29 +181,5 @@ final class FootballTeamStrengthListCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @param FootballTeamStrength[] $teamStrengths
-     * @return array
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    private function formatTeamStrengths(array $teamStrengths): array
-    {
-        $formattedTeamStrengths = array_reduce(
-            $teamStrengths,
-            function (array $rows, FootballTeamStrength $teamStrength) {
-                $rows[] = [
-                    $this->entityManager->find(FootballTeam::class, $teamStrength->teamId)?->getName() ?? 'Unknown',
-                    $teamStrength->attack,
-                    $teamStrength->defense
-                ];
-                return $rows;
-            },
-            []
-        );
-        usort($formattedTeamStrengths, fn(array $a, array $b) => strcmp($a[0], $b[0]));
-        return $formattedTeamStrengths;
     }
 }

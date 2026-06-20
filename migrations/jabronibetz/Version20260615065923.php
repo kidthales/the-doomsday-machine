@@ -7,17 +7,16 @@ namespace DoctrineMigrations\Jabronibetz;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20260610035533 extends AbstractMigration
+final class Version20260615065923 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add/remove the rounds column and the group_rounds columns to/from the football_competition table.';
+        return 'Add/remove the separate_match_xg_home_away column to/from the football_competition table.';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE football_competition ADD COLUMN rounds SMALLINT DEFAULT NULL');
-        $this->addSql('ALTER TABLE football_competition ADD COLUMN group_rounds SMALLINT DEFAULT NULL');
+        $this->addSql('ALTER TABLE football_competition ADD COLUMN separate_match_xg_home_away BOOLEAN DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
@@ -28,7 +27,9 @@ final class Version20260610035533 extends AbstractMigration
               id,
               managing_organization_id,
               name,
-              short_name
+              short_name,
+              rounds,
+              group_rounds
             FROM
               football_competition
         SQL
@@ -40,6 +41,8 @@ final class Version20260610035533 extends AbstractMigration
               managing_organization_id INTEGER DEFAULT NULL,
               name VARCHAR(255) NOT NULL,
               short_name VARCHAR(32) NOT NULL,
+              rounds SMALLINT DEFAULT NULL,
+              group_rounds SMALLINT DEFAULT NULL,
               CONSTRAINT FK_6DCE6C5DDD9F7FF2 FOREIGN KEY (managing_organization_id) REFERENCES football_organization (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
             )
         SQL
@@ -47,13 +50,15 @@ final class Version20260610035533 extends AbstractMigration
         $this->addSql(<<<'SQL'
             INSERT INTO football_competition (
               id, managing_organization_id, name,
-              short_name
+              short_name, rounds, group_rounds
             )
             SELECT
               id,
               managing_organization_id,
               name,
-              short_name
+              short_name,
+              rounds,
+              group_rounds
             FROM
               __temp__football_competition
         SQL

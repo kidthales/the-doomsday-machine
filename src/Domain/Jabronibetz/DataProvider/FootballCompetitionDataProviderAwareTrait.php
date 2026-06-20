@@ -19,27 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\DTO;
+namespace App\Domain\Jabronibetz\DataProvider;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class FootballTeamStrength
+trait FootballCompetitionDataProviderAwareTrait
 {
     /**
-     * @param int[] $matchIds
-     * @param int[] $competitionIds
-     * @param int $teamId
-     * @param float $attack
-     * @param float $defense
+     * @var FootballCompetitionDataProvider|null
      */
-    public function __construct(
-        public array $matchIds,
-        public array $competitionIds,
-        public int   $teamId,
-        public float $attack,
-        public float $defense
-    )
+    protected ?FootballCompetitionDataProvider $footballCompetitionDataProvider = null;
+
+    /**
+     * @return FootballCompetitionDataProvider|null
+     */
+    public function getFootballCompetitionDataProvider(): ?FootballCompetitionDataProvider
     {
+        return $this->footballCompetitionDataProvider;
+    }
+
+    /**
+     * @param FootballCompetitionDataProvider $provider
+     * @return $this
+     */
+    #[Required]
+    public function setFootballCompetitionDataProvider(FootballCompetitionDataProvider $provider): static
+    {
+        $this->footballCompetitionDataProvider = $provider;
+        return $this;
     }
 }

@@ -108,6 +108,13 @@ class FootballCompetition implements ChoosableInterface
     private ?int $groupRounds = null;
 
     /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'separate_match_xg_home_away', type: Types::BOOLEAN, nullable: true)]
+    #[Groups([self::GROUP_DETAIL])]
+    private ?bool $separateMatchXGHomeAway = null;
+
+    /**
      *
      */
     public function __construct()
@@ -130,6 +137,36 @@ class FootballCompetition implements ChoosableInterface
     public function getChoiceValue(): string
     {
         return sprintf('%s (%s)', $this->getName() ?? 'Unknown', $this->getShortName() ?? 'UNK');
+    }
+
+    /**
+     * @return Collection<int, FootballTeam>
+     */
+    public function getTeams(): Collection
+    {
+        return $this->teamEntries->map(fn($entry) => $entry->getTeam());
+    }
+
+    /**
+     * @return array<string, Collection<int, FootballTeam>>
+     */
+    public function getTeamsByGroup(): array
+    {
+        $teamsByGroup = [];
+        foreach ($this->teamEntries as $teamEntry) {
+            $group = $teamEntry->getGroup();
+
+            if ($group === null) {
+                continue;
+            }
+
+            if (!isset($teamsByGroup[$group])) {
+                $teamsByGroup[$group] = new ArrayCollection();
+            }
+
+            $teamsByGroup[$group]->add($teamEntry->getTeam());
+        }
+        return $teamsByGroup;
     }
 
     /**
@@ -243,6 +280,24 @@ class FootballCompetition implements ChoosableInterface
     public function setGroupRounds(?int $rounds): static
     {
         $this->groupRounds = $rounds;
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getSeparateMatchXgHomeAway(): ?bool
+    {
+        return $this->separateMatchXGHomeAway;
+    }
+
+    /**
+     * @param bool|null $separate
+     * @return $this
+     */
+    public function setSeparateMatchXgHomeAway(?bool $separate): static
+    {
+        $this->separateMatchXGHomeAway = $separate;
         return $this;
     }
 }

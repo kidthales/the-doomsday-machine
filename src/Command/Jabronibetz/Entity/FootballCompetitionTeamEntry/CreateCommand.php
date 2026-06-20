@@ -72,16 +72,21 @@ final class CreateCommand extends Command
                 mode: InputOption::VALUE_OPTIONAL,
                 description: 'The result of the football team in the competition'
             )
+            ->addOption(
+                name: 'seed',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The seed of the football team in the competition'
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to create a
                 <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <competition-id> <team-id> [--group [<group>]] [--result [<result>]]</info>
+                  <info>%command.full_name% <competition-id> <team-id> [--group [<group>]] [--result [<result>]] [--seed [<seed>]]</info>
 
                 Examples:
-                  <info>%command.full_name% 1 1 --group A</info>
+                  <info>%command.full_name% 1 1 --group A --seed 14</info>
 
                 If no competition id or team id is specified, you'll be prompted interactively.
                 HELP
@@ -146,11 +151,21 @@ final class CreateCommand extends Command
                 $result = trim($result);
             }
 
+            $seed = $input->getOption('seed');
+            if ($seed !== null) {
+                if (!is_numeric($seed)) {
+                    $io->error('The seed option must be a numeric value.');
+                    return Command::FAILURE;
+                }
+                $seed = intval($seed);
+            }
+
             $entry = (new FootballCompetitionTeamEntry())
                 ->setCompetition($cmp)
                 ->setTeam($team)
                 ->setGroup($group)
-                ->setResult($result);
+                ->setResult($result)
+                ->setSeed($seed);
 
             $errors = $this->validator->validate($entry);
             if (count($errors) > 0) {

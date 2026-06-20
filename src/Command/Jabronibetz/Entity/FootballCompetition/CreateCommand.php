@@ -76,6 +76,11 @@ final class CreateCommand extends Command
                 mode: InputOption::VALUE_OPTIONAL,
                 description: 'The total football match rounds for the competition\'s group phase'
             )
+            ->addOption(
+                name: 'separate-match-xg-home-away',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Flag if separate football match xg calculations are used for home and away teams'
+            )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to create a <comment>football competition</comment>
@@ -83,10 +88,11 @@ final class CreateCommand extends Command
 
                 Usage:
                   <info>%command.full_name% <name> <short-name> <organization-id>
-                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]</info>
+                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]
+                    [--separate-match-xg-home-away [<separate-match-xg-home-away>]]</info>
 
                 Examples:
-                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1 --rounds 9 --group-rounds 3</info>
+                  <info>%command.full_name% "2026 FIFA World Cup" FWC26 1 --rounds 9 --group-rounds 3 --separate-match-xg-home-away false</info>
 
                 If no name, short name, or organization id is specified, you'll be prompted interactively.
                 HELP
@@ -147,12 +153,22 @@ final class CreateCommand extends Command
                 $groupRounds = intval($groupRounds);
             }
 
+            $separateMatchXGHomeAway = $input->getOption('separate-match-xg-home-away');
+            if ($separateMatchXGHomeAway !== null) {
+                $separateMatchXGHomeAway = filter_var($separateMatchXGHomeAway, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($separateMatchXGHomeAway === null) {
+                    $io->error('The separate-match-xg-home-away option must be a boolean value.');
+                    return Command::FAILURE;
+                }
+            }
+
             $cmp = (new FootballCompetition())
                 ->setName(trim($input->getArgument('name')))
                 ->setShortName(trim($input->getArgument('short-name')))
                 ->setManagingOrganization($org)
                 ->setRounds($rounds)
-                ->setGroupRounds($groupRounds);
+                ->setGroupRounds($groupRounds)
+                ->setSeparateMatchXgHomeAway($separateMatchXGHomeAway);
 
             $errors = $this->validator->validate($cmp);
             if (count($errors) > 0) {
