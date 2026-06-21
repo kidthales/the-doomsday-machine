@@ -24,14 +24,25 @@ namespace App\Domain\Jabronibetz\DTO;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-readonly class FootballMatchXG
+final readonly class FootballMatchXGLerp extends FootballMatchXG
 {
     /**
      * @param int $matchId
      * @param float $homeTeam
      * @param float $awayTeam
+     * @param FootballMatchXG $a
+     * @param FootballMatchXG $b
+     * @param float $t
      */
-    public function __construct(public int $matchId, public float $homeTeam, public float $awayTeam)
+    public function __construct(
+        int                    $matchId,
+        float                  $homeTeam,
+        float                  $awayTeam,
+        public FootballMatchXG $a,
+        public FootballMatchXG $b,
+        public float           $t
+    )
     {
+        parent::__construct($matchId, $homeTeam, $awayTeam);
     }
 }

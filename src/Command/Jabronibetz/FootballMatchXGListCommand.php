@@ -24,6 +24,7 @@ namespace App\Command\Jabronibetz;
 use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
@@ -47,10 +48,18 @@ final class FootballMatchXGListCommand extends Command
 {
     use DefinitionListConverterAwareTrait,
         EntityManagerAwareTrait,
-        FootballCalculatorAwareTrait,
         FootballCompetitionDataProviderAwareTrait;
 
-    private const array HEADERS = ['Match', 'Home XG (Seed)', 'Away XG (Seed)', 'Home XG (Strength)', 'Away XG (Strength)', 'Home XG (Lerp)', 'Away XG (Lerp)'];
+    private const array HEADERS = [
+        'Match',
+        'Home XG (Seed)',
+        'Away XG (Seed)',
+        'Home XG (Strength)',
+        'Away XG (Strength)',
+        'Home XG (Lerp)',
+        'Away XG (Lerp)',
+        't'
+    ];
 
     /**
      * @return void
@@ -117,13 +126,13 @@ final class FootballMatchXGListCommand extends Command
         $io->title('Jabronibetz: List Football Match XGs');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($cmp === null) {
+            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
+            if ($competition === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
-            $io->section($cmp->getName());
+            $io->section($competition->getName());
 
             $group = $input->getOption('group');
             $limit = $input->getOption('limit');
@@ -134,57 +143,41 @@ final class FootballMatchXGListCommand extends Command
                 }
                 $limit = intval($limit);
             }
-
-            $teamEntryMatchXGs = $this->footballCompetitionDataProvider->getTeamEntryMatchXGs($cmp, $group, $limit);
-            $teamStrengthMatchXGs = $this->footballCompetitionDataProvider->getTeamStrengthMatchXGs($cmp, $group, $limit);
+            $matchXGs = $this->footballCompetitionDataProvider->getMatchXGLerps($competition, $group, $limit);
 
             if ($group) {
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group, $limit) as $matchGroup => $groupMatches) {
+                foreach ($matchXGs as $matchXGGroup => $groupMatchXGs) {
                     $rows = [];
-                    foreach ($groupMatches as $groupMatch) {
-                        $matchId = (string)$groupMatch->getId();
-                        $teamEntryMatchXG = $teamEntryMatchXGs[$matchGroup][$matchId];
-                        $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchGroup][$matchId];
-                        $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
-                            $teamEntryMatchXG,
-                            $teamStrengthMatchXG,
-                            ($groupMatch->getRound() - 1) / $cmp->getRounds()
-                        );
+                    foreach ($groupMatchXGs as $groupMatchXG) {
                         $rows[] = [
-                            $groupMatch->getChoiceValue(),
-                            $teamEntryMatchXG->homeTeam,
-                            $teamEntryMatchXG->awayTeam,
-                            $teamStrengthMatchXG->homeTeam,
-                            $teamStrengthMatchXG->awayTeam,
-                            $lerpMatchXG->homeTeam,
-                            $lerpMatchXG->awayTeam
+                            $this->entityManager->find(FootballMatch::class, $groupMatchXG->matchId)->getChoiceValue(),
+                            $groupMatchXG->a->homeTeam,
+                            $groupMatchXG->a->awayTeam,
+                            $groupMatchXG->b->homeTeam,
+                            $groupMatchXG->b->awayTeam,
+                            $groupMatchXG->homeTeam,
+                            $groupMatchXG->awayTeam,
+                            $groupMatchXG->t
                         ];
                     }
                     $table = new Table($output);
-                    $table->setHeaderTitle(sprintf('Group %s', $matchGroup));
+                    $table->setHeaderTitle(sprintf('Group %s', $matchXGGroup));
                     $table->setHeaders(self::HEADERS);
                     $table->setRows($rows);
                     $table->render();
                 }
             } else {
                 $rows = [];
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group, $limit) as $match) {
-                    $matchId = (string)$match->getId();
-                    $teamEntryMatchXG = $teamEntryMatchXGs[$matchId];
-                    $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchId];
-                    $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
-                        $teamEntryMatchXG,
-                        $teamStrengthMatchXG,
-                        ($match->getRound() - 1) / $cmp->getRounds()
-                    );
+                foreach ($matchXGs as $matchXG) {
                     $rows[] = [
-                        $match->getChoiceValue(),
-                        $teamEntryMatchXG->homeTeam,
-                        $teamEntryMatchXG->awayTeam,
-                        $teamStrengthMatchXG->homeTeam,
-                        $teamStrengthMatchXG->awayTeam,
-                        $lerpMatchXG->homeTeam,
-                        $lerpMatchXG->awayTeam
+                        $this->entityManager->find(FootballMatch::class, $matchXG->matchId)->getChoiceValue(),
+                        $matchXG->a->homeTeam,
+                        $matchXG->a->awayTeam,
+                        $matchXG->b->homeTeam,
+                        $matchXG->b->awayTeam,
+                        $matchXG->homeTeam,
+                        $matchXG->awayTeam,
+                        $matchXG->t
                     ];
                 }
                 $io->table(self::HEADERS, $rows);

@@ -22,13 +22,16 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Calculator;
 
 use App\Domain\Jabronibetz\DTO\FootballCompetitionAverageGoalsForPerFulltime;
+use App\Domain\Jabronibetz\DTO\FootballMatchScoreProbabilityDistribution;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregation;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregationAverage;
 use App\Domain\Jabronibetz\DTO\FootballMatchXG;
+use App\Domain\Jabronibetz\DTO\FootballMatchXGLerp;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballMatchTeamReferenceFrame;
+use LogicException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -327,7 +330,6 @@ final readonly class FootballCalculator
                 awayTeam: $competitionAverageGoalsForPerFulltime->awayTeam * $awayTeamStrength->attack * $homeTeamStrength->defense,
             );
         }
-
         return $matchXGs;
     }
 
@@ -380,7 +382,6 @@ final readonly class FootballCalculator
                 awayTeam: 1 - $epsilon
             );
         }
-
         return $matchXGs;
     }
 
@@ -388,15 +389,54 @@ final readonly class FootballCalculator
      * @param FootballMatchXG $a
      * @param FootballMatchXG $b
      * @param float $t
-     * @return FootballMatchXG
+     * @return FootballMatchXGLerp
      */
-    public function calculateMatchGXLerp(FootballMatchXG $a, FootballMatchXG $b, float $t): FootballMatchXG
+    public function calculateMatchGXLerp(FootballMatchXG $a, FootballMatchXG $b, float $t): FootballMatchXGLerp
     {
+        if ($a->matchId !== $b->matchId) {
+            throw new LogicException('Interpolating football match XGs that are not for the same match');
+        }
+
         $t = max(0.0, min(1.0, $t));
-        return new FootballMatchXG(
+        return new FootballMatchXGLerp(
             matchId: $a->matchId,
             homeTeam: $a->homeTeam + $t * ($b->homeTeam - $a->homeTeam),
             awayTeam: $a->awayTeam + $t * ($b->awayTeam - $a->awayTeam),
+            a: $a,
+            b: $b,
+            t: $t
         );
+    }
+
+    /**
+     * @param FootballMatchXGLerp[] $matchXGs
+     * @param int $maxGoals
+     * @return array<string, FootballMatchScoreProbabilityDistribution>
+     */
+    public function calculateMatchScoreProbabilityDistributions(array $matchXGs, int $maxGoals): array
+    {
+        $factorial = function ($n) use (&$factorial) {
+            if ($n <= 1) {
+                return 1;
+            }
+            return $n * $factorial($n - 1);
+        };
+        $poisson = fn(int $k, float $lambda) => (pow($lambda, $k) * pow(M_E, -$lambda)) / $factorial($k);
+
+        $matchScoreProbabilityDistributions = [];
+        foreach ($matchXGs as $matchXG) {
+            $distribution = array_fill(0, $maxGoals, array_fill(0, $maxGoals, null));
+            for ($h = 0; $h <= $maxGoals; ++$h) {
+                for ($a = 0; $a <= $maxGoals; ++$a) {
+                    $distribution[$h][$a] = $poisson($h, $matchXG->homeTeam) * $poisson($a, $matchXG->awayTeam);
+                }
+            }
+            $matchScoreProbabilityDistributions[(string)$matchXG->matchId] = new FootballMatchScoreProbabilityDistribution(
+                matchId: $matchXG->matchId,
+                sourceMatchXG: $matchXG,
+                distribution: $distribution,
+            );
+        }
+        return $matchScoreProbabilityDistributions;
     }
 }

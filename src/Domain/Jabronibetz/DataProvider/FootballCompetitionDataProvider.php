@@ -23,9 +23,11 @@ namespace App\Domain\Jabronibetz\DataProvider;
 
 use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballCompetitionAverageGoalsForPerFulltime;
+use App\Domain\Jabronibetz\DTO\FootballMatchScoreProbabilityDistribution;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregation;
 use App\Domain\Jabronibetz\DTO\FootballMatchTeamReferenceFrameAggregationAverage;
 use App\Domain\Jabronibetz\DTO\FootballMatchXG;
+use App\Domain\Jabronibetz\DTO\FootballMatchXGLerp;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
@@ -190,7 +192,11 @@ final class FootballCompetitionDataProvider
      * @param int|null $limit
      * @return FootballMatch[]|array<string, FootballMatch[]>
      */
-    public function getNonFulltimeMatches(FootballCompetition $competition, bool $group = false, ?int $limit = null): array
+    public function getNonFulltimeMatches(
+        FootballCompetition $competition,
+        bool                $group = false,
+        ?int                $limit = null
+    ): array
     {
         /** @var FootballMatchRepository $matchRepo */
         $matchRepo = $this->entityManager->getRepository(FootballMatch::class);
@@ -238,7 +244,11 @@ final class FootballCompetitionDataProvider
      * @param int|null $limit
      * @return array<string, FootballMatchXG>|array<string, array<string, FootballMatchXG>>
      */
-    public function getTeamEntryMatchXGs(FootballCompetition $competition, bool $group = false, ?int $limit = null): array
+    public function getTeamEntryMatchXGs(
+        FootballCompetition $competition,
+        bool                $group = false,
+        ?int                $limit = null
+    ): array
     {
         $matches = $this->getNonFulltimeMatches($competition, $group, $limit);
         $entries = $competition->getTeamEntries()->toArray();
@@ -251,38 +261,6 @@ final class FootballCompetitionDataProvider
                 $matches
             )
             : $this->footballCalculator->calculateMatchXGsFromCompetitionTeamEntries($matches, $entries);
-    }
-
-    /**
-     * @param FootballCompetition $competition
-     * @param bool $group
-     * @param int|null $limit
-     * @return array<string, FootballMatchXG>|array<string, array<string, FootballMatchXG>>
-     * @throws SerializerExceptionInterface
-     */
-    public function getTeamStrengthMatchXGs(FootballCompetition $competition, bool $group = false, int $limit = null): array
-    {
-        $matches = $this->getNonFulltimeMatches($competition, $group, $limit);
-        $teamStrengths = $this->getTeamStrengths($competition, $group);
-        $competitionAverageGoalsForPerFulltime = $this->getAverageGoalsForPerFulltime($competition, $group);
-
-        if ($group) {
-            $matchXGsByGroup = [];
-            foreach ($matches as $matchGroup => $groupMatches) {
-                $matchXGsByGroup[$matchGroup] = $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-                    $groupMatches,
-                    $competitionAverageGoalsForPerFulltime[$matchGroup],
-                    $teamStrengths[$matchGroup]
-                );
-            }
-            return $matchXGsByGroup;
-        }
-
-        return $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
-            $matches,
-            $competitionAverageGoalsForPerFulltime,
-            $teamStrengths
-        );
     }
 
     /**
@@ -403,5 +381,110 @@ final class FootballCompetitionDataProvider
             $matchTeamReferenceFrameAggregationAverage,
             $matchTeamReferenceFrameAggregationAverage
         );
+    }
+
+    /**
+     * @param FootballCompetition $competition
+     * @param bool $group
+     * @param int|null $limit
+     * @return array<string, FootballMatchXG>|array<string, array<string, FootballMatchXG>>
+     * @throws SerializerExceptionInterface
+     */
+    public function getTeamStrengthMatchXGs(
+        FootballCompetition $competition,
+        bool                $group = false,
+        ?int                $limit = null
+    ): array
+    {
+        $matches = $this->getNonFulltimeMatches($competition, $group, $limit);
+        $teamStrengths = $this->getTeamStrengths($competition, $group);
+        $competitionAverageGoalsForPerFulltime = $this->getAverageGoalsForPerFulltime($competition, $group);
+
+        if ($group) {
+            $matchXGsByGroup = [];
+            foreach ($matches as $matchGroup => $groupMatches) {
+                $matchXGsByGroup[$matchGroup] = $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
+                    $groupMatches,
+                    $competitionAverageGoalsForPerFulltime[$matchGroup],
+                    $teamStrengths[$matchGroup]
+                );
+            }
+            return $matchXGsByGroup;
+        }
+
+        return $this->footballCalculator->calculateMatchXGsFromTeamStrengths(
+            $matches,
+            $competitionAverageGoalsForPerFulltime,
+            $teamStrengths
+        );
+    }
+
+    /**
+     * @param FootballCompetition $competition
+     * @param bool $group
+     * @param int|null $limit
+     * @return array<string, FootballMatchXGLerp>|array<string, array<string, FootballMatchXGLerp>>
+     * @throws SerializerExceptionInterface
+     */
+    public function getMatchXGLerps(FootballCompetition $competition, bool $group = false, ?int $limit = null): array
+    {
+        $matches = $this->getNonFulltimeMatches($competition, $group, $limit);
+        $teamEntryMatchXGs = $this->getTeamEntryMatchXGs($competition, $group, $limit);
+        $teamStrengthMatchXGs = $this->getTeamStrengthMatchXGs($competition, $group, $limit);
+
+        if ($group) {
+            $matchXGLerpsByGroup = [];
+            foreach ($matches as $matchGroup => $groupMatches) {
+                if (!isset($matchXGLerpsByGroup[$matchGroup])) {
+                    $matchXGLerpsByGroup[$matchGroup] = [];
+                }
+                foreach ($groupMatches as $groupMatch) {
+                    $matchId = (string)$groupMatch->getId();
+                    $matchXGLerpsByGroup[$matchGroup][$matchId] = $this->footballCalculator->calculateMatchGXLerp(
+                        $teamEntryMatchXGs[$matchGroup][$matchId],
+                        $teamStrengthMatchXGs[$matchGroup][$matchId],
+                        ($groupMatch->getRound() - 1) / $competition->getGroupRounds()
+                    );
+                }
+            }
+            return $matchXGLerpsByGroup;
+        }
+
+        $matchXGLerps = [];
+        foreach ($matches as $match) {
+            $matchId = (string)$match->getId();
+            $matchXGLerps[$matchId] = $this->footballCalculator->calculateMatchGXLerp(
+                $teamEntryMatchXGs[$matchId],
+                $teamStrengthMatchXGs[$matchId],
+                ($match->getRound() - 1) / $competition->getRounds()
+            );
+        }
+        return $matchXGLerps;
+    }
+
+    /**
+     * @param FootballCompetition $competition
+     * @param bool $group
+     * @param int|null $limit
+     * @return array<string, FootballMatchScoreProbabilityDistribution>|array<string, array<string, FootballMatchScoreProbabilityDistribution>>
+     * @throws SerializerExceptionInterface
+     */
+    public function getMatchScoreProbabilityDistributions(
+        FootballCompetition $competition,
+        bool                $group = false,
+        ?int                $limit = null
+    ): array
+    {
+        $maxGoals = 10;
+        $matchXGs = $this->getMatchXGLerps($competition, $group, $limit);
+        return $group
+            ? array_map(
+                fn($groupMatchXGs) => $this->footballCalculator->calculateMatchScoreProbabilityDistributions(
+                    $groupMatchXGs,
+                    $maxGoals
+                ),
+                $matchXGs
+            )
+            : $this->footballCalculator->calculateMatchScoreProbabilityDistributions($matchXGs, $maxGoals);
     }
 }
