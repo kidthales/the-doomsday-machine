@@ -24,6 +24,7 @@ namespace App\Command\Jabronibetz;
 use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
@@ -47,10 +48,18 @@ final class FootballMatchXGListCommand extends Command
 {
     use DefinitionListConverterAwareTrait,
         EntityManagerAwareTrait,
-        FootballCalculatorAwareTrait,
         FootballCompetitionDataProviderAwareTrait;
 
-    private const array HEADERS = ['Match', 'Home XG (Seed)', 'Away XG (Seed)', 'Home XG (Strength)', 'Away XG (Strength)', 'Home XG (Lerp)', 'Away XG (Lerp)'];
+    private const array HEADERS = [
+        'Match',
+        'Home XG (Seed)',
+        'Away XG (Seed)',
+        'Home XG (Strength)',
+        'Away XG (Strength)',
+        'Home XG (Lerp)',
+        'Away XG (Lerp)',
+        't'
+    ];
 
     /**
      * @return void
@@ -68,16 +77,21 @@ final class FootballMatchXGListCommand extends Command
                 mode: InputOption::VALUE_NONE,
                 description: 'List & calculate football match xg by competition group'
             )
+            ->addOption(
+                name: 'limit',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'Limit quantity the of football match xg displayed'
+            )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to list the <comment>football team strength</comment>s
+                The <info>%command.name%</info> command allows you to list the <comment>football match XG</comment>s
                 for a <comment>football competition</comment> that exists in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <competition-id> [--group]</info>
+                  <info>%command.full_name% <competition-id> [--group] [--limit <limit>]</info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
+                  <info>%command.full_name% 1 --limit 32</info>
 
                 If no competition-id is specified, you'll be prompted interactively.
                 HELP
@@ -109,68 +123,60 @@ final class FootballMatchXGListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: List Football Match XGs');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($cmp === null) {
+            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
+            if ($competition === null) {
                 $io->error('Football competition not found');
                 return Command::FAILURE;
             }
 
-            $io->section($cmp->getName());
+            $io->title(sprintf('Jabronibetz: List Football Match XGs - %s', $competition->getName()));
 
             $group = $input->getOption('group');
-            $teamEntryMatchXGs = $this->footballCompetitionDataProvider->getTeamEntryMatchXGs($cmp, $group);
-            $teamStrengthMatchXGs = $this->footballCompetitionDataProvider->getTeamStrengthMatchXGs($cmp, $group);
+            $limit = $input->getOption('limit');
+            if ($limit !== null) {
+                if (!is_numeric($limit)) {
+                    $io->error('Limit quantity must be a numeric value');
+                    return Command::FAILURE;
+                }
+                $limit = intval($limit);
+            }
+            $matchXGs = $this->footballCompetitionDataProvider->getMatchXGLerps($competition, $group, $limit);
 
             if ($group) {
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $matchGroup => $groupMatches) {
+                foreach ($matchXGs as $matchXGGroup => $groupMatchXGs) {
                     $rows = [];
-                    foreach ($groupMatches as $groupMatch) {
-                        $matchId = (string)$groupMatch->getId();
-                        $teamEntryMatchXG = $teamEntryMatchXGs[$matchGroup][$matchId];
-                        $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchGroup][$matchId];
-                        $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
-                            $teamEntryMatchXG,
-                            $teamStrengthMatchXG,
-                            ($groupMatch->getRound() - 1) / $cmp->getRounds()
-                        );
+                    foreach ($groupMatchXGs as $groupMatchXG) {
                         $rows[] = [
-                            $groupMatch->getChoiceValue(),
-                            $teamEntryMatchXG->homeTeam,
-                            $teamEntryMatchXG->awayTeam,
-                            $teamStrengthMatchXG->homeTeam,
-                            $teamStrengthMatchXG->awayTeam,
-                            $lerpMatchXG->homeTeam,
-                            $lerpMatchXG->awayTeam
+                            $this->entityManager->find(FootballMatch::class, $groupMatchXG->matchId)->getChoiceValue(),
+                            $groupMatchXG->a->homeTeam,
+                            $groupMatchXG->a->awayTeam,
+                            $groupMatchXG->b->homeTeam,
+                            $groupMatchXG->b->awayTeam,
+                            $groupMatchXG->homeTeam,
+                            $groupMatchXG->awayTeam,
+                            $groupMatchXG->t
                         ];
                     }
                     $table = new Table($output);
-                    $table->setHeaderTitle(sprintf('Group %s', $matchGroup));
+                    $table->setHeaderTitle(sprintf('Group %s', $matchXGGroup));
                     $table->setHeaders(self::HEADERS);
                     $table->setRows($rows);
                     $table->render();
                 }
             } else {
                 $rows = [];
-                foreach ($this->footballCompetitionDataProvider->getNonFulltimeMatches($cmp, $group) as $match) {
-                    $matchId = (string)$match->getId();
-                    $teamEntryMatchXG = $teamEntryMatchXGs[$matchId];
-                    $teamStrengthMatchXG = $teamStrengthMatchXGs[$matchId];
-                    $lerpMatchXG = $this->footballCalculator->calculateMatchGXLerp(
-                        $teamEntryMatchXG,
-                        $teamStrengthMatchXG,
-                        ($match->getRound() - 1) / $cmp->getRounds()
-                    );
+                foreach ($matchXGs as $matchXG) {
                     $rows[] = [
-                        $match->getChoiceValue(),
-                        $teamEntryMatchXG->homeTeam,
-                        $teamEntryMatchXG->awayTeam,
-                        $teamStrengthMatchXG->homeTeam,
-                        $teamStrengthMatchXG->awayTeam,
-                        $lerpMatchXG->homeTeam,
-                        $lerpMatchXG->awayTeam
+                        $this->entityManager->find(FootballMatch::class, $matchXG->matchId)->getChoiceValue(),
+                        $matchXG->a->homeTeam,
+                        $matchXG->a->awayTeam,
+                        $matchXG->b->homeTeam,
+                        $matchXG->b->awayTeam,
+                        $matchXG->homeTeam,
+                        $matchXG->awayTeam,
+                        $matchXG->t
                     ];
                 }
                 $io->table(self::HEADERS, $rows);

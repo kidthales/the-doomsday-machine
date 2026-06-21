@@ -24,14 +24,18 @@ namespace App\Domain\Jabronibetz\DTO;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-readonly class FootballMatchXG
+final readonly class FootballMatchScoreProbabilityDistribution
 {
     /**
      * @param int $matchId
-     * @param float $homeTeam
-     * @param float $awayTeam
+     * @param FootballMatchXGLerp $sourceMatchXG
+     * @param array $distribution
      */
-    public function __construct(public int $matchId, public float $homeTeam, public float $awayTeam)
+    public function __construct(
+        public int                 $matchId,
+        public FootballMatchXGLerp $sourceMatchXG,
+        public array               $distribution
+    )
     {
     }
 }

@@ -19,36 +19,30 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Jabronibetz\Calculator;
-
-use Symfony\Contracts\Service\Attribute\Required;
+namespace App\Domain\Jabronibetz\DTO;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait FootballCalculatorAwareTrait
+final readonly class FootballMatchXGLerp extends FootballMatchXG
 {
     /**
-     * @var FootballCalculator|null
+     * @param int $matchId
+     * @param float $homeTeam
+     * @param float $awayTeam
+     * @param FootballMatchXG $a
+     * @param FootballMatchXG $b
+     * @param float $t
      */
-    protected ?FootballCalculator $footballCalculator = null;
-
-    /**
-     * @return FootballCalculator|null
-     */
-    public function getFootballCalculator(): ?FootballCalculator
+    public function __construct(
+        int                    $matchId,
+        float                  $homeTeam,
+        float                  $awayTeam,
+        public FootballMatchXG $a,
+        public FootballMatchXG $b,
+        public float           $t
+    )
     {
-        return $this->footballCalculator;
-    }
-
-    /**
-     * @param FootballCalculator $calculator
-     * @return $this
-     */
-    #[Required]
-    public function setFootballCalculator(FootballCalculator $calculator): static
-    {
-        $this->footballCalculator = $calculator;
-        return $this;
+        parent::__construct($matchId, $homeTeam, $awayTeam);
     }
 }
