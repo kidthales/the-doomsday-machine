@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\DataProvider;
 
+use App\Domain\Jabronibetz\Calculator\FootballCalculator;
 use App\Domain\Jabronibetz\Calculator\FootballCalculatorAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballCompetitionAverageGoalsForPerFulltime;
 use App\Domain\Jabronibetz\DTO\FootballMatchScoreProbabilityDistribution;
@@ -45,7 +46,14 @@ use ValueError;
  */
 final class FootballCompetitionDataProvider
 {
-    use EntityManagerAwareTrait, FootballCalculatorAwareTrait;
+    use EntityManagerAwareTrait;
+
+    /**
+     * @param FootballCalculator $footballCalculator
+     */
+    public function __construct(private readonly FootballCalculator $footballCalculator)
+    {
+    }
 
     /**
      * @param FootballCompetition $competition

@@ -108,7 +108,7 @@ final class FootballTeamStrengthListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: List Football Team Strengths');
+
 
         try {
             $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
@@ -117,7 +117,7 @@ final class FootballTeamStrengthListCommand extends Command
                 return Command::FAILURE;
             }
 
-            $io->section($competition->getName());
+            $io->title(sprintf('Jabronibetz: List Football Team Strengths - %s', $competition->getName()));
 
             $group = $input->getOption('group');
             $teamStrengths = $this->footballCompetitionDataProvider->getTeamStrengths($competition, $group);

@@ -84,7 +84,7 @@ final class FootballMatchXGListCommand extends Command
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to list the <comment>football team strength</comment>s
+                The <info>%command.name%</info> command allows you to list the <comment>football match XG</comment>s
                 for a <comment>football competition</comment> that exists in the <comment>Jabronibetz</comment> db.
 
                 Usage:
@@ -123,7 +123,6 @@ final class FootballMatchXGListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Jabronibetz: List Football Match XGs');
 
         try {
             $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
@@ -132,7 +131,7 @@ final class FootballMatchXGListCommand extends Command
                 return Command::FAILURE;
             }
 
-            $io->section($competition->getName());
+            $io->title(sprintf('Jabronibetz: List Football Match XGs - %s', $competition->getName()));
 
             $group = $input->getOption('group');
             $limit = $input->getOption('limit');
