@@ -21,10 +21,12 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponSize;
 
+use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -35,10 +37,10 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-weapon-size:list',
-    description: 'List rules weapon sizes'
+    name: 'app:bfrpg:entity:rules-weapon-size:read',
+    description: 'Read a rules weapon size'
 )]
-final class ListCommand extends Command
+final class ReadCommand extends Command
 {
     use EntityManagerAwareTrait;
 
@@ -48,18 +50,42 @@ final class ListCommand extends Command
     protected function configure(): void
     {
         $this
+            ->addArgument(
+                name: 'id',
+                mode: InputArgument::REQUIRED,
+                description: 'The id of the rules weapon size'
+            )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to list
-                <comment>rules weapon size</comment>s in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to read a
+                <comment>rules weapon size</comment> in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name%</info>
+                  <info>%command.full_name% <id></info>
 
                 Examples:
-                  <info>%command.full_name%</info>
+                  <info>%command.full_name% 1</info>
+
+                If no id is specified, you'll be prompted interactively.
                 HELP
             );
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $this->interactChoiceQuestionWithChoosables(
+            $input,
+            $output,
+            'id',
+            'Rules weapon size: ',
+            $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
+            true
+        );
     }
 
     /**
@@ -70,19 +96,21 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: List Rules Weapon Sizes');
+        $io->title('BFRPG: Read Rules Weapon Size');
 
         try {
-            $weaponSizes = $this->entityManager->getRepository(RulesWeaponSize::class)->findAll();
-            foreach ($weaponSizes as $weaponSize) {
-                $io->definitionList(...$this->definitionListConverter->convert(
-                    $weaponSize,
-                    [
-                        AbstractNormalizer::GROUPS => RulesWeaponSize::GROUP_LIST
-                    ]
-                ));
+            $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
+            if ($weaponSize === null) {
+                $io->error('Rules weapon size not found');
+                return Command::FAILURE;
             }
-            $io->info(sprintf('Found %d rules weapon sizes.', count($weaponSizes)));
+
+            $io->definitionList(...$this->definitionListConverter->convert(
+                $weaponSize,
+                [
+                    AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                ]
+            ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
