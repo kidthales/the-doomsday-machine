@@ -23,6 +23,7 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballMatchRepository;
 use App\Domain\Shared\Console\Question\ChoosableInterface;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -184,11 +185,12 @@ class FootballMatch implements ChoosableInterface
      */
     public function getChoiceValue(): string
     {
+        $timestamp = $this->getTimestamp();
         return sprintf(
             '%s vs %s (%s) [%s, Round %s]',
             $this->getHomeTeam()?->getName() ?? 'Unknown',
             $this->getAwayTeam()?->getName() ?? 'Unknown',
-            $this->getTimestamp() ?? 'TBD',
+            $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
             $this->getCompetition()?->getShortName() ?? 'UNK',
             $this->getRound() ?? 'N/A'
         );
