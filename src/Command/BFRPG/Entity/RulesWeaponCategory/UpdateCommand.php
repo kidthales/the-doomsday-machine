@@ -19,15 +19,16 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesWeaponSize;
+namespace App\Command\BFRPG\Entity\RulesWeaponCategory;
 
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Entity\RulesWeaponSize;
+use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -37,10 +38,10 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-weapon-size:create',
-    description: 'Create a rules weapon size'
+    name: 'app:bfrpg:entity:rules-weapon-category:update',
+    description: 'Update a rules weapon category'
 )]
-final class CreateCommand extends Command
+final class UpdateCommand extends Command
 {
     use EntityManagerAwareTrait;
 
@@ -51,32 +52,32 @@ final class CreateCommand extends Command
     {
         $this
             ->addArgument(
+                name: 'id',
+                mode: InputArgument::REQUIRED,
+                description: 'The id of the rules weapon category'
+            )
+            ->addOption(
                 name: 'name',
-                mode: InputArgument::REQUIRED,
-                description: 'The name of the rules weapon size'
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The name of the rules weapon category'
             )
-            ->addArgument(
-                name: 'short-name',
-                mode: InputArgument::REQUIRED,
-                description: 'The short name of the rules weapon size'
-            )
-            ->addArgument(
+            ->addOption(
                 name: 'source-id',
-                mode: InputArgument::REQUIRED,
-                description: 'The rules source id for the weapon size'
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The rules source id for the weapon category'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a
-                <comment>rules weapon size</comment> in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to update a
+                <comment>rules weapon category</comment> in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <short-name> <source-id></info>
+                  <info>%command.full_name% <id> [--name <name>] [--source-id <source-id>]</info>
 
                 Examples:
-                  <info>%command.full_name% Small S 1 </info>
+                  <info>%command.full_name% 1 --name Axes </info>
 
-                If no name, short name, or source id is specified, you'll be prompted interactively.
+                If no id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -88,14 +89,12 @@ final class CreateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactQuestion($input, $output, 'name', 'Rules weapon size name: ');
-        $this->interactQuestion($input, $output, 'short-name', 'Rules weapon size short name: ');
         $this->interactChoiceQuestionWithChoosables(
             $input,
             $output,
-            'source-id',
-            'Rules item sourced from: ',
-            $this->entityManager->getRepository(RulesSource::class)->findAll(),
+            'id',
+            'Rules weapon category: ',
+            $this->entityManager->getRepository(RulesWeaponCategory::class)->findAll(),
             true
         );
     }
@@ -108,21 +107,29 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Create Rules Weapon Size');
+        $io->title('BFRPG: Update Rules Weapon Category');
 
         try {
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
-            if ($source === null) {
-                $io->error('Rules source not found');
+            $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
+            if ($weaponCategory === null) {
+                $io->error('Rules weapon category not found');
                 return Command::FAILURE;
             }
 
-            $weaponSize = (new RulesWeaponSize())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')))
-                ->setSource($source);
+            $weaponCategory->setName(trim($input->getOption('name') ?? $weaponCategory->getName()));
 
-            $errors = $this->validator->validate($weaponSize);
+            $source = null;
+            $sourceId = $input->getOption('source-id');
+            if ($sourceId !== null) {
+                $source = $this->entityManager->find(RulesSource::class, $sourceId);
+                if ($source === null) {
+                    $io->error('Rules source not found');
+                    return Command::FAILURE;
+                }
+            }
+            $weaponCategory->setSource($source ?? $weaponCategory->getSource());
+
+            $errors = $this->validator->validate($weaponCategory);
             if (count($errors) > 0) {
                 $io->error((string)$errors);
                 return Command::FAILURE;
@@ -130,25 +137,25 @@ final class CreateCommand extends Command
 
             if ($input->isInteractive()) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $weaponSize,
+                    $weaponCategory,
                     [
-                        AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                        AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
 
-                if (!$io->confirm('Create rules weapon size?')) {
+                if (!$io->confirm('Update rules weapon category?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($weaponSize);
+            $this->entityManager->persist($weaponCategory);
             $this->entityManager->flush();
 
             $io->success(
                 sprintf(
-                    'Rules weapon size %s has been created with id %d.',
-                    $weaponSize->getChoiceValue(),
-                    $weaponSize->getId()
+                    'Rules weapon category %s with id %d has been updated.',
+                    $weaponCategory->getChoiceValue(),
+                    $weaponCategory->getId()
                 )
             );
         } catch (Throwable $e) {
