@@ -314,8 +314,8 @@ final readonly class FootballCalculator
         $matchXGs = [];
         foreach ($matches as $match) {
             $matchId = $match->getId();
-            $homeTeamId = $match->getHomeTeam()->getId();
-            $awayTeamId = $match->getAwayTeam()->getId();
+            $homeTeamId = $match->getHomeTeam()?->getId();
+            $awayTeamId = $match->getAwayTeam()?->getId();
 
             if ($matchId === null) {
                 continue;
@@ -364,13 +364,12 @@ final readonly class FootballCalculator
         $matchXGs = [];
         foreach ($matches as $match) {
             $matchId = $match->getId();
-
-            $homeTeamSeed = $teamSeeds[$match->getHomeTeam()?->getId()] ?? null;
-            $awayTeamSeed = $teamSeeds[$match->getAwayTeam()?->getId()] ?? null;
-
-            if ($matchId === null || $homeTeamSeed === null || $awayTeamSeed === null) {
+            if ($matchId === null) {
                 continue;
             }
+
+            $homeTeamSeed = $teamSeeds[$match->getHomeTeam()?->getId()] ?? $bottomSeed;
+            $awayTeamSeed = $teamSeeds[$match->getAwayTeam()?->getId()] ?? $bottomSeed;
 
             $direction = $homeTeamSeed < $awayTeamSeed ? 1.0 : ($homeTeamSeed > $awayTeamSeed ? -1.0 : 0.0);
             $norm = (float)($bottomSeed <= $topSeed ? 1.0 : abs($homeTeamSeed - $awayTeamSeed) / ($bottomSeed - $topSeed));

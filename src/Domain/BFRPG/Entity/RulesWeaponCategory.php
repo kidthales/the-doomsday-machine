@@ -21,10 +21,8 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Entity;
 
-use App\Domain\BFRPG\Repository\RulesSourceRepository;
+use App\Domain\BFRPG\Repository\RulesWeaponCategoryRepository;
 use App\Domain\Shared\Console\Question\ChoosableInterface;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -32,13 +30,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: RulesSourceRepository::class)]
-#[ORM\Table(name: 'rules_source')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_SOURCE_NAME', fields: ['name'])]
-class RulesSource implements ChoosableInterface
+#[ORM\Entity(repositoryClass: RulesWeaponCategoryRepository::class)]
+#[ORM\Table(name: 'rules_weapon_category')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_WEAPON_CATEGORY_NAME', fields: ['name'])]
+class RulesWeaponCategory implements ChoosableInterface
 {
-    public const string GROUP_LIST = 'rules_source_list';
-    public const string GROUP_DETAIL = 'rules_source_detail';
+    public const string GROUP_LIST = 'rules_weapon_category_list';
+    public const string GROUP_DETAIL = 'rules_weapon_category_detail';
 
     /**
      * @var int|null
@@ -52,39 +50,20 @@ class RulesSource implements ChoosableInterface
     /**
      * @var string|null
      */
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 24)]
     #[Assert\NotBlank(normalizer: 'trim')]
-    #[Assert\Length(min: 1, max: 255)]
+    #[Assert\Length(min: 1, max: 24)]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $name = null;
 
     /**
-     * @var Collection<int, RulesItem>
+     * @var RulesSource|null
      */
-    #[ORM\OneToMany(targetEntity: RulesItem::class, mappedBy: 'source')]
-    private Collection $items;
-
-    /**
-     * @var Collection<int, RulesWeaponSize>
-     */
-    #[ORM\OneToMany(targetEntity: RulesWeaponSize::class, mappedBy: 'source')]
-    private Collection $weaponSizes;
-
-    /**
-     * @var Collection<int, RulesWeaponCategory>
-     */
-    #[ORM\OneToMany(targetEntity: RulesWeaponCategory::class, mappedBy: 'source')]
-    private Collection $weaponCategories;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        $this->items = new ArrayCollection();
-        $this->weaponSizes = new ArrayCollection();
-        $this->weaponCategories = new ArrayCollection();
-    }
+    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_weapon_category')]
+    #[ORM\JoinColumn(name: 'rules_source_id', onDelete: 'CASCADE')]
+    #[Assert\NotNull]
+    #[Groups([self::GROUP_DETAIL])]
+    private ?RulesSource $source = null;
 
     /**
      * @return string
@@ -129,26 +108,20 @@ class RulesSource implements ChoosableInterface
     }
 
     /**
-     * @return Collection<int, RulesItem>
+     * @return RulesSource|null
      */
-    public function getItems(): Collection
+    public function getSource(): ?RulesSource
     {
-        return $this->items;
+        return $this->source;
     }
 
     /**
-     * @return Collection<int, RulesWeaponSize>
+     * @param RulesSource $source
+     * @return $this
      */
-    public function getWeaponSizes(): Collection
+    public function setSource(RulesSource $source): static
     {
-        return $this->weaponSizes;
-    }
-
-    /**
-     * @return Collection<int, RulesWeaponCategory>
-     */
-    public function getWeaponCategories(): Collection
-    {
-        return $this->weaponCategories;
+        $this->source = $source;
+        return $this;
     }
 }
