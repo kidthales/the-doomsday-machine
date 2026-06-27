@@ -185,7 +185,11 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
         $table = new Table($output);
         $table->setHeaderTitle($match->getChoiceValue());
         $table->setHeaders([
-            sprintf('%s \\ %s', $match->getHomeTeam()?->getName(), $match->getAwayTeam()?->getName()),
+            sprintf(
+                '%s \\ %s',
+                $match->getHomeTeam()?->getName() ?? 'Unknown',
+                $match->getAwayTeam()?->getName() ?? 'Unknown'
+            ),
             ...array_keys($matchScoreProbabilityDistribution->distribution)
         ]);
         $table->setRows(
@@ -236,9 +240,9 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
         }
 
         $io->definitionList(
-            [sprintf('%s Win', $match->getHomeTeam()?->getName()) => sprintf('%.2f%%', $homeWinChance * 100)],
+            [sprintf('%s Win', $match->getHomeTeam()?->getName() ?? 'Unknown') => sprintf('%.2f%%', $homeWinChance * 100)],
             ['Draw' => sprintf('%.2f%%', $drawChance * 100)],
-            [sprintf('%s Win', $match->getAwayTeam()?->getName()) => sprintf('%.2f%%', $awayWinChance * 100)],
+            [sprintf('%s Win', $match->getAwayTeam()?->getName() ?? 'Unknown') => sprintf('%.2f%%', $awayWinChance * 100)],
         );
     }
 }
