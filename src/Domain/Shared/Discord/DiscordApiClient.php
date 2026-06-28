@@ -34,6 +34,10 @@ final readonly class DiscordApiClient
     {
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Application
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * @return ResponseInterface
      * @throws TransportExceptionInterface
@@ -43,6 +47,84 @@ final readonly class DiscordApiClient
     {
         return $this->request('GET', 'applications/@me');
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Message
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param string $channelId
+     * @param string|null $around
+     * @param string|null $before
+     * @param string|null $after
+     * @param int|null $limit
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://discord.com/developers/docs/resources/message#get-channel-messages
+     */
+    public function getChannelMessages(
+        string  $channelId,
+        ?string $around = null,
+        ?string $before = null,
+        ?string $after = null,
+        ?int    $limit = null
+    ): ResponseInterface
+    {
+        $query = array_filter(
+            ['around' => $around, 'before' => $before, 'after' => $after, 'limit' => $limit],
+            fn (mixed $value) => $value !== null
+        );
+        return $this->request('GET', sprintf('channels/%s/messages', $channelId), ['query' => $query]);
+    }
+
+    /**
+     * @param string $channelId
+     * @param string $messageId
+     * @param string|null $reason
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://discord.com/developers/docs/resources/message#delete-message
+     */
+    public function deleteMessage(string $channelId, string $messageId, ?string $reason = null): ResponseInterface
+    {
+        $headers = [];
+        if ($reason !== null) {
+            $headers['X-Audit-Log-Reason'] = $reason;
+        }
+        return $this->request(
+            'DELETE',
+            sprintf('channels/%s/messages/%s', $channelId, $messageId),
+            ['headers' => $headers]
+        );
+    }
+
+    /**
+     * @param string $channelId
+     * @param string[] $messages
+     * @param string|null $reason
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://discord.com/developers/docs/resources/message#bulk-delete-messages
+     */
+    public function bulkDeleteMessages(string $channelId, array $messages, ?string $reason = null): ResponseInterface
+    {
+        $headers = [];
+        if ($reason !== null) {
+            $headers['X-Audit-Log-Reason'] = $reason;
+        }
+        return $this->request(
+            'POST',
+            sprintf('channels/%s/messages/bulk-delete', $channelId),
+            [
+                'headers' => $headers,
+                'json' => ['messages' => $messages]
+            ]
+        );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // HTTP
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * @param string $method
