@@ -49,6 +49,52 @@ final readonly class DiscordApiClient
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Channel
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param string $channelId
+     * @param string|null $reason
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://docs.discord.com/developers/resources/channel#delete/close-channel
+     */
+    public function deleteChannel(string $channelId, ?string $reason = null): ResponseInterface
+    {
+        $headers = [];
+        if ($reason !== null) {
+            $headers['X-Audit-Log-Reason'] = $reason;
+        }
+        return $this->request('DELETE', sprintf('channels/%s', $channelId), ['headers' => $headers]);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Guild
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param string $guildId
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://docs.discord.com/developers/resources/guild#get-guild-channels
+     */
+    public function getGuildChannels(string $guildId): ResponseInterface
+    {
+        return $this->request('GET', sprintf('guilds/%s/channels', $guildId));
+    }
+
+    /**
+     * @param string $guildId
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://docs.discord.com/developers/resources/guild#list-active-guild-threads
+     */
+    public function listActiveGuildThreads(string $guildId): ResponseInterface
+    {
+        return $this->request('GET', sprintf('guilds/%s/threads/active', $guildId));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Message
     ////////////////////////////////////////////////////////////////////////////
 
@@ -123,7 +169,34 @@ final readonly class DiscordApiClient
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // HTTP
+    // User
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param string|null $before
+     * @param string|null $after
+     * @param int|null $limit
+     * @param bool|null $withCounts
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://docs.discord.com/developers/resources/user#get-current-user-guilds
+     */
+    public function getCurrentUserGuilds(
+        ?string $before = null,
+        ?string $after = null,
+        ?int    $limit = null,
+        ?bool   $withCounts = null
+    ): ResponseInterface
+    {
+        $query = array_filter(
+            ['before' => $before, 'after' => $after, 'limit' => $limit, 'with_counts' => $withCounts],
+            fn (mixed $value) => $value !== null
+        );
+        return $this->request('GET', 'users/@me/guilds', ['query' => $query]);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Internal
     ////////////////////////////////////////////////////////////////////////////
 
     /**

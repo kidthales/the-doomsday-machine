@@ -71,7 +71,16 @@ final class InfoCommand extends Command
         $io->title('Discord: Message Eraser Bot Info');
 
         try {
-            $io->definitionList(...$this->definitionListConverter->convert($this->messageEraserBot->getInfo()));
+            $io->section('Current Application');
+            $io->definitionList(
+                ...$this->definitionListConverter->convert($this->messageEraserBot->getCurrentApplication())
+            );
+
+            $io->section('Current User Guilds');
+            $io->listing(array_map(fn (array $guild) => $guild['name'], $this->messageEraserBot->getCurrentUserGuilds()));
+
+            $io->section('Installation');
+            $io->text($this->messageEraserBot->getInstallLink());
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
