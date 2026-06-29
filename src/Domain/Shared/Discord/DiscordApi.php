@@ -21,6 +21,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared\Discord;
 
+use Symfony\Component\HttpClient\ThrottlingHttpClient;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -28,10 +31,28 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class DiscordApiClient
+final readonly class DiscordApi
 {
-    public function __construct(private HttpClientInterface $httpClient)
+    /**
+     * @var ThrottlingHttpClient
+     */
+    private ThrottlingHttpClient $httpClient;
+
+    /**
+     * @param HttpClientInterface $httpClient
+     */
+    public function __construct(HttpClientInterface $httpClient)
     {
+        // TODO: retry_after backoff logic...
+        $this->httpClient = new ThrottlingHttpClient(
+            $httpClient,
+            (new RateLimiterFactory([
+                'id' => 'discord_api_limiter',
+                'policy' => 'token_bucket',
+                'limit' => 50,
+                'rate' => ['interval' => '1 second', 'amount' => 50]
+            ], new InMemoryStorage()))->create()
+        );
     }
 
     ////////////////////////////////////////////////////////////////////////////

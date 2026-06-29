@@ -29,24 +29,18 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class MessageEraserBot extends DiscordBot
 {
+    // Get Channel Messages: VIEW_CHANNEL, CONNECT (voice), READ_MESSAGE_HISTORY
+    // Delete Message: MANAGE_MESSAGES
+    // Bulk Delete Messages: MANAGE_MESSAGES
+    // Delete Thread: MANAGE_THREADS
+    protected const int DISCORD_PERMISSIONS = 17180992512;
+
     /**
      * @param string $token
      */
     public function __construct(#[Autowire(env: 'DISCORD_MESSAGE_ERASER_BOT_TOKEN')] string $token)
     {
         parent::__construct($token);
-    }
-
-    /**
-     * @return string
-     */
-    public function getInstallLink(): string
-    {
-        // Get Channel Messages: VIEW_CHANNEL, CONNECT (voice), READ_MESSAGE_HISTORY
-        // Delete Message: MANAGE_MESSAGES
-        // Bulk Delete Messages: MANAGE_MESSAGES
-        // Delete Thread: MANAGE_THREADS
-        return 'https://discord.com/oauth2/authorize?client_id=1520700429481152512&permissions=17180992512&integration_type=0&scope=bot';
     }
 
     // TODO

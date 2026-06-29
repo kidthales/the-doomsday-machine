@@ -33,19 +33,32 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 abstract class DiscordBot
 {
-    public const string DISCORD_API_VERSION = 'v10';
+    protected const string DISCORD_API_VERSION = 'v10';
+
+    protected const int DISCORD_PERMISSIONS = 0;
+    protected const int DISCORD_INTEGRATION_TYPE = 0;
 
     /**
-     * @var DiscordApiClient
+     * @var DiscordApi
      */
-    protected readonly DiscordApiClient $discordApi;
+    protected readonly DiscordApi $discordApi;
+
+    /**
+     * @var array|null
+     */
+    private ?array $currentApplication = null;
+
+    /**
+     * @var array|null
+     */
+    private ?array $currentUserGuilds = null;
 
     /**
      * @param string $token
      */
     public function __construct(string $token)
     {
-        $this->discordApi = new DiscordApiClient(
+        $this->discordApi = new DiscordApi(
             HttpClient::createForBaseUri(
                 baseUri: sprintf('https://discord.com/api/%s/', static::DISCORD_API_VERSION),
                 defaultOptions: [
@@ -60,23 +73,24 @@ abstract class DiscordBot
 
     /**
      * @return string
-     */
-    abstract public function getInstallLink(): string;
-
-    /**
-     * @return array
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getCurrentApplication(): array
+    public function getInstallLink(): string
     {
-        return $this->discordApi->getCurrentApplication()->toArray();
+        return sprintf(
+            'https://discord.com/oauth2/authorize?client_id=%s&permissions=%d&integration_type=%d&scope=bot',
+            $this->getCurrentApplication()['id'],
+            static::DISCORD_PERMISSIONS,
+            static::DISCORD_INTEGRATION_TYPE
+        );
     }
 
     /**
+     * @param bool $refresh
      * @return array
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -84,20 +98,38 @@ abstract class DiscordBot
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getCurrentUserGuilds(): array
+    public function getCurrentApplication(bool $refresh = false): array
     {
-        $limit = 200;
-        $guilds = [];
-        $page = $this->discordApi->getCurrentUserGuilds(limit: $limit)->toArray();
-        while (true) {
-            $guilds = [...$guilds, ...$page];
-            if (count($page) !== $limit) {
-                break;
-            }
-            // TODO: investigate http client rate limiting support...
-            usleep(500000);
-            $page = $this->discordApi->getCurrentUserGuilds(after: $page[$limit - 1]['id'], limit: $limit)->toArray();
+        if ($refresh || $this->currentApplication === null) {
+            $this->currentApplication = $this->discordApi->getCurrentApplication()->toArray();
         }
-        return $guilds;
+        return $this->currentApplication;
+    }
+
+    /**
+     * @param bool $refresh
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getCurrentUserGuilds(bool $refresh = false): array
+    {
+        if ($refresh || $this->currentUserGuilds === null) {
+            $limit = 200;
+            $guilds = [];
+            $page = $this->discordApi->getCurrentUserGuilds(limit: $limit)->toArray();
+            while (true) {
+                $guilds = [...$guilds, ...$page];
+                if (count($page) !== $limit) {
+                    break;
+                }
+                $page = $this->discordApi->getCurrentUserGuilds(after: $page[$limit - 1]['id'], limit: $limit)->toArray();
+            }
+            $this->currentUserGuilds = $guilds;
+        }
+        return $this->currentUserGuilds;
     }
 }
