@@ -19,27 +19,34 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Shared\Console\Question;
+namespace App\Domain\Discord\MessageEraserBot;
 
 /**
- * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ChoicesBuilder
+final readonly class MessageDeletionBucket
 {
     /**
-     * @param ChoosableInterface[] $items
-     * @return array<string, string>
+     * @param array<array<array<string, mixed>>> $bulk
+     * @param array<array<string, mixed>> $individual
      */
-    public function build(array $items): array
+    public function __construct(public array $bulk, public array $individual)
     {
-        return array_reduce(
-            $items,
-            function (array $choices, ChoosableInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
-        );
+    }
+
+    /**
+     * @return int
+     */
+    public function getBulkCount(): int
+    {
+        return array_reduce($this->bulk, fn (int $c, array $a) => $c + count($a), 0);
+    }
+
+    /**
+     * @return int
+     */
+    public function getIndividualCount(): int
+    {
+        return count($this->individual);
     }
 }

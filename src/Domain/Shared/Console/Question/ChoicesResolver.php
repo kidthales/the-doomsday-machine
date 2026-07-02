@@ -22,24 +22,39 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Console\Question;
 
 /**
- * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ChoicesBuilder
+final readonly class ChoicesResolver
 {
     /**
-     * @param ChoosableInterface[] $items
-     * @return array<string, string>
+     * @param array $valueByChoice
      */
-    public function build(array $items): array
+    public function __construct(private array $valueByChoice)
     {
-        return array_reduce(
-            $items,
-            function (array $choices, ChoosableInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
-        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasChoices(): bool
+    {
+        return count($this->valueByChoice) > 0;
+    }
+
+    /**
+     * @return array
+     */
+    public function getChoices(): array
+    {
+        return array_keys($this->valueByChoice);
+    }
+
+    /**
+     * @param string $choice
+     * @return mixed
+     */
+    public function resolveChoice(string $choice): mixed
+    {
+        return $this->valueByChoice[$choice] ?? null;
     }
 }

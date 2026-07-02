@@ -19,27 +19,25 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Shared\Console\Question;
+namespace App\Domain\Discord\MessageEraserBot;
+
+use RuntimeException;
+use Throwable;
 
 /**
- * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ChoicesBuilder
+class MessageDeletionException extends RuntimeException
 {
     /**
-     * @param ChoosableInterface[] $items
-     * @return array<string, string>
+     * @param int $deletionCount
+     * @param Throwable $previous
      */
-    public function build(array $items): array
+    public function __construct(int $deletionCount, Throwable $previous)
     {
-        return array_reduce(
-            $items,
-            function (array $choices, ChoosableInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
+        parent::__construct(
+            message: sprintf('Deleted %d messages before encountering error: %s', $deletionCount, $previous->getMessage()),
+            previous: $previous
         );
     }
 }

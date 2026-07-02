@@ -19,27 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Shared\Console\Question;
+namespace App\Domain\Discord\AuditorBot;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ChoicesBuilder
+trait AuditorBotAwareTrait
 {
     /**
-     * @param ChoosableInterface[] $items
-     * @return array<string, string>
+     * @var AuditorBot|null
      */
-    public function build(array $items): array
+    protected ?AuditorBot $auditorBot = null;
+
+    /**
+     * @return AuditorBot|null
+     */
+    public function getAuditorBot(): ?AuditorBot
     {
-        return array_reduce(
-            $items,
-            function (array $choices, ChoosableInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
-        );
+        return $this->auditorBot;
+    }
+
+    /**
+     * @param AuditorBot $bot
+     * @return $this
+     */
+    #[Required]
+    public function setAuditorBot(AuditorBot $bot): static
+    {
+        $this->auditorBot = $bot;
+        return $this;
     }
 }

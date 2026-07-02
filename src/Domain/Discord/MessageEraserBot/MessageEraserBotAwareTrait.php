@@ -19,27 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Shared\Console\Question;
+namespace App\Domain\Discord\MessageEraserBot;
+
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
- * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ChoicesBuilder
+trait MessageEraserBotAwareTrait
 {
     /**
-     * @param ChoosableInterface[] $items
-     * @return array<string, string>
+     * @var MessageEraserBot|null
      */
-    public function build(array $items): array
+    protected ?MessageEraserBot $messageEraserBot = null;
+
+    /**
+     * @return MessageEraserBot|null
+     */
+    public function getMessageEraserBot(): ?MessageEraserBot
     {
-        return array_reduce(
-            $items,
-            function (array $choices, ChoosableInterface $choice) {
-                $choices[$choice->getChoiceKey()] = $choice->getChoiceValue();
-                return $choices;
-            },
-            []
-        );
+        return $this->messageEraserBot;
+    }
+
+    /**
+     * @param MessageEraserBot $bot
+     * @return $this
+     */
+    #[Required]
+    public function setMessageEraserBot(MessageEraserBot $bot): static
+    {
+        $this->messageEraserBot = $bot;
+        return $this;
     }
 }

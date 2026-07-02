@@ -120,30 +120,6 @@ final class FootballCompetitionDataProvider
     /**
      * @param FootballCompetition $competition
      * @param bool $group
-     * @return FootballMatchTeamReferenceFrameAggregationAverage|array<string, FootballMatchTeamReferenceFrameAggregationAverage>
-     * @throws SerializerExceptionInterface
-     */
-    public function getMatchTeamReferenceFrameAggregationAverage(
-        FootballCompetition $competition,
-        bool                $group = false
-    ): FootballMatchTeamReferenceFrameAggregationAverage|array
-    {
-        $matchTeamReferenceFrameAggregations = $this->getMatchTeamReferenceFrameAggregations($competition, $group);
-        return $group
-            ? array_map(
-                fn($aggregations) => $this->footballCalculator->calculateMatchTeamReferenceFrameAggregationAverage(
-                    $aggregations
-                ),
-                $matchTeamReferenceFrameAggregations
-            )
-            : $this->footballCalculator->calculateMatchTeamReferenceFrameAggregationAverage(
-                $matchTeamReferenceFrameAggregations
-            );
-    }
-
-    /**
-     * @param FootballCompetition $competition
-     * @param bool $group
      * @return array<string, FootballTeamStrength>|array<string, array<string, FootballTeamStrength>>
      * @throws SerializerExceptionInterface
      */
