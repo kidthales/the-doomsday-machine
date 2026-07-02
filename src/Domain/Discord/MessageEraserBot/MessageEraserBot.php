@@ -70,9 +70,9 @@ final class MessageEraserBot extends DiscordBot
      * @throws TransportExceptionInterface
      */
     public function getMessagesWithinDateRange(
-        string $channelId,
-        DateTimeInterface $start,
-        DateTimeInterface $end,
+        string             $channelId,
+        DateTimeInterface  $start,
+        DateTimeInterface  $end,
         ?ProgressIndicator $progressIndicator = null,
     ): array
     {
@@ -88,7 +88,7 @@ final class MessageEraserBot extends DiscordBot
             }
         };
 
-        $candidates =  $this->discordApi->getChannelMessages(
+        $candidates = $this->discordApi->getChannelMessages(
             channelId: $channelId,
             around: $this->createSnowflake()->idForTimestamp($start),
             limit: $limit
@@ -97,7 +97,7 @@ final class MessageEraserBot extends DiscordBot
         if (!empty($candidates)) {
             $process($candidates);
 
-            while(DiscordApi::parseDiscordTimestamp($candidates[0]['timestamp']) < $end) {
+            while (DiscordApi::parseDiscordTimestamp($candidates[0]['timestamp']) < $end) {
                 $candidates = $this->discordApi->getChannelMessages(
                     channelId: $channelId,
                     after: $candidates[0]['id'],
@@ -138,7 +138,7 @@ final class MessageEraserBot extends DiscordBot
             $individual = [...$bulk, ...$individual];
             $bulk = [];
         } else {
-            $bulk = array_chunk($bulk,(int)ceil($bulkCount / ceil($bulkCount / 100)));
+            $bulk = array_chunk($bulk, (int)ceil($bulkCount / ceil($bulkCount / 100)));
         }
 
         return new MessageDeletionBucket($bulk, $individual);
@@ -152,15 +152,14 @@ final class MessageEraserBot extends DiscordBot
      * @return void
      */
     public function deleteMessages(
-        string $channelId,
+        string                $channelId,
         MessageDeletionBucket $bucket,
-        ?string $reason = null,
-        ?ProgressBar $progressBar = null
+        ?string               $reason = null,
+        ?ProgressBar          $progressBar = null
     ): void
     {
         $deletionCount = 0;
         try {
-            $reason = sprintf('[%s] %s', $this->getCurrentApplication()['name'], $reason ?? 'Unspecified');
             foreach ($bucket->bulk as $batch) {
                 $response = $this->discordApi->bulkDeleteMessages($channelId, array_map(fn(array $m) => $m['id'], $batch), $reason);
                 if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
@@ -171,6 +170,8 @@ final class MessageEraserBot extends DiscordBot
                     // Throw the exception
                     $response->toArray();
                 }
+                // TODO: Frequent 429 errors...
+                sleep(5);
             }
             foreach ($bucket->individual as $individual) {
                 $response = $this->discordApi->deleteMessage($channelId, $individual['id'], $reason);

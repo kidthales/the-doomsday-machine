@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Discord\MessageEraserBot;
+namespace App\Command\Discord\AuditorBot;
 
-use App\Domain\Discord\MessageEraserBot\MessageEraserBotAwareTrait;
+use App\Domain\Discord\AuditorBot\AuditorBotAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -33,12 +33,12 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:discord:message-eraser-bot:info',
-    description: 'Display discord message eraser bot info'
+    name: 'app:discord:auditor-bot:info',
+    description: 'Display discord auditor bot info'
 )]
 final class InfoCommand extends Command
 {
-    use MessageEraserBotAwareTrait;
+    use AuditorBotAwareTrait;
 
     /**
      * @return void
@@ -49,7 +49,7 @@ final class InfoCommand extends Command
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to display
-                <comment>discord message eraser bot</comment> info.
+                <comment>discord auditor bot</comment> info.
 
                 Usage:
                   <info>%command.full_name%</info>
@@ -68,19 +68,19 @@ final class InfoCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Discord: Message Eraser Bot: Info');
+        $io->title('Discord: Auditor Bot: Info');
 
         try {
             $io->section('Current Application');
             $io->definitionList(
-                ...$this->definitionListConverter->convert($this->messageEraserBot->getCurrentApplication())
+                ...$this->definitionListConverter->convert($this->auditorBot->getCurrentApplication())
             );
 
             $io->section('Current User Guilds');
-            $io->listing(array_map(fn (array $guild) => $guild['name'], $this->messageEraserBot->getCurrentUserGuilds()));
+            $io->listing(array_map(fn (array $guild) => $guild['name'], $this->auditorBot->getCurrentUserGuilds()));
 
             $io->section('Installation');
-            $io->text($this->messageEraserBot->getInstallLink());
+            $io->text($this->auditorBot->getInstallLink());
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

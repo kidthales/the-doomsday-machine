@@ -98,7 +98,7 @@ final class DateRangeDeleteCommand extends Command
                   <info>%command.full_name% <channel-id> <start-date> <end-date> [--reason <reason>]</info>
 
                 Examples:
-                  <info>%command.full_name% 1459278103053471804 2026-02-01 2026-03-01 --reason "Monthly clean up"</info>
+                  <info>%command.full_name% 1459278103053471804 2026-02-01 2026-03-01 --reason "Monthly clean up."</info>
 
                 If no channel id, start date, or end date is specified, you'll be prompted interactively.
                 HELP
@@ -151,7 +151,7 @@ final class DateRangeDeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Discord: Message Eraser Bot Date Range Delete');
+        $io->title('Discord: Message Eraser Bot: Date Range Delete');
 
         try {
             $channelId = $input->getArgument('channel-id');

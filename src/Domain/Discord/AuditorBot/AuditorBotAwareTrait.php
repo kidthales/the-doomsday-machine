@@ -19,36 +19,36 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Discord\MessageEraserBot;
+namespace App\Domain\Discord\AuditorBot;
 
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-trait MessageEraserBotAwareTrait
+trait AuditorBotAwareTrait
 {
     /**
-     * @var MessageEraserBot|null
+     * @var AuditorBot|null
      */
-    protected ?MessageEraserBot $messageEraserBot = null;
+    protected ?AuditorBot $auditorBot = null;
 
     /**
-     * @return MessageEraserBot|null
+     * @return AuditorBot|null
      */
-    public function getMessageEraserBot(): ?MessageEraserBot
+    public function getAuditorBot(): ?AuditorBot
     {
-        return $this->messageEraserBot;
+        return $this->auditorBot;
     }
 
     /**
-     * @param MessageEraserBot $bot
+     * @param AuditorBot $bot
      * @return $this
      */
     #[Required]
-    public function setMessageEraserBot(MessageEraserBot $bot): static
+    public function setAuditorBot(AuditorBot $bot): static
     {
-        $this->messageEraserBot = $bot;
+        $this->auditorBot = $bot;
         return $this;
     }
 }

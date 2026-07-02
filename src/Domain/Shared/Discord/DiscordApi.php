@@ -95,6 +95,37 @@ final readonly class DiscordApi
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Audit Log
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param string $guildId
+     * @param string|null $userId
+     * @param int|null $actionType
+     * @param string|null $before
+     * @param string|null $after
+     * @param int|null $limit
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     * @see https://docs.discord.com/developers/resources/audit-log#get-guild-audit-log
+     */
+    public function getGuildAuditLog(
+        string  $guildId,
+        ?string $userId = null,
+        ?int    $actionType = null,
+        ?string $before = null,
+        ?string $after = null,
+        ?int    $limit = null
+    ): ResponseInterface
+    {
+        $query = array_filter(
+            ['user_id' => $userId, 'action_type' => $actionType, 'before' => $before, 'after' => $after, 'limit' => $limit],
+            fn(mixed $value) => $value !== null
+        );
+        return $this->request('GET', sprintf('guilds/%s/audit-logs', $guildId), ['query' => $query]);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Channel
     ////////////////////////////////////////////////////////////////////////////
 
@@ -159,7 +190,7 @@ final readonly class DiscordApi
     {
         $query = array_filter(
             ['around' => $around, 'before' => $before, 'after' => $after, 'limit' => $limit],
-            fn (mixed $value) => $value !== null
+            fn(mixed $value) => $value !== null
         );
         return $this->request('GET', sprintf('channels/%s/messages', $channelId), ['query' => $query]);
     }
@@ -231,7 +262,7 @@ final readonly class DiscordApi
     {
         $query = array_filter(
             ['before' => $before, 'after' => $after, 'limit' => $limit, 'with_counts' => $withCounts],
-            fn (mixed $value) => $value !== null
+            fn(mixed $value) => $value !== null
         );
         return $this->request('GET', 'users/@me/guilds', ['query' => $query]);
     }
