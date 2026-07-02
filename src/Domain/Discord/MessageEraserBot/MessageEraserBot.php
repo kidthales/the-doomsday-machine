@@ -21,8 +21,21 @@ declare(strict_types=1);
 
 namespace App\Domain\Discord\MessageEraserBot;
 
+use App\Domain\Shared\Discord\DiscordApi;
 use App\Domain\Shared\Discord\DiscordBot;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Godruoyi\Snowflake\SnowflakeException;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\ProgressIndicator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Throwable;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -38,10 +51,139 @@ final class MessageEraserBot extends DiscordBot
     /**
      * @param string $token
      */
-    public function __construct(#[Autowire(env: 'DISCORD_MESSAGE_ERASER_BOT_TOKEN')] string $token)
+    public function __construct(#[Autowire(env: 'string:DISCORD_MESSAGE_ERASER_BOT_TOKEN')] string $token)
     {
         parent::__construct($token);
     }
 
-    // TODO
+    /**
+     * @param string $channelId
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @param ProgressIndicator|null $progressIndicator
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws SnowflakeException
+     * @throws TransportExceptionInterface
+     */
+    public function getMessagesWithinDateRange(
+        string $channelId,
+        DateTimeInterface $start,
+        DateTimeInterface $end,
+        ?ProgressIndicator $progressIndicator = null,
+    ): array
+    {
+        $limit = 100;
+        $messages = [];
+        $process = function (array $candidates) use ($start, $end, &$messages, $progressIndicator) {
+            for ($i = count($candidates) - 1; $i >= 0; --$i) {
+                $date = DiscordApi::parseDiscordTimestamp($candidates[$i]['timestamp']);
+                if ($date >= $start && $date < $end) {
+                    $messages[] = $candidates[$i];
+                }
+                $progressIndicator?->advance();
+            }
+        };
+
+        $candidates =  $this->discordApi->getChannelMessages(
+            channelId: $channelId,
+            around: $this->createSnowflake()->idForTimestamp($start),
+            limit: $limit
+        )->toArray();
+
+        if (!empty($candidates)) {
+            $process($candidates);
+
+            while(DiscordApi::parseDiscordTimestamp($candidates[0]['timestamp']) < $end) {
+                $candidates = $this->discordApi->getChannelMessages(
+                    channelId: $channelId,
+                    after: $candidates[0]['id'],
+                    limit: $limit
+                )->toArray();
+
+                if (empty($candidates)) {
+                    break;
+                }
+
+                $process($candidates);
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
+     * @param array $messages
+     * @return MessageDeletionBucket
+     */
+    public function bucketMessagesForDeletion(array $messages): MessageDeletionBucket
+    {
+        $twoWeeksAgo = new DateTimeImmutable('-2 weeks');
+        $bulk = [];
+        $individual = [];
+
+        foreach ($messages as $message) {
+            if (DiscordApi::parseDiscordTimestamp($message['timestamp']) >= $twoWeeksAgo) {
+                $bulk[] = $message;
+            } else {
+                $individual[] = $message;
+            }
+        }
+
+        $bulkCount = count($bulk);
+        if ($bulkCount < 2) {
+            $individual = [...$bulk, ...$individual];
+            $bulk = [];
+        } else {
+            $bulk = array_chunk($bulk,(int)ceil($bulkCount / ceil($bulkCount / 100)));
+        }
+
+        return new MessageDeletionBucket($bulk, $individual);
+    }
+
+    /**
+     * @param string $channelId
+     * @param MessageDeletionBucket $bucket
+     * @param string|null $reason
+     * @param ProgressBar|null $progressBar
+     * @return void
+     */
+    public function deleteMessages(
+        string $channelId,
+        MessageDeletionBucket $bucket,
+        ?string $reason = null,
+        ?ProgressBar $progressBar = null
+    ): void
+    {
+        $deletionCount = 0;
+        try {
+            $reason = sprintf('[%s] %s', $this->getCurrentApplication()['name'], $reason ?? 'Unspecified');
+            foreach ($bucket->bulk as $batch) {
+                $response = $this->discordApi->bulkDeleteMessages($channelId, array_map(fn(array $m) => $m['id'], $batch), $reason);
+                if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
+                    $batchCount = count($batch);
+                    $deletionCount += $batchCount;
+                    $progressBar?->advance($batchCount);
+                } else {
+                    // Throw the exception
+                    $response->toArray();
+                }
+            }
+            foreach ($bucket->individual as $individual) {
+                $response = $this->discordApi->deleteMessage($channelId, $individual['id'], $reason);
+                if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
+                    ++$deletionCount;
+                    $progressBar?->advance();
+                } else {
+                    // Throw the exception
+                    $response->toArray();
+                }
+            }
+        } catch (Throwable $e) {
+            throw new MessageDeletionException($deletionCount, $e);
+        }
+    }
 }

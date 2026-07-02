@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Console\Command;
 
 use App\Domain\Shared\Console\Question\ChoicesBuilderAwareTrait;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use App\Domain\Shared\Console\Question\ChoosableInterface;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use App\Domain\Shared\Validator\ValidatorAwareTrait;
@@ -46,6 +47,19 @@ abstract class Command extends BaseCommand
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     * @param string $question
+     * @return mixed
+     */
+    protected function askQuestion(InputInterface $input, OutputInterface $output, string $question): mixed
+    {
+        /** @var QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        return $helper->ask($input, $output, new Question($question));
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
      * @param string $argument
      * @param string $question
      * @return void
@@ -58,10 +72,30 @@ abstract class Command extends BaseCommand
     ): void
     {
         if ($input->getArgument($argument) === null) {
-            /** @var QuestionHelper $helper */
-            $helper = $this->getHelper('question');
-            $input->setArgument($argument, $helper->ask($input, $output, new Question($question)));
+            $input->setArgument($argument, $this->askQuestion($input, $output, $question));
         }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $question
+     * @param array $choices
+     * @param bool $useKeyAsChoiceValue
+     * @return mixed
+     */
+    protected function askChoiceQuestion(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $question,
+        array           $choices,
+        bool            $useKeyAsChoiceValue = false
+    ): mixed
+    {
+        /** @var QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $choice = $helper->ask($input, $output, new ChoiceQuestion($question, $choices));
+        return $useKeyAsChoiceValue ? array_search($choice, $choices, true) : $choice;
     }
 
     /**
@@ -82,16 +116,58 @@ abstract class Command extends BaseCommand
         bool            $useKeyAsChoiceValue = false
     ): void
     {
-        if ($input->getArgument($argument) === null && !empty($choices)) {
-            /** @var QuestionHelper $helper */
-            $helper = $this->getHelper('question');
-            $choice = $helper->ask($input, $output, new ChoiceQuestion($question, $choices));
-            $choice = $useKeyAsChoiceValue ? array_search($choice, $choices, true) : $choice;
-            $input->setArgument($argument, $choice);
+        if ($input->getArgument($argument) === null) {
+            $input->setArgument(
+                $argument,
+                $this->askChoiceQuestion($input, $output, $question, $choices, $useKeyAsChoiceValue)
+            );
         }
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $question
+     * @param ChoicesResolver $choicesResolver
+     * @return mixed
+     */
+    protected function askChoiceQuestionWithChoicesResolver(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $question,
+        ChoicesResolver $choicesResolver
+    ): mixed {
+        /** @var QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $choice = $helper->ask($input, $output, new ChoiceQuestion($question, $choicesResolver->getChoices()));
+        return $choicesResolver->resolveChoice($choice);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @param ChoicesResolver $choicesResolver
+     * @return void
+     */
+    protected function interactChoiceQuestionWithChoicesResolver(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question,
+        ChoicesResolver $choicesResolver
+    ): void {
+        if ($input->getArgument($argument) === null) {
+            $input->setArgument(
+                $argument,
+                $this->askChoiceQuestionWithChoicesResolver($input, $output, $question, $choicesResolver)
+            );
+        }
+    }
+
+    /**
+     * @deprecated
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param string $argument

@@ -24,6 +24,7 @@ namespace App\Domain\Shared\Console\Question;
 use Symfony\Contracts\Service\Attribute\Required;
 
 /**
+ * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 trait ChoicesBuilderAwareTrait

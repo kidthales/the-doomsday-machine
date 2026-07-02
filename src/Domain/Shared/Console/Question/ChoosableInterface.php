@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Console\Question;
 
 /**
+ * @deprecated
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 interface ChoosableInterface

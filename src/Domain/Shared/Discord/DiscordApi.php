@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared\Discord;
 
+use DateTimeImmutable;
 use Symfony\Component\HttpClient\ThrottlingHttpClient;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
@@ -33,6 +34,30 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 final readonly class DiscordApi
 {
+    public const int CHANNEL_TYPE_GUILD_TEXT = 0;
+    public const int CHANNEL_TYPE_DM = 1;
+    public const int CHANNEL_TYPE_GUILD_VOICE = 2;
+    public const int CHANNEL_TYPE_GROUP_DM = 3;
+    public const int CHANNEL_TYPE_GUILD_CATEGORY = 4;
+    public const int CHANNEL_TYPE_GUILD_ANNOUNCEMENT = 5;
+    public const int CHANNEL_TYPE_ANNOUNCEMENT_THREAD = 10;
+    public const int CHANNEL_TYPE_PUBLIC_THREAD = 11;
+    public const int CHANNEL_TYPE_PRIVATE_THREAD = 12;
+    public const int CHANNEL_TYPE_GUILD_STAGE_VOICE = 13;
+    public const int CHANNEL_TYPE_GUILD_DIRECTORY = 14;
+    public const int CHANNEL_TYPE_GUILD_FORUM = 15;
+    public const int CHANNEL_TYPE_GUILD_MEDIA = 16;
+
+    /**
+     * @param string $timestamp
+     * @return DateTimeImmutable
+     */
+    public static function parseDiscordTimestamp(string $timestamp): DateTimeImmutable
+    {
+        $date = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.uP', $timestamp);
+        return $date ?: DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sP', $timestamp);
+    }
+
     /**
      * @var ThrottlingHttpClient
      */
@@ -49,8 +74,8 @@ final readonly class DiscordApi
             (new RateLimiterFactory([
                 'id' => 'discord_api_limiter',
                 'policy' => 'token_bucket',
-                'limit' => 50,
-                'rate' => ['interval' => '1 second', 'amount' => 50]
+                'limit' => 1,
+                'rate' => ['interval' => '1 second', 'amount' => 1]
             ], new InMemoryStorage()))->create()
         );
     }
@@ -75,18 +100,13 @@ final readonly class DiscordApi
 
     /**
      * @param string $channelId
-     * @param string|null $reason
      * @return ResponseInterface
      * @throws TransportExceptionInterface
-     * @see https://docs.discord.com/developers/resources/channel#delete/close-channel
+     * @see https://docs.discord.com/developers/resources/channel#get-channel
      */
-    public function deleteChannel(string $channelId, ?string $reason = null): ResponseInterface
+    public function getChannel(string $channelId): ResponseInterface
     {
-        $headers = [];
-        if ($reason !== null) {
-            $headers['X-Audit-Log-Reason'] = $reason;
-        }
-        return $this->request('DELETE', sprintf('channels/%s', $channelId), ['headers' => $headers]);
+        return $this->request('GET', sprintf('channels/%s', $channelId));
     }
 
     ////////////////////////////////////////////////////////////////////////////
