@@ -21,13 +21,11 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballMatchScoreProbabilityDistribution;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
-use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -48,9 +46,7 @@ use Throwable;
 )]
 final class FootballMatchScoreProbabilityDistributionListCommand extends Command
 {
-    use DefinitionListConverterAwareTrait,
-        EntityManagerAwareTrait,
-        FootballCompetitionDataProviderAwareTrait;
+    use FootballCompetitionDataProviderAwareTrait;
 
     /**
      * @return void
@@ -97,14 +93,7 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'competition-id',
-            'Football competition id: ',
-            $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetition($input, $output, 'competition-id', 'Football competition: ');
     }
 
     /**
@@ -119,7 +108,7 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
         try {
             $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
             if ($competition === null) {
-                $io->error('Football competition not found');
+                $io->error('Football competition not found.');
                 return Command::FAILURE;
             }
 
@@ -131,7 +120,7 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
             $limit = $input->getOption('limit');
             if ($limit !== null) {
                 if (!is_numeric($limit)) {
-                    $io->error('Limit quantity must be a numeric value');
+                    $io->error('Limit quantity must be a numeric value.');
                     return Command::FAILURE;
                 }
                 $limit = intval($limit);
@@ -182,8 +171,18 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
     ): void
     {
         $match = $this->entityManager->find(FootballMatch::class, $matchScoreProbabilityDistribution->matchId);
+        $timestamp = $match->getTimestamp();
         $table = new Table($output);
-        $table->setHeaderTitle($match->getChoiceValue());
+        $table->setHeaderTitle(
+            sprintf(
+                '%s vs %s (%s) [%s, Round %s]',
+                $match->getHomeTeam()?->getName() ?? 'Unknown',
+                $match->getAwayTeam()?->getName() ?? 'Unknown',
+                $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+                $match->getCompetition()?->getShortName() ?? 'UNK',
+                $match->getRound() ?? 'N/A'
+            )
+        );
         $table->setHeaders([
             sprintf(
                 '%s \\ %s',

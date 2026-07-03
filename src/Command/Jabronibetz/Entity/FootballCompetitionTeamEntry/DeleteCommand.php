@@ -21,11 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -79,14 +76,7 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football competition team entry id: ',
-            $this->entityManager->getRepository(FootballCompetitionTeamEntry::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetitionTeamEntry($input, $output, 'id', 'Football competition team entry: ');
     }
 
     /**
@@ -102,11 +92,12 @@ final class DeleteCommand extends Command
         try {
             $entry = $this->entityManager->find(FootballCompetitionTeamEntry::class, $input->getArgument('id'));
             if ($entry === null) {
-                $io->error('Football competition team entry not found');
+                $io->error('Football competition team entry not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $entry,
                     [
@@ -117,22 +108,27 @@ final class DeleteCommand extends Command
                         ]
                     ]
                 ));
-
                 if (!$io->confirm('Delete football competition team entry?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $entry->getId();
-
+            $cmp = $entry->getFootballCompetition();
+            $team = $entry->getFootballTeam();
             $this->entityManager->remove($entry);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football competition team entry %s with id %d has been deleted.',
-                $entry->getChoiceValue(),
-                $id
-            ));
+            $io->success(
+                sprintf(
+                    'Football competition team entry %s with id %d has been deleted.',
+                    sprintf(
+                        '%s - %s',
+                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
+                    ),
+                    $id
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

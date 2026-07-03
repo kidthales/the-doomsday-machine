@@ -21,12 +21,11 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -47,7 +46,7 @@ use Throwable;
 )]
 final class FootballTeamStrengthListCommand extends Command
 {
-    use EntityManagerAwareTrait, FootballCompetitionDataProviderAwareTrait;
+    use FootballCompetitionDataProviderAwareTrait;
 
     private const array HEADERS = ['Team', 'Attack', 'Defense'];
 
@@ -90,14 +89,7 @@ final class FootballTeamStrengthListCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'competition-id',
-            'Football competition id: ',
-            $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetition($input, $output, 'competition-id', 'Football competition: ');
     }
 
     /**
@@ -109,11 +101,10 @@ final class FootballTeamStrengthListCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-
         try {
             $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
             if ($competition === null) {
-                $io->error('Football competition not found');
+                $io->error('Football competition not found.');
                 return Command::FAILURE;
             }
 

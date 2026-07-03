@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballOrganization;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,8 +40,6 @@ use Throwable;
 )]
 final class CreateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -108,13 +105,13 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $org,
                     [
                         AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
-
                 if (!$io->confirm('Create football organization?')) {
                     return Command::SUCCESS;
                 }
@@ -122,12 +119,13 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($org);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football organization %s has been created with id %d.',
-                $org->getChoiceValue(),
-                $org->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football organization %s has been created with id %d.',
+                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
+                    $org->getId()
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

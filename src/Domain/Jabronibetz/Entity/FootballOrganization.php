@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Repository\FootballOrganizationRepository;
-use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -35,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: FootballOrganizationRepository::class)]
 #[ORM\Table(name: 'football_organization')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_ORGANIZATION_NAME', fields: ['name'])]
-class FootballOrganization implements ChoosableInterface
+class FootballOrganization
 {
     public const string GROUP_LIST = 'football_organization_list';
     public const string GROUP_DETAIL = 'football_organization_detail';
@@ -88,22 +87,6 @@ class FootballOrganization implements ChoosableInterface
     {
         $this->managedCompetitions = new ArrayCollection();
         $this->managedTeams = new ArrayCollection();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceKey(): string
-    {
-        return (string)$this->getId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceValue(): string
-    {
-        return sprintf('%s (%s)', $this->getName() ?? 'Unknown', $this->getShortName() ?? 'UNK');
     }
 
     /**

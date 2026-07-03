@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballCompetition;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -115,14 +112,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football competition id: ',
-            $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetition($input, $output, 'id', 'Football competition: ');
     }
 
     /**
@@ -138,24 +128,15 @@ final class UpdateCommand extends Command
         try {
             $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('id'));
             if ($cmp === null) {
-                $io->error('Football competition not found');
+                $io->error('Football competition not found.');
                 return Command::FAILURE;
             }
 
             $cmp->setName(trim($input->getOption('name') ?? $cmp->getName()));
             $cmp->setShortName(trim($input->getOption('short-name') ?? $cmp->getShortName()));
-
-            $orgId = $input->getOption('organization-id');
-            if ($orgId !== null) {
-                $org = $this->entityManager->find(FootballOrganization::class, $orgId);
-                if ($org === null) {
-                    $io->error('Football organization not found');
-                    return Command::FAILURE;
-                }
-            } else {
-                $org = $cmp->getManagingOrganization();
-            }
-            $cmp->setManagingOrganization($org);
+            $cmp->setManagingOrganization(
+                $this->parseFootballOrganizationOption($input, 'organization-id') ?? $cmp->getManagingOrganization()
+            );
 
             $rounds = $input->getOption('rounds');
             if ($rounds === false) {
@@ -203,13 +184,13 @@ final class UpdateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $cmp,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
-
                 if (!$io->confirm('Update football competition?')) {
                     return Command::SUCCESS;
                 }
@@ -217,12 +198,13 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($cmp);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football competition %s with id %d has been updated.',
-                $cmp->getChoiceValue(),
-                $cmp->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football competition %s with id %d has been updated.',
+                    sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                    $cmp->getId()
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

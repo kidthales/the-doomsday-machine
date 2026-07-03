@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballOrganization;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,8 +40,6 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -77,14 +74,7 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football organization id: ',
-            $this->entityManager->getRepository(FootballOrganization::class)->findAll(),
-            true
-        );
+        $this->interactFootballOrganization($input, $output, 'id', 'Football organization: ');
     }
 
     /**
@@ -100,39 +90,41 @@ final class DeleteCommand extends Command
         try {
             $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('id'));
             if ($org === null) {
-                $io->error('Football organization not found');
+                $io->error('Football organization not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $org,
                     [
                         AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
-
                 $numCmps = $org->getManagedCompetitions()->count();
                 if ($numCmps > 0) {
                     $io->warning(sprintf('%d football competitions will also be deleted!', $numCmps));
                 }
-
                 $numTeams = $org->getManagedTeams()->count();
                 if ($numTeams > 0) {
                     $io->warning(sprintf('%d football teams will also be deleted!', $numTeams));
                 }
-
                 if (!$io->confirm('Delete football organization?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $org->getId();
-
             $this->entityManager->remove($org);
             $this->entityManager->flush();
-
-            $io->success(sprintf('Football organization %s with id %d has been deleted.', $org->getChoiceValue(), $id));
+            $io->success(
+                sprintf(
+                    'Football organization %s with id %d has been deleted.',
+                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
+                    $id
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
