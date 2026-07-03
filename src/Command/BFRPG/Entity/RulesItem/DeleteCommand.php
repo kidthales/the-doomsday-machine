@@ -21,11 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesItem;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
-use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +41,6 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -79,26 +75,7 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        if ($input->getArgument('id') === null) {
-            $itemIdByName = array_reduce(
-                $this->entityManager->getRepository(RulesItem::class)->findAll(),
-                function (array $carry, RulesItem $item) {
-                    $carry[$item->getName()] = $item->getId();
-                    return $carry;
-                },
-                []
-            );
-            if (!empty($itemIdByName)) {
-                ksort($itemIdByName);
-                $this->interactChoiceQuestionWithChoicesResolver(
-                    $input,
-                    $output,
-                    'id',
-                    'Rules item: ',
-                    new ChoicesResolver($itemIdByName),
-                );
-            }
-        }
+        $this->interactRulesItem($input, $output, 'id', 'Rules item: ');
     }
 
     /**

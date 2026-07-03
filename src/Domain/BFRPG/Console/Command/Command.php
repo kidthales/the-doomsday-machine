@@ -21,10 +21,14 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Console\Command;
 
+use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -73,5 +77,61 @@ abstract class Command extends BaseCommand
                 );
             }
         }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesItem(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $itemIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItem::class)->findAll(),
+                function (array $carry, RulesItem $item) {
+                    $carry[$item->getName()] = $item->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemIdByName)) {
+                ksort($itemIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($itemIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesSource|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesSourceOption(InputInterface $input, string $option): ?RulesSource
+    {
+        $source = null;
+        $sourceId = $input->getOption($option);
+        if ($sourceId !== null) {
+            $source = $this->entityManager->find(RulesSource::class, $sourceId);
+            if ($source === null) {
+                throw new RuntimeException('Rules source not found.');
+            }
+        }
+        return $source;
     }
 }
