@@ -21,11 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponSize;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
-use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +41,6 @@ use Throwable;
 )]
 final class CreateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -91,26 +87,7 @@ final class CreateCommand extends Command
     {
         $this->interactQuestion($input, $output, 'name', 'Rules weapon size name: ');
         $this->interactQuestion($input, $output, 'short-name', 'Rules weapon size short name: ');
-        if ($input->getArgument('source-id') === null) {
-            $sourceIdByName = array_reduce(
-                $this->entityManager->getRepository(RulesSource::class)->findAll(),
-                function (array $carry, RulesSource $source) {
-                    $carry[$source->getName()] = $source->getId();
-                    return $carry;
-                },
-                []
-            );
-            if (!empty($sourceIdByName)) {
-                ksort($sourceIdByName);
-                $this->interactChoiceQuestionWithChoicesResolver(
-                    $input,
-                    $output,
-                    'source-id',
-                    'Rules weapon size sourced from: ',
-                    new ChoicesResolver($sourceIdByName),
-                );
-            }
-        }
+        $this->interactRulesSource($input, $output, 'source-id', 'Rules weapon size sourced from: ');
     }
 
     /**

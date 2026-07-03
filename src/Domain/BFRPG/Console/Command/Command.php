@@ -24,6 +24,7 @@ namespace App\Domain\BFRPG\Console\Command;
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
+use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
@@ -147,6 +148,42 @@ abstract class Command extends BaseCommand
                     $argument,
                     $question,
                     new ChoicesResolver($weaponCategoryIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesWeaponSize(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $weaponSizeIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
+                function (array $carry, RulesWeaponSize $weaponSize) {
+                    $carry[$weaponSize->getName()] = $weaponSize->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponSizeIdByName)) {
+                ksort($weaponSizeIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($weaponSizeIdByName),
                 );
             }
         }

@@ -21,11 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponSize;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
-use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,8 +42,6 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -95,26 +91,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        if ($input->getArgument('id') === null) {
-            $weaponSizeIdByName = array_reduce(
-                $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
-                function (array $carry, RulesWeaponSize $weaponSize) {
-                    $carry[$weaponSize->getName()] = $weaponSize->getId();
-                    return $carry;
-                },
-                []
-            );
-            if (!empty($weaponSizeIdByName)) {
-                ksort($weaponSizeIdByName);
-                $this->interactChoiceQuestionWithChoicesResolver(
-                    $input,
-                    $output,
-                    'id',
-                    'Rules weapon size: ',
-                    new ChoicesResolver($weaponSizeIdByName),
-                );
-            }
-        }
+        $this->interactRulesWeaponSize($input, $output, 'id', 'Rules weapon size: ');
     }
 
     /**
@@ -136,17 +113,7 @@ final class UpdateCommand extends Command
 
             $weaponSize->setName(trim($input->getOption('name') ?? $weaponSize->getName()));
             $weaponSize->setShortName(trim($input->getOption('short-name') ?? $weaponSize->getShortName()));
-
-            $source = null;
-            $sourceId = $input->getOption('source-id');
-            if ($sourceId !== null) {
-                $source = $this->entityManager->find(RulesSource::class, $sourceId);
-                if ($source === null) {
-                    $io->error('Rules source not found.');
-                    return Command::FAILURE;
-                }
-            }
-            $weaponSize->setSource($source ?? $weaponSize->getSource());
+            $weaponSize->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $weaponSize->getSource());
 
             $errors = $this->validator->validate($weaponSize);
             if (count($errors) > 0) {
@@ -169,7 +136,6 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($weaponSize);
             $this->entityManager->flush();
-
             $io->success(
                 sprintf(
                     'Rules weapon size %s with id %d has been updated.',
