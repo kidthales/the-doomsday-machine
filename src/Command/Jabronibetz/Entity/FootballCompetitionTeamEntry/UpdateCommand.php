@@ -21,11 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,8 +43,6 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -109,14 +106,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football competition team entry id: ',
-            $this->entityManager->getRepository(FootballCompetitionTeamEntry::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetitionTeamEntry($input, $output, 'id', 'Football competition team entry: ');
     }
 
     /**
@@ -132,7 +122,7 @@ final class UpdateCommand extends Command
         try {
             $entry = $this->entityManager->find(FootballCompetitionTeamEntry::class, $input->getArgument('id'));
             if ($entry === null) {
-                $io->error('Football competition team entry not found');
+                $io->error('Football competition team entry not found.');
                 return Command::FAILURE;
             }
 
@@ -140,7 +130,7 @@ final class UpdateCommand extends Command
             if ($cmpId !== null) {
                 $cmp = $this->entityManager->find(FootballCompetition::class, $cmpId);
                 if ($cmp === null) {
-                    $io->error('Football competition not found');
+                    $io->error('Football competition not found.');
                     return Command::FAILURE;
                 }
             } else {
@@ -152,7 +142,7 @@ final class UpdateCommand extends Command
             if ($teamId !== null) {
                 $team = $this->entityManager->find(FootballTeam::class, $teamId);
                 if ($team === null) {
-                    $io->error('Football team not found');
+                    $io->error('Football team not found.');
                     return Command::FAILURE;
                 }
             } else {
@@ -198,6 +188,7 @@ final class UpdateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $entry,
                     [
@@ -208,7 +199,6 @@ final class UpdateCommand extends Command
                         ]
                     ]
                 ));
-
                 if (!$io->confirm('Update football competition team entry?')) {
                     return Command::SUCCESS;
                 }
@@ -216,12 +206,16 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($entry);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football competition team entry %s with id %d has been updated.',
-                $entry->getChoiceValue(),
-                $entry->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football competition team entry %s with id %d has been updated.',
+                    sprintf(
+                        '%s - %s',
+                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
+                    ),
+                    $entry->getId()
+                ));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

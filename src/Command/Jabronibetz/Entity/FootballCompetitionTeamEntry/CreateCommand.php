@@ -21,11 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,8 +43,6 @@ use Throwable;
 )]
 final class CreateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -100,22 +97,8 @@ final class CreateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'competition-id',
-            'Football competition id: ',
-            $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
-            true
-        );
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'team-id',
-            'Football team id: ',
-            $this->entityManager->getRepository(FootballTeam::class)->findAll(),
-            true
-        );
+        $this->interactFootballCompetition($input, $output, 'competition-id', 'Football competition: ');
+        $this->interactFootballTeam($input, $output, 'team-id', 'Football team: ');
     }
 
     /**
@@ -131,13 +114,13 @@ final class CreateCommand extends Command
         try {
             $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
             if ($cmp === null) {
-                $io->error('Football competition not found');
+                $io->error('Football competition not found.');
                 return Command::FAILURE;
             }
 
             $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('team-id'));
             if ($team === null) {
-                $io->error('Football team not found');
+                $io->error('Football team not found.');
                 return Command::FAILURE;
             }
 
@@ -174,6 +157,7 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $entry,
                     [
@@ -184,7 +168,6 @@ final class CreateCommand extends Command
                         ]
                     ]
                 ));
-
                 if (!$io->confirm('Create football competition team entry?')) {
                     return Command::SUCCESS;
                 }
@@ -192,12 +175,17 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($entry);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football competition team entry %s has been created with id %d.',
-                $entry->getChoiceValue(),
-                $entry->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football competition team entry %s has been created with id %d.',
+                    sprintf(
+                        '%s - %s',
+                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
+                    ),
+                    $entry->getId()
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
