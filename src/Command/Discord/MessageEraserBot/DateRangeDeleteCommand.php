@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Command\Discord\MessageEraserBot;
 
+use App\Domain\Discord\MessageEraserBot\MessageDeletionException;
 use App\Domain\Discord\MessageEraserBot\MessageEraserBotAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
 use App\Domain\Shared\Discord\DiscordApi;
@@ -35,6 +36,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -194,16 +196,22 @@ final class DateRangeDeleteCommand extends Command
                 ['End Date' => $endDate->format('Y-m-d H:i:s')]
             );
 
+            $stopwatch = new Stopwatch();
+
             $progressIndicator = new ProgressIndicator($output);
             $progressIndicator->start('Searching...');
+            $stopwatch->start('Search');
             $messages = $this->messageEraserBot->getMessagesWithinDateRange(
                 $channelId,
                 $startDate,
                 $endDate,
                 $progressIndicator
             );
+            $searchEvent = $stopwatch->stop('Search');
             $messagesCount = count($messages);
-            $progressIndicator->finish(sprintf('Found %d messages.', $messagesCount));
+            $progressIndicator->finish(
+                sprintf('Found %d messages in %.3f seconds.', $messagesCount, round($searchEvent->getDuration() / 1000, 3))
+            );
             $io->newLine();
 
             if ($messagesCount === 0) {
@@ -257,6 +265,7 @@ final class DateRangeDeleteCommand extends Command
 
             $progressBar = $io->createProgressBar($messagesCount);
             $progressBar->start();
+            $stopwatch->start('Delete');
             try {
                 $this->messageEraserBot->deleteMessages(
                     channelId: $channelId,
@@ -264,12 +273,23 @@ final class DateRangeDeleteCommand extends Command
                     reason: $input->getOption('reason'),
                     progressBar: $progressBar
                 );
-            } finally {
-                $progressBar->finish();
-                $io->newLine(2);
+            } catch (MessageDeletionException $e) {
+                $progressBar->clear();
+                throw $e;
             }
+            $deleteEvent = $stopwatch->stop('Delete');
+            $progressBar->finish();
+            $io->newLine(2);
 
-            $io->success(sprintf('Deleted %d messages.', $messagesCount));
+            $deleteSeconds = $deleteEvent->getDuration() / 1000;
+            $io->success(
+                sprintf(
+                    'Deleted %d messages in %.3f seconds (%.3f messages/s).',
+                    $messagesCount,
+                    round($deleteSeconds, 3),
+                    round($messagesCount / $deleteSeconds, 3)
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -150,6 +150,7 @@ final class MessageEraserBot extends DiscordBot
      * @param string|null $reason
      * @param ProgressBar|null $progressBar
      * @return void
+     * @throws MessageDeletionException
      */
     public function deleteMessages(
         string                $channelId,
@@ -170,8 +171,6 @@ final class MessageEraserBot extends DiscordBot
                     // Throw the exception
                     $response->toArray();
                 }
-                // TODO: Frequent 429 errors...
-                sleep(5);
             }
             foreach ($bucket->individual as $individual) {
                 $response = $this->discordApi->deleteMessage($channelId, $individual['id'], $reason);
