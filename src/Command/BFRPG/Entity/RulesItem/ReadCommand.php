@@ -25,6 +25,7 @@ use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -78,14 +79,26 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules item id: ',
-            $this->entityManager->getRepository(RulesItem::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('id') === null) {
+            $itemIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItem::class)->findAll(),
+                function (array $carry, RulesItem $item) {
+                    $carry[$item->getName()] = $item->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemIdByName)) {
+                ksort($itemIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'id',
+                    'Rules item: ',
+                    new ChoicesResolver($itemIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -101,10 +114,9 @@ final class ReadCommand extends Command
         try {
             $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
             if ($item === null) {
-                $io->error('Rules item not found');
+                $io->error('Rules item not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $item,
                 [

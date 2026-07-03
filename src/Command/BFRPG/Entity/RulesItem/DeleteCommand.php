@@ -25,6 +25,7 @@ use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -78,14 +79,26 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules item id: ',
-            $this->entityManager->getRepository(RulesItem::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('id') === null) {
+            $itemIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItem::class)->findAll(),
+                function (array $carry, RulesItem $item) {
+                    $carry[$item->getName()] = $item->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemIdByName)) {
+                ksort($itemIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'id',
+                    'Rules item: ',
+                    new ChoicesResolver($itemIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -101,29 +114,27 @@ final class DeleteCommand extends Command
         try {
             $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
             if ($item === null) {
-                $io->error('Rules item not found');
+                $io->error('Rules item not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $item,
                     [
                         AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Delete rules item?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $item->getId();
-
             $this->entityManager->remove($item);
             $this->entityManager->flush();
-
-            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getChoiceValue(), $id));
+            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getName(), $id));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

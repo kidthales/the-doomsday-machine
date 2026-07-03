@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesSourceRepository;
-use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -35,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: RulesSourceRepository::class)]
 #[ORM\Table(name: 'rules_source')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_SOURCE_NAME', fields: ['name'])]
-class RulesSource implements ChoosableInterface
+class RulesSource
 {
     public const string GROUP_LIST = 'rules_source_list';
     public const string GROUP_DETAIL = 'rules_source_detail';
@@ -84,22 +83,6 @@ class RulesSource implements ChoosableInterface
         $this->items = new ArrayCollection();
         $this->weaponSizes = new ArrayCollection();
         $this->weaponCategories = new ArrayCollection();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceKey(): string
-    {
-        return (string)$this->getId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceValue(): string
-    {
-        return $this->getName();
     }
 
     /**

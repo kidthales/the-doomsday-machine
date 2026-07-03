@@ -25,6 +25,7 @@ use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -106,14 +107,26 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules item id: ',
-            $this->entityManager->getRepository(RulesItem::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('id') === null) {
+            $itemIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItem::class)->findAll(),
+                function (array $carry, RulesItem $item) {
+                    $carry[$item->getName()] = $item->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemIdByName)) {
+                ksort($itemIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'id',
+                    'Rules item: ',
+                    new ChoicesResolver($itemIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -129,7 +142,7 @@ final class UpdateCommand extends Command
         try {
             $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
             if ($item === null) {
-                $io->error('Rules item not found');
+                $io->error('Rules item not found.');
                 return Command::FAILURE;
             }
 
@@ -158,7 +171,7 @@ final class UpdateCommand extends Command
             if ($sourceId !== null) {
                 $source = $this->entityManager->find(RulesSource::class, $sourceId);
                 if ($source === null) {
-                    $io->error('Rules source not found');
+                    $io->error('Rules source not found.');
                     return Command::FAILURE;
                 }
             }
@@ -180,13 +193,13 @@ final class UpdateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $item,
                     [
                         AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Update rules item?')) {
                     return Command::SUCCESS;
                 }
@@ -194,8 +207,7 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($item);
             $this->entityManager->flush();
-
-            $io->success(sprintf('Rules item %s with id %d has been updated.', $item->getChoiceValue(), $item->getId()));
+            $io->success(sprintf('Rules item %s with id %d has been updated.', $item->getName(), $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

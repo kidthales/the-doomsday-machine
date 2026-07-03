@@ -24,6 +24,7 @@ namespace App\Command\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -77,14 +78,26 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules source id: ',
-            $this->entityManager->getRepository(RulesSource::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('id') === null) {
+            $sourceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesSource::class)->findAll(),
+                function (array $carry, RulesSource $source) {
+                    $carry[$source->getName()] = $source->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($sourceIdByName)) {
+                ksort($sourceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'id',
+                    'Rules source: ',
+                    new ChoicesResolver($sourceIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -100,10 +113,9 @@ final class ReadCommand extends Command
         try {
             $source = $this->entityManager->find(RulesSource::class, $input->getArgument('id'));
             if ($source === null) {
-                $io->error('Rules source not found');
+                $io->error('Rules source not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $source,
                 [

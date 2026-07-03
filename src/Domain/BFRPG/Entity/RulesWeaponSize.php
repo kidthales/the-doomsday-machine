@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesWeaponSizeRepository;
-use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -34,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'rules_weapon_size')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_WEAPON_SIZE_NAME', fields: ['name'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_WEAPON_SIZE_SHORT_NAME', fields: ['shortName'])]
-class RulesWeaponSize implements ChoosableInterface
+class RulesWeaponSize
 {
     public const string GROUP_LIST = 'rules_weapon_size_list';
     public const string GROUP_DETAIL = 'rules_weapon_size_detail';
@@ -74,22 +73,6 @@ class RulesWeaponSize implements ChoosableInterface
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
-
-    /**
-     * @return string
-     */
-    public function getChoiceKey(): string
-    {
-        return (string)$this->getId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceValue(): string
-    {
-        return $this->getName();
-    }
 
     /**
      * @return int|null

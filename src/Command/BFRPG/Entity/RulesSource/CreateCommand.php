@@ -101,13 +101,13 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
                         AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
-
                 if (!$io->confirm('Create rules source?')) {
                     return Command::SUCCESS;
                 }
@@ -115,12 +115,7 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($source);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Rules source %s has been created with id %d.',
-                $source->getChoiceValue(),
-                $source->getId()
-            ));
+            $io->success(sprintf('Rules source %s has been created with id %d.', $source->getName(), $source->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -25,6 +25,7 @@ use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -78,14 +79,26 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules weapon size id: ',
-            $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('id') === null) {
+            $weaponSizeIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
+                function (array $carry, RulesWeaponSize $weaponSize) {
+                    $carry[$weaponSize->getName()] = $weaponSize->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponSizeIdByName)) {
+                ksort($weaponSizeIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'id',
+                    'Rules weapon size: ',
+                    new ChoicesResolver($weaponSizeIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -101,30 +114,28 @@ final class DeleteCommand extends Command
         try {
             $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
             if ($weaponSize === null) {
-                $io->error('Rules weapon size not found');
+                $io->error('Rules weapon size not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $weaponSize,
                     [
                         AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Delete rules weapon size?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $weaponSize->getId();
-
             $this->entityManager->remove($weaponSize);
             $this->entityManager->flush();
-
             $io->success(
-                sprintf('Rules weapon size %s with id %d has been deleted.', $weaponSize->getChoiceValue(), $id)
+                sprintf('Rules weapon size %s with id %d has been deleted.', $weaponSize->getName(), $id)
             );
         } catch (Throwable $e) {
             $io->error($e->getMessage());

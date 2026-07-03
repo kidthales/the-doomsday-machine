@@ -25,6 +25,7 @@ use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command;
+use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -84,14 +85,26 @@ final class CreateCommand extends Command
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $this->interactQuestion($input, $output, 'name', 'Rules weapon category name: ');
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'source-id',
-            'Rules category sourced from: ',
-            $this->entityManager->getRepository(RulesSource::class)->findAll(),
-            true
-        );
+        if ($input->getArgument('source-id') === null) {
+            $sourceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesSource::class)->findAll(),
+                function (array $carry, RulesSource $source) {
+                    $carry[$source->getName()] = $source->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($sourceIdByName)) {
+                ksort($sourceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    'source-id',
+                    'Rules weapon category sourced from: ',
+                    new ChoicesResolver($sourceIdByName),
+                );
+            }
+        }
     }
 
     /**
@@ -107,7 +120,7 @@ final class CreateCommand extends Command
         try {
             $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
             if ($source === null) {
-                $io->error('Rules source not found');
+                $io->error('Rules source not found.');
                 return Command::FAILURE;
             }
 
@@ -122,13 +135,13 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $weaponCategory,
                     [
                         AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Create rules weapon category?')) {
                     return Command::SUCCESS;
                 }
@@ -136,11 +149,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($weaponCategory);
             $this->entityManager->flush();
-
             $io->success(
                 sprintf(
                     'Rules weapon category %s has been created with id %d.',
-                    $weaponCategory->getChoiceValue(),
+                    $weaponCategory->getName(),
                     $weaponCategory->getId()
                 )
             );
