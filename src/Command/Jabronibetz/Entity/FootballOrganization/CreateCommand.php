@@ -122,7 +122,7 @@ final class CreateCommand extends Command
             $io->success(
                 sprintf(
                     'Football organization %s has been created with id %d.',
-                    sprintf('%s (%S)', $org->getName(), $org->getShortName()),
+                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
                     $org->getId()
                 )
             );

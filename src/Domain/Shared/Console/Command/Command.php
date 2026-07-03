@@ -21,9 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared\Console\Command;
 
-use App\Domain\Shared\Console\Question\ChoicesBuilderAwareTrait;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
-use App\Domain\Shared\Console\Question\ChoosableInterface;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use App\Domain\Shared\Validator\ValidatorAwareTrait;
 use Symfony\Component\Console\Command\Command as BaseCommand;
@@ -38,7 +36,7 @@ use Symfony\Component\Console\Question\Question;
  */
 abstract class Command extends BaseCommand
 {
-    use ChoicesBuilderAwareTrait, DefinitionListConverterAwareTrait, ValidatorAwareTrait;
+    use DefinitionListConverterAwareTrait, ValidatorAwareTrait;
 
     const int SUCCESS = BaseCommand::SUCCESS;
     const int FAILURE = BaseCommand::FAILURE;
@@ -164,33 +162,5 @@ abstract class Command extends BaseCommand
                 $this->askChoiceQuestionWithChoicesResolver($input, $output, $question, $choicesResolver)
             );
         }
-    }
-
-    /**
-     * @deprecated
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param string $argument
-     * @param string $question
-     * @param ChoosableInterface[] $choosables
-     * @param bool $useKeyAsChoiceValue
-     * @return void
-     */
-    protected function interactChoiceQuestionWithChoosables(
-        InputInterface  $input,
-        OutputInterface $output,
-        string          $argument,
-        string          $question,
-        array           $choosables,
-        bool            $useKeyAsChoiceValue = false
-    ): void {
-        $this->interactChoiceQuestion(
-            $input,
-            $output,
-            $argument,
-            $question,
-            $this->choicesBuilder->build($choosables),
-            $useKeyAsChoiceValue
-        );
     }
 }
