@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jabronibetz\Console\Command;
 
+use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
@@ -72,6 +73,43 @@ abstract class Command extends BaseCommand
                     $argument,
                     $question,
                     new ChoicesResolver($orgIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactFootballCompetition(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $cmpIdByName = array_reduce(
+                $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
+                function (array $carry, FootballCompetition $cmp) {
+                    $name = sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName());
+                    $carry[$name] = $cmp->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($cmpIdByName)) {
+                ksort($cmpIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($cmpIdByName),
                 );
             }
         }

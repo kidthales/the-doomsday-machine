@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballCompetition;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class CreateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -108,14 +105,7 @@ final class CreateCommand extends Command
     {
         $this->interactQuestion($input, $output, 'name', 'Football competition name: ');
         $this->interactQuestion($input, $output, 'short-name', 'Football competition short name: ');
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'organization-id',
-            'Football competition managed by: ',
-            $this->entityManager->getRepository(FootballOrganization::class)->findAll(),
-            true
-        );
+        $this->interactFootballOrganization($input, $output, 'organization-id', 'Football competition managed by: ');
     }
 
     /**
@@ -131,7 +121,7 @@ final class CreateCommand extends Command
         try {
             $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
             if ($org === null) {
-                $io->error('Football organization not found');
+                $io->error('Football organization not found.');
                 return Command::FAILURE;
             }
 
@@ -177,13 +167,13 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $cmp,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
-
                 if (!$io->confirm('Create football competition?')) {
                     return Command::SUCCESS;
                 }
@@ -191,12 +181,13 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($cmp);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football competition %s has been created with id %d.',
-                $cmp->getChoiceValue(),
-                $cmp->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football competition %s has been created with id %d.',
+                    sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                    $cmp->getId()
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
