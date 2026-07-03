@@ -23,6 +23,7 @@ namespace App\Domain\BFRPG\Console\Command;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
@@ -110,6 +111,42 @@ abstract class Command extends BaseCommand
                     $argument,
                     $question,
                     new ChoicesResolver($itemIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesWeaponCategory(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $weaponCategoryIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeaponCategory::class)->findAll(),
+                function (array $carry, RulesWeaponCategory $weaponCategory) {
+                    $carry[$weaponCategory->getName()] = $weaponCategory->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponCategoryIdByName)) {
+                ksort($weaponCategoryIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($weaponCategoryIdByName),
                 );
             }
         }
