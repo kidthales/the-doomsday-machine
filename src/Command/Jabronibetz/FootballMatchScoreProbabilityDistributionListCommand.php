@@ -171,8 +171,18 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
     ): void
     {
         $match = $this->entityManager->find(FootballMatch::class, $matchScoreProbabilityDistribution->matchId);
+        $timestamp = $match->getTimestamp();
         $table = new Table($output);
-        $table->setHeaderTitle($match->getChoiceValue());
+        $table->setHeaderTitle(
+            sprintf(
+                '%s vs %s (%s) [%s, Round %s]',
+                $match->getHomeTeam()?->getName() ?? 'Unknown',
+                $match->getAwayTeam()?->getName() ?? 'Unknown',
+                $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+                $match->getCompetition()?->getShortName() ?? 'UNK',
+                $match->getRound() ?? 'N/A'
+            )
+        );
         $table->setHeaders([
             sprintf(
                 '%s \\ %s',
