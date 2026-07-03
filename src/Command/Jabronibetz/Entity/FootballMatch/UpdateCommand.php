@@ -195,17 +195,7 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
-            $cmpId = $input->getOption('competition-id');
-            if ($cmpId !== null) {
-                $cmp = $this->entityManager->find(FootballCompetition::class, $cmpId);
-                if ($cmp === null) {
-                    $io->error('Football competition not found.');
-                    return Command::FAILURE;
-                }
-            } else {
-                $cmp = $match->getCompetition();
-            }
-            $match->setCompetition($cmp);
+            $match->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $match->getCompetition());
 
             $homeTeamId = $input->getOption('home-team-id');
             if ($homeTeamId === false) {
@@ -222,7 +212,7 @@ final class UpdateCommand extends Command
             if ($homeTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
-                    ->count(['competition' => $cmp, 'team' => $homeTeam]);
+                    ->count(['competition' => $match->getCompetition(), 'team' => $homeTeam]);
                 if ($count !== 1) {
                     $io->error('Home football team not entered into competition.');
                     return Command::FAILURE;
@@ -245,7 +235,7 @@ final class UpdateCommand extends Command
             if ($awayTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
-                    ->count(['competition' => $cmp, 'team' => $awayTeam]);
+                    ->count(['competition' => $match->getCompetition(), 'team' => $awayTeam]);
                 if ($count !== 1) {
                     $io->error('Away football team not entered into competition.');
                     return Command::FAILURE;

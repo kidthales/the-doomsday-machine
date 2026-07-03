@@ -134,18 +134,9 @@ final class UpdateCommand extends Command
 
             $cmp->setName(trim($input->getOption('name') ?? $cmp->getName()));
             $cmp->setShortName(trim($input->getOption('short-name') ?? $cmp->getShortName()));
-
-            $orgId = $input->getOption('organization-id');
-            if ($orgId !== null) {
-                $org = $this->entityManager->find(FootballOrganization::class, $orgId);
-                if ($org === null) {
-                    $io->error('Football organization not found.');
-                    return Command::FAILURE;
-                }
-            } else {
-                $org = $cmp->getManagingOrganization();
-            }
-            $cmp->setManagingOrganization($org);
+            $cmp->setManagingOrganization(
+                $this->parseFootballOrganizationOption($input, 'organization-id') ?? $cmp->getManagingOrganization()
+            );
 
             $rounds = $input->getOption('rounds');
             if ($rounds === false) {

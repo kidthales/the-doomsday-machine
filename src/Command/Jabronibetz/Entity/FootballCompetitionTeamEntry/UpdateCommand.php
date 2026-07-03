@@ -126,17 +126,7 @@ final class UpdateCommand extends Command
                 return Command::FAILURE;
             }
 
-            $cmpId = $input->getOption('competition-id');
-            if ($cmpId !== null) {
-                $cmp = $this->entityManager->find(FootballCompetition::class, $cmpId);
-                if ($cmp === null) {
-                    $io->error('Football competition not found.');
-                    return Command::FAILURE;
-                }
-            } else {
-                $cmp = $entry->getCompetition();
-            }
-            $entry->setCompetition($cmp);
+            $entry->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $entry->getCompetition());
 
             $teamId = $input->getOption('team-id');
             if ($teamId !== null) {
@@ -211,7 +201,7 @@ final class UpdateCommand extends Command
                     'Football competition team entry %s with id %d has been updated.',
                     sprintf(
                         '%s - %s',
-                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                        sprintf('%s (%s)', $entry->getCompetition()->getName(), $entry->getCompetition()->getShortName()),
                         sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
                     ),
                     $entry->getId()

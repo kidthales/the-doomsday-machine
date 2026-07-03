@@ -30,6 +30,9 @@ use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Doctrine\Common\Collections\Order;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -242,5 +245,45 @@ abstract class Command extends BaseCommand
                 );
             }
         }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return FootballOrganization|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballOrganizationOption(InputInterface $input, string $option): ?FootballOrganization
+    {
+        $organization = null;
+        $organizationId = $input->getOption($option);
+        if ($organizationId !== null) {
+            $organization = $this->entityManager->find(FootballOrganization::class, $organizationId);
+            if ($organization === null) {
+                throw new RuntimeException('Football organization not found.');
+            }
+        }
+        return $organization;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return FootballCompetition|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballCompetitionOption(InputInterface $input, string $option): ?FootballCompetition
+    {
+        $competition = null;
+        $competitionId = $input->getOption($option);
+        if ($competitionId !== null) {
+            $competition = $this->entityManager->find(FootballCompetition::class, $competitionId);
+            if ($competition === null) {
+                throw new RuntimeException('Football competition not found.');
+            }
+        }
+        return $competition;
     }
 }
