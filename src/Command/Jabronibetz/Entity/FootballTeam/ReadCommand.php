@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballTeam;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,8 +41,6 @@ use Throwable;
 )]
 final class ReadCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -78,14 +75,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football team id: ',
-            $this->entityManager->getRepository(FootballTeam::class)->findAll(),
-            true
-        );
+        $this->interactFootballTeam($input, $output, 'id', 'Football team: ');
     }
 
     /**
@@ -101,10 +91,9 @@ final class ReadCommand extends Command
         try {
             $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('id'));
             if ($team === null) {
-                $io->error('Football team not found');
+                $io->error('Football team not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $team,
                 [

@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Jabronibetz\Console\Command;
 
 use App\Domain\Jabronibetz\Entity\FootballOrganization;
+use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
@@ -71,6 +72,43 @@ abstract class Command extends BaseCommand
                     $argument,
                     $question,
                     new ChoicesResolver($orgIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactFootballTeam(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $teamIdByName = array_reduce(
+                $this->entityManager->getRepository(FootballTeam::class)->findAll(),
+                function (array $carry, FootballTeam $team) {
+                    $name = sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value);
+                    $carry[$name] = $team->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($teamIdByName)) {
+                ksort($teamIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($teamIdByName),
                 );
             }
         }

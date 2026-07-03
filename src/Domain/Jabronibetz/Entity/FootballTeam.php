@@ -23,7 +23,6 @@ namespace App\Domain\Jabronibetz\Entity;
 
 use App\Domain\Jabronibetz\Enum\FootballGender;
 use App\Domain\Jabronibetz\Repository\FootballTeamRepository;
-use App\Domain\Shared\Console\Question\ChoosableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: FootballTeamRepository::class)]
 #[ORM\Table(name: 'football_team')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_FOOTBALL_TEAM_NAME_GENDER', fields: ['name', 'gender'])]
-class FootballTeam implements ChoosableInterface
+class FootballTeam
 {
     public const string GROUP_LIST = 'football_team_list';
     public const string GROUP_DETAIL = 'football_team_detail';
@@ -114,27 +113,6 @@ class FootballTeam implements ChoosableInterface
         $this->competitionEntries = new ArrayCollection();
         $this->homeMatches = new ArrayCollection();
         $this->awayMatches = new ArrayCollection();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceKey(): string
-    {
-        return (string)$this->getId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getChoiceValue(): string
-    {
-        return sprintf(
-            '%s (%s) [%s]',
-            $this->getName() ?? 'Unknown',
-            $this->getShortName() ?? 'UNK',
-            $this->getGender()?->value ?? 'unknown'
-        );
     }
 
     /**
