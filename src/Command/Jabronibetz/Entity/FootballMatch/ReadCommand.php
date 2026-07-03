@@ -21,11 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballMatch;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class ReadCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -79,14 +76,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football match id: ',
-            $this->entityManager->getRepository(FootballMatch::class)->findAll(),
-            true
-        );
+        $this->interactFootballMatch($input, $output, 'id', 'Football match: ');
     }
 
     /**
@@ -102,10 +92,9 @@ final class ReadCommand extends Command
         try {
             $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
             if ($match === null) {
-                $io->error('Football match not found');
+                $io->error('Football match not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $match,
                 [

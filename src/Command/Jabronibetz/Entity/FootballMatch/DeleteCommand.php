@@ -21,11 +21,10 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballMatch;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -79,14 +76,7 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football match id: ',
-            $this->entityManager->getRepository(FootballMatch::class)->findAll(),
-            true
-        );
+        $this->interactFootballMatch($input, $output, 'id', 'Football match: ');
     }
 
     /**
@@ -102,11 +92,12 @@ final class DeleteCommand extends Command
         try {
             $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
             if ($match === null) {
-                $io->error('Football match not found');
+                $io->error('Football match not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $match,
                     [
@@ -117,22 +108,33 @@ final class DeleteCommand extends Command
                         ]
                     ]
                 ));
-
                 if (!$io->confirm('Delete football match?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $match->getId();
-
+            $homeTeam = $match->getHomeTeam();
+            $awayTeam = $match->getAwayTeam();
+            $timestamp = $match->getTimestamp();
+            $cmp = $match->getCompetition();
+            $round = $match->getRound();
             $this->entityManager->remove($match);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football match %s with id %d has been deleted.',
-                $match->getChoiceValue(),
-                $id
-            ));
+            $io->success(
+                sprintf(
+                    'Football match %s with id %d has been deleted.',
+                    sprintf(
+                        '%s vs %s (%s) [%s, Round %s]',
+                        $homeTeam?->getName() ?? 'Unknown',
+                        $awayTeam?->getName() ?? 'Unknown',
+                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+                        $cmp?->getShortName() ?? 'UNK',
+                        $round ?? 'N/A'
+                    ),
+                    $id
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

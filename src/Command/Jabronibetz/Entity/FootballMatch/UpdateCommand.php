@@ -21,12 +21,11 @@ declare(strict_types=1);
 
 namespace App\Command\Jabronibetz\Entity\FootballMatch;
 
+use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
-use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -45,8 +44,6 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -178,14 +175,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Football match id: ',
-            $this->entityManager->getRepository(FootballMatch::class)->findAll(),
-            true
-        );
+        $this->interactFootballMatch($input, $output, 'id', 'Football match: ');
     }
 
     /**
@@ -201,7 +191,7 @@ final class UpdateCommand extends Command
         try {
             $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
             if ($match === null) {
-                $io->error('Football match not found');
+                $io->error('Football match not found.');
                 return Command::FAILURE;
             }
 
@@ -209,7 +199,7 @@ final class UpdateCommand extends Command
             if ($cmpId !== null) {
                 $cmp = $this->entityManager->find(FootballCompetition::class, $cmpId);
                 if ($cmp === null) {
-                    $io->error('Football competition not found');
+                    $io->error('Football competition not found.');
                     return Command::FAILURE;
                 }
             } else {
@@ -225,7 +215,7 @@ final class UpdateCommand extends Command
             } else {
                 $homeTeam = $this->entityManager->find(FootballTeam::class, $homeTeamId);
                 if ($homeTeam === null) {
-                    $io->error('Home football team not found');
+                    $io->error('Home football team not found.');
                     return Command::FAILURE;
                 }
             }
@@ -248,7 +238,7 @@ final class UpdateCommand extends Command
             } else {
                 $awayTeam = $this->entityManager->find(FootballTeam::class, $awayTeamId);
                 if ($awayTeam === null) {
-                    $io->error('Away football team not found');
+                    $io->error('Away football team not found.');
                     return Command::FAILURE;
                 }
             }
@@ -431,6 +421,7 @@ final class UpdateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $match,
                     [
@@ -441,7 +432,6 @@ final class UpdateCommand extends Command
                         ]
                     ]
                 ));
-
                 if (!$io->confirm('Update football match?')) {
                     return Command::SUCCESS;
                 }
@@ -449,12 +439,20 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($match);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Football match %s with id %d has been updated.',
-                $match->getChoiceValue(),
-                $match->getId()
-            ));
+            $io->success(
+                sprintf(
+                    'Football match %s with id %d has been updated.',
+                    sprintf(
+                        '%s vs %s (%s) [%s, Round %s]',
+                        $match->getHomeTeam()?->getName() ?? 'Unknown',
+                        $match->getAwayTeam()?->getName() ?? 'Unknown',
+                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+                        $match->getCompetition()?->getShortName() ?? 'UNK',
+                        $match->getRound() ?? 'N/A'
+                    ),
+                    $match->getId()
+                )
+            );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
