@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Discord;
 
 use DateTimeImmutable;
+use Symfony\Component\HttpClient\RetryableHttpClient;
 use Symfony\Component\HttpClient\ThrottlingHttpClient;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
@@ -68,14 +69,13 @@ final readonly class DiscordApi
      */
     public function __construct(HttpClientInterface $httpClient)
     {
-        // TODO: retry_after backoff logic...
         $this->httpClient = new ThrottlingHttpClient(
-            $httpClient,
+            new RetryableHttpClient($httpClient, new DiscordApiRetryStrategy(jitter: 0.0)),
             (new RateLimiterFactory([
                 'id' => 'discord_api_limiter',
                 'policy' => 'token_bucket',
-                'limit' => 1,
-                'rate' => ['interval' => '1 second', 'amount' => 1]
+                'limit' => 50,
+                'rate' => ['interval' => '1 second', 'amount' => 50]
             ], new InMemoryStorage()))->create()
         );
     }

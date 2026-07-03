@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponCategory;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,8 +41,6 @@ use Throwable;
 )]
 final class ReadCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -78,14 +75,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules weapon category: ',
-            $this->entityManager->getRepository(RulesWeaponCategory::class)->findAll(),
-            true
-        );
+        $this->interactRulesWeaponCategory($input, $output, 'id', 'Rules weapon category: ');
     }
 
     /**
@@ -101,10 +91,9 @@ final class ReadCommand extends Command
         try {
             $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
             if ($weaponCategory === null) {
-                $io->error('Rules weapon category not found');
+                $io->error('Rules weapon category not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $weaponCategory,
                 [

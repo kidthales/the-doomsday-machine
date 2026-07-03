@@ -21,9 +21,8 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesItem;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesItem;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,8 +39,6 @@ use Throwable;
 )]
 final class ListCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */

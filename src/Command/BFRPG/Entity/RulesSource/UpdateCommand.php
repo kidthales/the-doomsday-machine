@@ -21,19 +21,13 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesSource;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
-use App\Domain\Shared\Console\Question\ChoicesBuilderAwareTrait;
-use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
-use App\Domain\Shared\Validator\ValidatorAwareTrait;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Throwable;
@@ -47,8 +41,6 @@ use Throwable;
 )]
 final class UpdateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -88,14 +80,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules source id: ',
-            $this->entityManager->getRepository(RulesSource::class)->findAll(),
-            true
-        );
+        $this->interactRulesSource($input, $output, 'id', 'Rules source: ');
     }
 
     /**
@@ -111,7 +96,7 @@ final class UpdateCommand extends Command
         try {
             $source = $this->entityManager->find(RulesSource::class, $input->getArgument('id'));
             if ($source === null) {
-                $io->error('Rules source not found');
+                $io->error('Rules source not found.');
                 return Command::FAILURE;
             }
 
@@ -124,13 +109,13 @@ final class UpdateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $source,
                     [
                         AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
-
                 if (!$io->confirm('Update rules source?')) {
                     return Command::SUCCESS;
                 }
@@ -138,12 +123,7 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($source);
             $this->entityManager->flush();
-
-            $io->success(sprintf(
-                'Rules source %s with id %d has been updated.',
-                $source->getChoiceValue(),
-                $source->getId()
-            ));
+            $io->success(sprintf('Rules source %s with id %d has been updated.', $source->getName(), $source->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesItem;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +42,6 @@ use Throwable;
 )]
 final class CreateCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -102,14 +99,7 @@ final class CreateCommand extends Command
         $this->interactQuestion($input, $output, 'name', 'Rules item name: ');
         $this->interactQuestion($input, $output, 'price', 'Rules item price: ');
         $this->interactQuestion($input, $output, 'weight', 'Rules item weight: ');
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'source-id',
-            'Rules item sourced from: ',
-            $this->entityManager->getRepository(RulesSource::class)->findAll(),
-            true
-        );
+        $this->interactRulesSource($input, $output, 'source-id', 'Rules item sourced from: ');
     }
 
     /**
@@ -137,7 +127,7 @@ final class CreateCommand extends Command
 
             $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
             if ($source === null) {
-                $io->error('Rules source not found');
+                $io->error('Rules source not found.');
                 return Command::FAILURE;
             }
 
@@ -160,13 +150,13 @@ final class CreateCommand extends Command
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $item,
                     [
                         AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Create rules item?')) {
                     return Command::SUCCESS;
                 }
@@ -174,8 +164,7 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($item);
             $this->entityManager->flush();
-
-            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getChoiceValue(), $item->getId()));
+            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getName(), $item->getId()));
         } catch (Throwable $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

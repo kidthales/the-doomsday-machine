@@ -21,10 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponSize;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,8 +41,6 @@ use Throwable;
 )]
 final class ReadCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -78,14 +75,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules weapon size: ',
-            $this->entityManager->getRepository(RulesWeaponSize::class)->findAll(),
-            true
-        );
+        $this->interactRulesWeaponSize($input, $output, 'id', 'Rules weapon size: ');
     }
 
     /**
@@ -101,10 +91,9 @@ final class ReadCommand extends Command
         try {
             $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
             if ($weaponSize === null) {
-                $io->error('Rules weapon size not found');
+                $io->error('Rules weapon size not found.');
                 return Command::FAILURE;
             }
-
             $io->definitionList(...$this->definitionListConverter->convert(
                 $weaponSize,
                 [

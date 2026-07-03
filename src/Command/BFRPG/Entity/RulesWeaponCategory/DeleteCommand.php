@@ -21,11 +21,9 @@ declare(strict_types=1);
 
 namespace App\Command\BFRPG\Entity\RulesWeaponCategory;
 
+use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
-use App\Domain\BFRPG\Entity\RulesWeaponSize;
-use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
-use App\Domain\Shared\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,8 +41,6 @@ use Throwable;
 )]
 final class DeleteCommand extends Command
 {
-    use EntityManagerAwareTrait;
-
     /**
      * @return void
      */
@@ -79,14 +75,7 @@ final class DeleteCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactChoiceQuestionWithChoosables(
-            $input,
-            $output,
-            'id',
-            'Rules weapon category id: ',
-            $this->entityManager->getRepository(RulesWeaponCategory::class)->findAll(),
-            true
-        );
+        $this->interactRulesWeaponCategory($input, $output, 'id', 'Rules weapon category: ');
     }
 
     /**
@@ -102,30 +91,28 @@ final class DeleteCommand extends Command
         try {
             $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
             if ($weaponCategory === null) {
-                $io->error('Rules weapon category not found');
+                $io->error('Rules weapon category not found.');
                 return Command::FAILURE;
             }
 
             if ($input->isInteractive()) {
+                $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $weaponCategory,
                     [
                         AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
-
                 if (!$io->confirm('Delete rules weapon category?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $weaponCategory->getId();
-
             $this->entityManager->remove($weaponCategory);
             $this->entityManager->flush();
-
             $io->success(
-                sprintf('Rules weapon category %s with id %d has been deleted.', $weaponCategory->getChoiceValue(), $id)
+                sprintf('Rules weapon category %s with id %d has been deleted.', $weaponCategory->getName(), $id)
             );
         } catch (Throwable $e) {
             $io->error($e->getMessage());
