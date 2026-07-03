@@ -29,6 +29,7 @@ use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
+use Doctrine\Common\Collections\Order;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -213,7 +214,9 @@ abstract class Command extends BaseCommand
     {
         if ($input->getArgument($argument) === null) {
             $matchIdByName = array_reduce(
-                $this->entityManager->getRepository(FootballMatch::class)->findAll(),
+                $this->entityManager
+                    ->getRepository(FootballMatch::class)
+                    ->findBy([], ['timestamp' => Order::Ascending->value]),
                 function (array $carry, FootballMatch $match) {
                     $timestamp = $match->getTimestamp();
                     $name = sprintf(
@@ -230,7 +233,6 @@ abstract class Command extends BaseCommand
                 []
             );
             if (!empty($matchIdByName)) {
-                ksort($matchIdByName);
                 $this->interactChoiceQuestionWithChoicesResolver(
                     $input,
                     $output,
