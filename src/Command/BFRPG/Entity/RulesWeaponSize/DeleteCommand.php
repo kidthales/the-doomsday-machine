@@ -89,11 +89,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Weapon Size');
 
         try {
-            $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
-            if ($weaponSize === null) {
-                $io->error('Rules weapon size not found.');
-                return Command::FAILURE;
-            }
+            $weaponSize = $this->parseRulesWeaponSizeArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -103,18 +99,20 @@ final class DeleteCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Delete rules weapon size?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $weaponSize->getId();
+
             $this->entityManager->remove($weaponSize);
             $this->entityManager->flush();
-            $io->success(
-                sprintf('Rules weapon size %s with id %d has been deleted.', $weaponSize->getName(), $id)
-            );
+
+            $io->success(sprintf('Rules weapon size with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

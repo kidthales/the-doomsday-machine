@@ -89,18 +89,14 @@ final class ReadCommand extends Command
         $io->title('BFRPG: Read Rules Weapon Size');
 
         try {
-            $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
-            if ($weaponSize === null) {
-                $io->error('Rules weapon size not found.');
-                return Command::FAILURE;
-            }
             $io->definitionList(...$this->definitionListConverter->convert(
-                $weaponSize,
+                $this->parseRulesWeaponSizeArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

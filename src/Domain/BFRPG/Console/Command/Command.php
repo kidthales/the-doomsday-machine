@@ -276,4 +276,25 @@ abstract class Command extends BaseCommand
         }
         return $weaponCategory;
     }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponSize|null
+     */
+    protected function parseRulesWeaponSizeArgument(InputInterface $input, string $argument): ?RulesWeaponSize
+    {
+        $weaponSizeId = $input->getArgument($argument);
+        if ($weaponSizeId === null) {
+            return null;
+        }
+        if (!is_numeric($weaponSizeId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $weaponSize = $this->entityManager->getRepository(RulesWeaponSize::class)->find($weaponSizeId);
+        if ($weaponSize === null) {
+            throw new RuntimeException('Rules weapon size not found.');
+        }
+        return $weaponSize;
+    }
 }
