@@ -117,23 +117,13 @@ final class CreateCommand extends Command
         $io->title('Jabronibetz: Create Football Team');
 
         try {
-            $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
-            if ($org === null) {
-                $io->error('Football organization not found.');
-                return Command::FAILURE;
-            }
-
             $team = (new FootballTeam())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')))
-                ->setManagingOrganization($org)
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setShortName($this->parseStringArgument($input, 'short-name', true))
+                ->setManagingOrganization($this->parseFootballOrganizationArgument($input, 'organization-id'))
                 ->setGender(FootballGender::from($input->getArgument('gender')));
 
-            $errors = $this->validator->validate($team);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($team);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -143,6 +133,7 @@ final class CreateCommand extends Command
                         AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Create football team?')) {
                     return Command::SUCCESS;
                 }
@@ -150,14 +141,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($team);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football team %s has been created with id %d.',
-                    sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value),
-                    $team->getId()
-                )
-            );
+
+            $io->success(sprintf('Football team has been created with id %d.', $team->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

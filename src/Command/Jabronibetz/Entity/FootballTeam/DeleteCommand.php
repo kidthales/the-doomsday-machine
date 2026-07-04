@@ -88,11 +88,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Team');
 
         try {
-            $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('id'));
-            if ($team === null) {
-                $io->error('Football team not found.');
-                return Command::FAILURE;
-            }
+            $team = $this->parseFootballTeamArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -102,30 +98,30 @@ final class DeleteCommand extends Command
                         AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
                     ]
                 ));
+
                 $numEntries = $team->getCompetitionEntries()->count();
                 if ($numEntries > 0) {
                     $io->warning(sprintf('%d football competition team entries will also be deleted!', $numEntries));
                 }
+
                 $numMatches = $team->getHomeMatches()->count() + $team->getAwayMatches()->count();
                 if ($numMatches > 0) {
                     $io->warning(sprintf('%d football matches will also be deleted!', $numMatches));
                 }
+
                 if (!$io->confirm('Delete football team?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $team->getId();
+
             $this->entityManager->remove($team);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football team %s with id %d has been deleted.',
-                    sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value),
-                    $id
-                )
-            );
+
+            $io->success(sprintf('Football team with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace App\Command\Jabronibetz\Entity\FootballTeam;
 
 use App\Domain\Jabronibetz\Console\Command\Command;
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\Enum\FootballGender;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -114,14 +113,10 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Team');
 
         try {
-            $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('id'));
-            if ($team === null) {
-                $io->error('Football team not found.');
-                return Command::FAILURE;
-            }
+            $team = $this->parseFootballTeamArgument($input, 'id');
 
-            $team->setName(trim($input->getOption('name') ?? $team->getName()));
-            $team->setShortName(trim($input->getOption('short-name') ?? $team->getShortName()));
+            $team->setName($this->parseStringOption($input, 'name', true) ?? $team->getName());
+            $team->setShortName($this->parseStringOption($input, 'short-name', true) ?? $team->getShortName());
             $team->setManagingOrganization(
                 $this->parseFootballOrganizationOption($input, 'organization-id') ?? $team->getManagingOrganization()
             );
@@ -131,11 +126,7 @@ final class UpdateCommand extends Command
                 $team->setGender(FootballGender::from($gender));
             }
 
-            $errors = $this->validator->validate($team);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($team);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -145,6 +136,7 @@ final class UpdateCommand extends Command
                         AbstractNormalizer::GROUPS => FootballTeam::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Update football team?')) {
                     return Command::SUCCESS;
                 }
@@ -152,14 +144,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($team);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football team %s with id %d has been updated.',
-                    sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value),
-                    $team->getId()
-                )
-            );
+
+            $io->success(sprintf('Football team with id %d has been updated.', $team->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
