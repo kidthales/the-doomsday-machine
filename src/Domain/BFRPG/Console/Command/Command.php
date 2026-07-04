@@ -27,14 +27,12 @@ use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
+use App\Domain\Shared\Console\Command\ParseEntityIdTrait;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
-use InvalidArgumentException;
-use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -42,6 +40,10 @@ use ValueError;
 abstract class Command extends BaseCommand
 {
     use EntityManagerAwareTrait;
+    use ParseEntityIdTrait {
+        parseEntityIdArgument as private;
+        parseEntityIdOption as private;
+    }
 
     const int SUCCESS = BaseCommand::SUCCESS;
     const int FAILURE = BaseCommand::FAILURE;
@@ -196,20 +198,9 @@ abstract class Command extends BaseCommand
      * @param string $argument
      * @return RulesSource|null
      */
-    protected function parseRulesSourceArgument(InputInterface $input, string $argument): ?RulesSource
+    protected function parseRulesSourceIdArgument(InputInterface $input, string $argument): ?RulesSource
     {
-        $sourceId = $input->getArgument($argument);
-        if ($sourceId === null) {
-            return null;
-        }
-        if (!is_numeric($sourceId)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
-        }
-        $source = $this->entityManager->getRepository(RulesSource::class)->find($sourceId);
-        if ($source === null) {
-            throw new RuntimeException('Rules source not found.');
-        }
-        return $source;
+        return $this->parseEntityIdArgument($input, $argument, RulesSource::class);
     }
 
     /**
@@ -219,20 +210,9 @@ abstract class Command extends BaseCommand
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    protected function parseRulesSourceOption(InputInterface $input, string $option): RulesSource|false|null
+    protected function parseRulesSourceIdOption(InputInterface $input, string $option): RulesSource|false|null
     {
-        $sourceId = $input->getOption($option);
-        if ($sourceId === null || $sourceId === false) {
-            return $sourceId;
-        }
-        if (!is_numeric($sourceId)) {
-            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
-        }
-        $source = $this->entityManager->find(RulesSource::class, $sourceId);
-        if ($source === null) {
-            throw new RuntimeException('Rules source not found.');
-        }
-        return $source;
+        return $this->parseEntityIdOption($input, $option, RulesSource::class);
     }
 
     /**
@@ -240,20 +220,9 @@ abstract class Command extends BaseCommand
      * @param string $argument
      * @return RulesItem|null
      */
-    protected function parseRulesItemArgument(InputInterface $input, string $argument): ?RulesItem
+    protected function parseRulesItemIdArgument(InputInterface $input, string $argument): ?RulesItem
     {
-        $itemId = $input->getArgument($argument);
-        if ($itemId === null) {
-            return null;
-        }
-        if (!is_numeric($itemId)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
-        }
-        $item = $this->entityManager->getRepository(RulesItem::class)->find($itemId);
-        if ($item === null) {
-            throw new RuntimeException('Rules item not found.');
-        }
-        return $item;
+        return $this->parseEntityIdArgument($input, $argument, RulesItem::class);
     }
 
     /**
@@ -261,20 +230,9 @@ abstract class Command extends BaseCommand
      * @param string $argument
      * @return RulesWeaponCategory|null
      */
-    protected function parseRulesWeaponCategoryArgument(InputInterface $input, string $argument): ?RulesWeaponCategory
+    protected function parseRulesWeaponCategoryIdArgument(InputInterface $input, string $argument): ?RulesWeaponCategory
     {
-        $weaponCategoryId = $input->getArgument($argument);
-        if ($weaponCategoryId === null) {
-            return null;
-        }
-        if (!is_numeric($weaponCategoryId)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
-        }
-        $weaponCategory = $this->entityManager->getRepository(RulesWeaponCategory::class)->find($weaponCategoryId);
-        if ($weaponCategory === null) {
-            throw new RuntimeException('Rules weapon category not found.');
-        }
-        return $weaponCategory;
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponCategory::class);
     }
 
     /**
@@ -282,19 +240,8 @@ abstract class Command extends BaseCommand
      * @param string $argument
      * @return RulesWeaponSize|null
      */
-    protected function parseRulesWeaponSizeArgument(InputInterface $input, string $argument): ?RulesWeaponSize
+    protected function parseRulesWeaponSizeIdArgument(InputInterface $input, string $argument): ?RulesWeaponSize
     {
-        $weaponSizeId = $input->getArgument($argument);
-        if ($weaponSizeId === null) {
-            return null;
-        }
-        if (!is_numeric($weaponSizeId)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
-        }
-        $weaponSize = $this->entityManager->getRepository(RulesWeaponSize::class)->find($weaponSizeId);
-        if ($weaponSize === null) {
-            throw new RuntimeException('Rules weapon size not found.');
-        }
-        return $weaponSize;
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponSize::class);
     }
 }

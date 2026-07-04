@@ -99,7 +99,7 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Organization');
 
         try {
-            $organization = $this->parseFootballOrganizationArgument($input, 'id');
+            $organization = $this->parseFootballOrganizationIdArgument($input, 'id');
 
             $organization->setName($this->parseStringOption($input, 'name', true) ?? $organization->getName());
             $organization->setShortName($this->parseStringOption($input, 'short-name', true) ?? $organization->getShortName());

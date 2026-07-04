@@ -90,7 +90,7 @@ final class ReadCommand extends Command
 
         try {
             $io->definitionList(...$this->definitionListConverter->convert(
-                $this->parseRulesItemArgument($input, 'id'),
+                $this->parseRulesItemIdArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]

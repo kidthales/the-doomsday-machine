@@ -100,10 +100,10 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Weapon Category');
 
         try {
-            $weaponCategory = $this->parseRulesWeaponCategoryArgument($input, 'id');
+            $weaponCategory = $this->parseRulesWeaponCategoryIdArgument($input, 'id');
 
             $weaponCategory->setName($this->parseStringOption($input, 'name') ?? $weaponCategory->getName());
-            $weaponCategory->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $weaponCategory->getSource());
+            $weaponCategory->setSource($this->parseRulesSourceIdOption($input, 'source-id') ?? $weaponCategory->getSource());
 
             $this->validate($weaponCategory);
 

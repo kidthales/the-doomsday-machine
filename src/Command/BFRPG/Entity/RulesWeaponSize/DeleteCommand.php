@@ -89,7 +89,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Weapon Size');
 
         try {
-            $weaponSize = $this->parseRulesWeaponSizeArgument($input, 'id');
+            $weaponSize = $this->parseRulesWeaponSizeIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');

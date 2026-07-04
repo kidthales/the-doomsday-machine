@@ -90,7 +90,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Match');
 
         try {
-            $match = $this->parseFootballMatchArgument($input, 'id');
+            $match = $this->parseFootballMatchIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');

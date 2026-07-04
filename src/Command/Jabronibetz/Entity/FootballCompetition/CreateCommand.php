@@ -121,7 +121,7 @@ final class CreateCommand extends Command
             $competition = (new FootballCompetition())
                 ->setName($this->parseStringArgument($input, 'name', true))
                 ->setShortName($this->parseStringArgument($input, 'short-name', true))
-                ->setManagingOrganization($this->parseFootballOrganizationArgument($input, 'organization-id'))
+                ->setManagingOrganization($this->parseFootballOrganizationIdArgument($input, 'organization-id'))
                 ->setRounds($this->parseIntOption($input, 'rounds'))
                 ->setGroupRounds($this->parseIntOption($input, 'group-rounds'))
                 ->setSeparateMatchXgHomeAway($this->parseBoolOption($input, 'separate-match-xg-home-away'));

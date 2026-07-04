@@ -113,8 +113,8 @@ final class CreateCommand extends Command
 
         try {
             $entry = (new FootballCompetitionTeamEntry())
-                ->setCompetition($this->parseFootballCompetitionArgument($input, 'competition-id'))
-                ->setTeam($this->parseFootballTeamArgument($input, 'team-id'))
+                ->setCompetition($this->parseFootballCompetitionIdArgument($input, 'competition-id'))
+                ->setTeam($this->parseFootballTeamIdArgument($input, 'team-id'))
                 ->setGroup($this->parseStringOption($input, 'group', true))
                 ->setResult($this->parseStringOption($input, 'result', true))
                 ->setSeed($this->parseIntOption($input, 'seed'));

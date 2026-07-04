@@ -113,12 +113,12 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Team');
 
         try {
-            $team = $this->parseFootballTeamArgument($input, 'id');
+            $team = $this->parseFootballTeamIdArgument($input, 'id');
 
             $team->setName($this->parseStringOption($input, 'name', true) ?? $team->getName());
             $team->setShortName($this->parseStringOption($input, 'short-name', true) ?? $team->getShortName());
             $team->setManagingOrganization(
-                $this->parseFootballOrganizationOption($input, 'organization-id') ?? $team->getManagingOrganization()
+                $this->parseFootballOrganizationIdOption($input, 'organization-id') ?? $team->getManagingOrganization()
             );
 
             $gender = $input->getOption('gender');

@@ -118,7 +118,7 @@ final class CreateCommand extends Command
                 ->setPrice($this->parseFloatArgument($input, 'price'))
                 ->setWeight($this->parseFloatArgument($input, 'weight'))
                 ->setDescription($this->parseStringOption($input, 'description', true))
-                ->setSource($this->parseRulesSourceArgument($input, 'source-id'));
+                ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
             $this->validate($item);
 

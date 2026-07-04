@@ -169,9 +169,9 @@ final class CreateCommand extends Command
         $io->title('Jabronibetz: Create Football Match');
 
         try {
-            $competition = $this->parseFootballCompetitionArgument($input, 'competition-id');
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'competition-id');
 
-            $homeTeam = $this->parseFootballTeamOption($input, 'home-team-id');
+            $homeTeam = $this->parseFootballTeamIdOption($input, 'home-team-id');
             if ($homeTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
@@ -182,7 +182,7 @@ final class CreateCommand extends Command
                 }
             }
 
-            $awayTeam = $this->parseFootballTeamOption($input, 'away-team-id');
+            $awayTeam = $this->parseFootballTeamIdOption($input, 'away-team-id');
             if ($awayTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)

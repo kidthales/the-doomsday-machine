@@ -89,7 +89,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Weapon Category');
 
         try {
-            $weaponCategory = $this->parseRulesWeaponCategoryArgument($input, 'id');
+            $weaponCategory = $this->parseRulesWeaponCategoryIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');

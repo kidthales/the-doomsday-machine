@@ -88,7 +88,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Team');
 
         try {
-            $team = $this->parseFootballTeamArgument($input, 'id');
+            $team = $this->parseFootballTeamIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');

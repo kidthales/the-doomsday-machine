@@ -104,7 +104,7 @@ final class CreateCommand extends Command
             $weaponSize = (new RulesWeaponSize())
                 ->setName($this->parseStringArgument($input, 'name', true))
                 ->setShortName($this->parseStringArgument($input, 'short-name', true))
-                ->setSource($this->parseRulesSourceArgument($input, 'source-id'));
+                ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
             $this->validate($weaponSize);
 

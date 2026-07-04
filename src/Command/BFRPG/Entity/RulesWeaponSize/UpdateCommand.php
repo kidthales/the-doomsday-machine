@@ -105,11 +105,11 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Weapon Size');
 
         try {
-            $weaponSize = $this->parseRulesWeaponSizeArgument($input, 'id');
+            $weaponSize = $this->parseRulesWeaponSizeIdArgument($input, 'id');
 
             $weaponSize->setName($this->parseStringOption($input, 'name', true) ?? $weaponSize->getName());
             $weaponSize->setShortName($this->parseStringOption($input, 'short-name', true) ?? $weaponSize->getShortName());
-            $weaponSize->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $weaponSize->getSource());
+            $weaponSize->setSource($this->parseRulesSourceIdOption($input, 'source-id') ?? $weaponSize->getSource());
 
             $this->validate($weaponSize);
 

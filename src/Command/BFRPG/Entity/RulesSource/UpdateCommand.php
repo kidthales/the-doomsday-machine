@@ -94,7 +94,7 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Source');
 
         try {
-            $source = $this->parseRulesSourceArgument($input, 'id');
+            $source = $this->parseRulesSourceIdArgument($input, 'id');
 
             $source->setName($this->parseStringOption($input, 'name', true) ?? $source->getName());
 

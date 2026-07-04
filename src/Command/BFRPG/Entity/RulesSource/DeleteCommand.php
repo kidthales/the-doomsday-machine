@@ -88,7 +88,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Source');
 
         try {
-            $source = $this->parseRulesSourceArgument($input, 'id');
+            $source = $this->parseRulesSourceIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');

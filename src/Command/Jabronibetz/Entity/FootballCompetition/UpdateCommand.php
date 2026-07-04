@@ -126,14 +126,14 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Competition');
 
         try {
-            $competition = $this->parseFootballCompetitionArgument($input, 'id');
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'id');
 
             $competition->setName($this->parseStringOption($input, 'name', true) ?? $competition->getName());
             $competition->setShortName(
                 $this->parseStringOption($input, 'short-name', true) ?? $competition->getShortName()
             );
             $competition->setManagingOrganization(
-                $this->parseFootballOrganizationOption($input, 'organization-id') ?? $competition->getManagingOrganization()
+                $this->parseFootballOrganizationIdOption($input, 'organization-id') ?? $competition->getManagingOrganization()
             );
 
             $rounds = $this->parseIntOption($input, 'rounds');

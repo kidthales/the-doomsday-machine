@@ -91,7 +91,7 @@ final class ReadCommand extends Command
 
         try {
             $io->definitionList(...$this->definitionListConverter->convert(
-                $this->parseFootballCompetitionTeamEntryArgument($input, 'id'),
+                $this->parseFootballCompetitionTeamEntryIdArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [
                         FootballCompetitionTeamEntry::GROUP_DETAIL,

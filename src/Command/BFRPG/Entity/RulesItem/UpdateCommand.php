@@ -116,12 +116,12 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Item');
 
         try {
-            $item = $this->parseRulesItemArgument($input, 'id');
+            $item = $this->parseRulesItemIdArgument($input, 'id');
 
             $item->setName($this->parseStringOption($input, 'name', true) ?? $item->getName());
             $item->setPrice($this->parseFloatOption($input, 'price') ?? $item->getPrice());
             $item->setWeight($this->parseFloatOption($input, 'weight') ?? $item->getWeight());
-            $item->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $item->getSource());
+            $item->setSource($this->parseRulesSourceIdOption($input, 'source-id') ?? $item->getSource());
 
             $description = $this->parseStringOption($input, 'description', true);
             $item->setDescription($description === false ? $item->getDescription() : $description);

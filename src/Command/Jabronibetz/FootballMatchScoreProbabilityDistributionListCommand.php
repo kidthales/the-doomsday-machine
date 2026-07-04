@@ -105,7 +105,7 @@ final class FootballMatchScoreProbabilityDistributionListCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $competition = $this->parseFootballCompetitionArgument($input, 'competition-id');
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'competition-id');
             $io->title(
                 sprintf('Jabronibetz: List Football Match Score Probability Distributions - %s', $competition->getName())
             );

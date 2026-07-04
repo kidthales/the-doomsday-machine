@@ -101,7 +101,7 @@ final class FootballTeamStrengthListCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $competition = $this->parseFootballCompetitionArgument($input, 'competition-id');
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'competition-id');
             $io->title(sprintf('Jabronibetz: List Football Team Strengths - %s', $competition->getName()));
 
             $group = $input->getOption('group');

@@ -120,7 +120,7 @@ final class CreateCommand extends Command
             $team = (new FootballTeam())
                 ->setName($this->parseStringArgument($input, 'name', true))
                 ->setShortName($this->parseStringArgument($input, 'short-name', true))
-                ->setManagingOrganization($this->parseFootballOrganizationArgument($input, 'organization-id'))
+                ->setManagingOrganization($this->parseFootballOrganizationIdArgument($input, 'organization-id'))
                 ->setGender(FootballGender::from($input->getArgument('gender')));
 
             $this->validate($team);

@@ -189,13 +189,13 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Match');
 
         try {
-            $match = $this->parseFootballMatchArgument($input, 'id');
+            $match = $this->parseFootballMatchIdArgument($input, 'id');
 
             $match->setCompetition(
-                $this->parseFootballCompetitionOption($input, 'competition-id') ?? $match->getCompetition()
+                $this->parseFootballCompetitionIdOption($input, 'competition-id') ?? $match->getCompetition()
             );
 
-            $homeTeam = $this->parseFootballTeamOption($input, 'home-team-id');
+            $homeTeam = $this->parseFootballTeamIdOption($input, 'home-team-id');
             $homeTeam = $homeTeam === false ? $match->getHomeTeam() : $homeTeam;
             if ($homeTeam !== null) {
                 $count = $this->entityManager
@@ -207,7 +207,7 @@ final class UpdateCommand extends Command
                 }
             }
 
-            $awayTeam = $this->parseFootballTeamOption($input, 'away-team-id');
+            $awayTeam = $this->parseFootballTeamIdOption($input, 'away-team-id');
             $awayTeam = $awayTeam === false ? $match->getAwayTeam() : $awayTeam;
             if ($awayTeam !== null) {
                 $count = $this->entityManager

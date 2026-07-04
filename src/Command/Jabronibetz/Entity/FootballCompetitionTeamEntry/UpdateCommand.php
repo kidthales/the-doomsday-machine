@@ -120,10 +120,10 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Competition Team Entry');
 
         try {
-            $entry = $this->parseFootballCompetitionTeamEntryArgument($input, 'id');
+            $entry = $this->parseFootballCompetitionTeamEntryIdArgument($input, 'id');
 
-            $entry->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $entry->getCompetition());
-            $entry->setTeam($this->parseFootballTeamOption($input, 'team-id') ?? $entry->getTeam());
+            $entry->setCompetition($this->parseFootballCompetitionIdOption($input, 'competition-id') ?? $entry->getCompetition());
+            $entry->setTeam($this->parseFootballTeamIdOption($input, 'team-id') ?? $entry->getTeam());
 
             $group = $this->parseStringOption($input, 'group', true);
             $entry->setGroup($group === false ? $entry->getGroup() : $group);

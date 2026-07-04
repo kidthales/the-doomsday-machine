@@ -97,7 +97,7 @@ final class CreateCommand extends Command
         try {
             $weaponCategory = (new RulesWeaponCategory())
                 ->setName($this->parseStringArgument($input, 'name', true))
-                ->setSource($this->parseRulesSourceArgument($input, 'source-id'));
+                ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
             $this->validate($weaponCategory);
 
