@@ -50,6 +50,23 @@ abstract class Command extends BaseCommand
     const int INVALID = BaseCommand::INVALID;
 
     /**
+     * @param FootballMatch $match
+     * @return string
+     */
+    protected static function getFootballMatchTitle(FootballMatch $match): string
+    {
+        $timestamp = $match->getTimestamp();
+        return sprintf(
+            '%s vs %s (%s) [%s, Round %s]',
+            $match->getHomeTeam()?->getName() ?? 'Unknown',
+            $match->getAwayTeam()?->getName() ?? 'Unknown',
+            $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+            $match->getCompetition()?->getShortName() ?? 'UNK',
+            $match->getRound() ?? 'N/A'
+        );
+    }
+
+    /**
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param string $argument
@@ -223,16 +240,7 @@ abstract class Command extends BaseCommand
                     ->getRepository(FootballMatch::class)
                     ->findBy([], ['timestamp' => Order::Ascending->value]),
                 function (array $carry, FootballMatch $match) {
-                    $timestamp = $match->getTimestamp();
-                    $name = sprintf(
-                        '%s vs %s (%s) [%s, Round %s]',
-                        $match->getHomeTeam()?->getName() ?? 'Unknown',
-                        $match->getAwayTeam()?->getName() ?? 'Unknown',
-                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                        $match->getCompetition()?->getShortName() ?? 'UNK',
-                        $match->getRound() ?? 'N/A'
-                    );
-                    $carry[$name] = $match->getId();
+                    $carry[static::getFootballMatchTitle($match)] = $match->getId();
                     return $carry;
                 },
                 []

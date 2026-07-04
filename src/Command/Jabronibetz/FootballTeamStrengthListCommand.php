@@ -24,7 +24,6 @@ namespace App\Command\Jabronibetz;
 use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
 use App\Domain\Jabronibetz\DTO\FootballTeamStrength;
-use App\Domain\Jabronibetz\Entity\FootballCompetition;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
@@ -102,16 +101,12 @@ final class FootballTeamStrengthListCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($competition === null) {
-                $io->error('Football competition not found.');
-                return Command::FAILURE;
-            }
-
+            $competition = $this->parseFootballCompetitionArgument($input, 'competition-id');
             $io->title(sprintf('Jabronibetz: List Football Team Strengths - %s', $competition->getName()));
 
             $group = $input->getOption('group');
             $teamStrengths = $this->footballCompetitionDataProvider->getTeamStrengths($competition, $group);
+
             if ($group) {
                 foreach ($teamStrengths as $teamGroup => $teamGroupStrengths) {
                     $table = new Table($output);
@@ -124,6 +119,7 @@ final class FootballTeamStrengthListCommand extends Command
                 $io->table(self::HEADERS, $this->formatTeamStrengths($teamStrengths));
             }
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

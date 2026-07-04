@@ -23,8 +23,10 @@ namespace App\Command\Jabronibetz;
 
 use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\DataProvider\FootballCompetitionDataProviderAwareTrait;
-use App\Domain\Jabronibetz\Entity\FootballCompetition;
+use App\Domain\Jabronibetz\DTO\FootballMatchXGLerp;
 use App\Domain\Jabronibetz\Entity\FootballMatch;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -113,85 +115,56 @@ final class FootballMatchXGListCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $competition = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($competition === null) {
-                $io->error('Football competition not found.');
-                return Command::FAILURE;
-            }
-
+            $competition = $this->parseFootballCompetitionArgument($input, 'competition-id');
             $io->title(sprintf('Jabronibetz: List Football Match XGs - %s', $competition->getName()));
 
             $group = $input->getOption('group');
-            $limit = $input->getOption('limit');
-            if ($limit !== null) {
-                if (!is_numeric($limit)) {
-                    $io->error('Limit quantity must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $limit = intval($limit);
-            }
+            $limit = $this->parseIntOption($input, 'limit');
+
             $matchXGs = $this->footballCompetitionDataProvider->getMatchXGLerps($competition, $group, $limit);
 
             if ($group) {
                 foreach ($matchXGs as $matchXGGroup => $groupMatchXGs) {
-                    $rows = [];
-                    foreach ($groupMatchXGs as $groupMatchXG) {
-                        $match = $this->entityManager->find(FootballMatch::class, $groupMatchXG->matchId);
-                        $timestamp = $match->getTimestamp();
-                        $rows[] = [
-                            sprintf(
-                                '%s vs %s (%s) [%s, Round %s]',
-                                $match->getHomeTeam()?->getName() ?? 'Unknown',
-                                $match->getAwayTeam()?->getName() ?? 'Unknown',
-                                $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                                $competition->getShortName() ?? 'UNK',
-                                $match->getRound() ?? 'N/A'
-                            ),
-                            $groupMatchXG->a->homeTeam,
-                            $groupMatchXG->a->awayTeam,
-                            $groupMatchXG->b->homeTeam,
-                            $groupMatchXG->b->awayTeam,
-                            $groupMatchXG->homeTeam,
-                            $groupMatchXG->awayTeam,
-                            $groupMatchXG->t
-                        ];
-                    }
                     $table = new Table($output);
                     $table->setHeaderTitle(sprintf('Group %s', $matchXGGroup));
                     $table->setHeaders(self::HEADERS);
-                    $table->setRows($rows);
+                    $table->setRows($this->formatMatchXGs($groupMatchXGs));
                     $table->render();
                 }
             } else {
-                $rows = [];
-                foreach ($matchXGs as $matchXG) {
-                    $match = $this->entityManager->find(FootballMatch::class, $matchXG->matchId);
-                    $timestamp = $match->getTimestamp();
-                    $rows[] = [
-                        sprintf(
-                            '%s vs %s (%s) [%s, Round %s]',
-                            $match->getHomeTeam()?->getName() ?? 'Unknown',
-                            $match->getAwayTeam()?->getName() ?? 'Unknown',
-                            $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                            $competition->getShortName() ?? 'UNK',
-                            $match->getRound() ?? 'N/A'
-                        ),
-                        $matchXG->a->homeTeam,
-                        $matchXG->a->awayTeam,
-                        $matchXG->b->homeTeam,
-                        $matchXG->b->awayTeam,
-                        $matchXG->homeTeam,
-                        $matchXG->awayTeam,
-                        $matchXG->t
-                    ];
-                }
-                $io->table(self::HEADERS, $rows);
+                $io->table(self::HEADERS, $this->formatMatchXGs($matchXGs));
             }
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param array $matchXGs
+     * @return FootballMatchXGLerp[]
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    private function formatMatchXGs(array $matchXGs): array
+    {
+        $rows = [];
+        foreach ($matchXGs as $matchXG) {
+            $match = $this->entityManager->find(FootballMatch::class, $matchXG->matchId);
+            $rows[] = [
+                self::getFootballMatchTitle($match),
+                $matchXG->a->homeTeam,
+                $matchXG->a->awayTeam,
+                $matchXG->b->homeTeam,
+                $matchXG->b->awayTeam,
+                $matchXG->homeTeam,
+                $matchXG->awayTeam,
+                $matchXG->t
+            ];
+        }
+        return $rows;
     }
 }
