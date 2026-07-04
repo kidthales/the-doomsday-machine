@@ -80,7 +80,7 @@ final class CreateCommand extends Command
                 <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <competition-id> <team-id> [--group [<group>]] [--result [<result>]] [--seed [<seed>]]</info>
+                  <info>%command.full_name% <competition-id> <team-id> [--group <group>] [--result <result>] [--seed <seed>]</info>
 
                 Examples:
                   <info>%command.full_name% 1 1 --group A --seed 14</info>

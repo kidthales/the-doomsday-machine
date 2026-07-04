@@ -401,4 +401,25 @@ abstract class Command extends BaseCommand
         }
         return $entry;
     }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return FootballMatch|null
+     */
+    protected function parseFootballMatchArgument(InputInterface $input, string $argument): ?FootballMatch
+    {
+        $matchId = $input->getArgument($argument);
+        if ($matchId === null) {
+            return null;
+        }
+        if (!is_numeric($matchId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $match = $this->entityManager->getRepository(FootballMatch::class)->find($matchId);
+        if ($match === null) {
+            throw new RuntimeException('Football match not found.');
+        }
+        return $match;
+    }
 }

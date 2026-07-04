@@ -189,26 +189,14 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Match');
 
         try {
-            $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
-            if ($match === null) {
-                $io->error('Football match not found.');
-                return Command::FAILURE;
-            }
+            $match = $this->parseFootballMatchArgument($input, 'id');
 
-            $match->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $match->getCompetition());
+            $match->setCompetition(
+                $this->parseFootballCompetitionOption($input, 'competition-id') ?? $match->getCompetition()
+            );
 
-            $homeTeamId = $input->getOption('home-team-id');
-            if ($homeTeamId === false) {
-                $homeTeam = $match->getHomeTeam();
-            } else if ($homeTeamId === null) {
-                $homeTeam = null;
-            } else {
-                $homeTeam = $this->entityManager->find(FootballTeam::class, $homeTeamId);
-                if ($homeTeam === null) {
-                    $io->error('Home football team not found.');
-                    return Command::FAILURE;
-                }
-            }
+            $homeTeam = $this->parseFootballTeamOption($input, 'home-team-id');
+            $homeTeam = $homeTeam === false ? $match->getHomeTeam() : $homeTeam;
             if ($homeTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
@@ -218,20 +206,9 @@ final class UpdateCommand extends Command
                     return Command::FAILURE;
                 }
             }
-            $match->setHomeTeam($homeTeam);
 
-            $awayTeamId = $input->getOption('away-team-id');
-            if ($awayTeamId === false) {
-                $awayTeam = $match->getAwayTeam();
-            } else if ($awayTeamId === null) {
-                $awayTeam = null;
-            } else {
-                $awayTeam = $this->entityManager->find(FootballTeam::class, $awayTeamId);
-                if ($awayTeam === null) {
-                    $io->error('Away football team not found.');
-                    return Command::FAILURE;
-                }
-            }
+            $awayTeam = $this->parseFootballTeamOption($input, 'away-team-id');
+            $awayTeam = $awayTeam === false ? $match->getAwayTeam() : $awayTeam;
             if ($awayTeam !== null) {
                 $count = $this->entityManager
                     ->getRepository(FootballCompetitionTeamEntry::class)
@@ -241,174 +218,80 @@ final class UpdateCommand extends Command
                     return Command::FAILURE;
                 }
             }
-            $match->setAwayTeam($awayTeam);
 
             if ($homeTeam !== null && $awayTeam !== null && $homeTeam->getId() === $awayTeam->getId()) {
                 $io->error('Football match must have distinct home and away teams.');
                 return Command::FAILURE;
             }
 
-            $timestamp = $input->getOption('timestamp');
-            if ($timestamp === false) {
-                $timestamp = $match->getTimestamp();
-            }
-            if ($timestamp !== null) {
-                if (!is_numeric($timestamp)) {
-                    $io->error('The timestamp option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $timestamp = intval($timestamp);
-            }
-            $match->setTimestamp($timestamp);
+            $match->setHomeTeam($homeTeam);
+            $match->setAwayTeam($awayTeam);
 
-            $round = $input->getOption('round');
-            if ($round === false) {
-                $round = $match->getRound();
-            }
-            if ($round !== null) {
-                if (!is_numeric($round)) {
-                    $io->error('The round option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $round = intval($round);
-            }
-            $match->setRound($round);
+            $timestamp = $this->parseIntOption($input, 'timestamp');
+            $match->setTimestamp($timestamp === false ? $match->getTimestamp() : $timestamp);
 
-            $homeTeamHalftimeScore = $input->getOption('home-team-halftime-score');
-            if ($homeTeamHalftimeScore === false) {
-                $homeTeamHalftimeScore = $match->getHomeTeamHalftimeScore();
-            }
-            if ($homeTeamHalftimeScore !== null) {
-                if (!is_numeric($homeTeamHalftimeScore)) {
-                    $io->error('The home-team-halftime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $homeTeamHalftimeScore = intval($homeTeamHalftimeScore);
-            }
-            $match->setHomeTeamHalftimeScore($homeTeamHalftimeScore);
+            $round = $this->parseIntOption($input, 'round');
+            $match->setRound($round === false ? $match->getRound() : $round);
 
-            $awayTeamHalftimeScore = $input->getOption('away-team-halftime-score');
-            if ($awayTeamHalftimeScore === false) {
-                $awayTeamHalftimeScore = $match->getAwayTeamHalftimeScore();
-            }
-            if ($awayTeamHalftimeScore !== null) {
-                if (!is_numeric($awayTeamHalftimeScore)) {
-                    $io->error('The away-team-halftime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $awayTeamHalftimeScore = intval($awayTeamHalftimeScore);
-            }
-            $match->setAwayTeamHalftimeScore($awayTeamHalftimeScore);
+            $homeTeamHalftimeScore = $this->parseIntOption($input, 'home-team-halftime-score');
+            $match->setHomeTeamHalftimeScore(
+                $homeTeamHalftimeScore === false ? $match->getHomeTeamHalftimeScore() : $homeTeamHalftimeScore
+            );
 
-            $homeTeamFulltimeScore = $input->getOption('home-team-fulltime-score');
-            if ($homeTeamFulltimeScore === false) {
-                $homeTeamFulltimeScore = $match->getHomeTeamFulltimeScore();
-            }
-            if ($homeTeamFulltimeScore !== null) {
-                if (!is_numeric($homeTeamFulltimeScore)) {
-                    $io->error('The home-team-fulltime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $homeTeamFulltimeScore = intval($homeTeamFulltimeScore);
-            }
-            $match->setHomeTeamFulltimeScore($homeTeamFulltimeScore);
+            $awayTeamHalftimeScore = $this->parseIntOption($input, 'away-team-halftime-score');
+            $match->setAwayTeamHalftimeScore(
+                $awayTeamHalftimeScore === false ? $match->getAwayTeamHalftimeScore() : $awayTeamHalftimeScore
+            );
 
-            $awayTeamFulltimeScore = $input->getOption('away-team-fulltime-score');
-            if ($awayTeamFulltimeScore === false) {
-                $awayTeamFulltimeScore = $match->getAwayTeamFulltimeScore();
-            }
-            if ($awayTeamFulltimeScore !== null) {
-                if (!is_numeric($awayTeamFulltimeScore)) {
-                    $io->error('The away-team-fulltime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $awayTeamFulltimeScore = intval($awayTeamFulltimeScore);
-            }
-            $match->setAwayTeamFulltimeScore($awayTeamFulltimeScore);
+            $homeTeamFulltimeScore = $this->parseIntOption($input, 'home-team-fulltime-score');
+            $match->setHomeTeamFulltimeScore(
+                $homeTeamFulltimeScore === false ? $match->getHomeTeamFulltimeScore() : $homeTeamFulltimeScore
+            );
 
-            $homeTeamExtraHalftimeScore = $input->getOption('home-team-extra-halftime-score');
-            if ($homeTeamExtraHalftimeScore === false) {
-                $homeTeamExtraHalftimeScore = $match->getHomeTeamExtraHalftimeScore();
-            }
-            if ($homeTeamExtraHalftimeScore !== null) {
-                if (!is_numeric($homeTeamExtraHalftimeScore)) {
-                    $io->error('The home-team-extra-halftime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $homeTeamExtraHalftimeScore = intval($homeTeamExtraHalftimeScore);
-            }
-            $match->setHomeTeamExtraHalftimeScore($homeTeamExtraHalftimeScore);
+            $awayTeamFulltimeScore = $this->parseIntOption($input, 'away-team-fulltime-score');
+            $match->setAwayTeamFulltimeScore(
+                $awayTeamFulltimeScore === false ? $match->getAwayTeamFulltimeScore() : $awayTeamFulltimeScore
+            );
 
-            $awayTeamExtraHalftimeScore = $input->getOption('away-team-extra-halftime-score');
-            if ($awayTeamExtraHalftimeScore === false) {
-                $awayTeamExtraHalftimeScore = $match->getAwayTeamExtraHalftimeScore();
-            }
-            if ($awayTeamExtraHalftimeScore !== null) {
-                if (!is_numeric($awayTeamExtraHalftimeScore)) {
-                    $io->error('The away-team-extra-halftime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $awayTeamExtraHalftimeScore = intval($awayTeamExtraHalftimeScore);
-            }
-            $match->setAwayTeamExtraHalftimeScore($awayTeamExtraHalftimeScore);
+            $homeTeamExtraHalftimeScore = $this->parseIntOption($input, 'home-team-extra-halftime-score');
+            $match->setHomeTeamExtraHalftimeScore(
+                $homeTeamExtraHalftimeScore === false
+                    ? $match->getHomeTeamExtraHalftimeScore()
+                    : $homeTeamExtraHalftimeScore
+            );
 
-            $homeTeamExtraFulltimeScore = $input->getOption('home-team-extra-fulltime-score');
-            if ($homeTeamExtraFulltimeScore === false) {
-                $homeTeamExtraFulltimeScore = $match->getHomeTeamExtraFulltimeScore();
-            }
-            if ($homeTeamExtraFulltimeScore !== null) {
-                if (!is_numeric($homeTeamExtraFulltimeScore)) {
-                    $io->error('The home-team-extra-fulltime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $homeTeamExtraFulltimeScore = intval($homeTeamExtraFulltimeScore);
-            }
-            $match->setHomeTeamExtraFulltimeScore($homeTeamExtraFulltimeScore);
+            $awayTeamExtraHalftimeScore = $this->parseIntOption($input, 'away-team-extra-halftime-score');
+            $match->setAwayTeamExtraHalftimeScore(
+                $awayTeamExtraHalftimeScore === false
+                    ? $match->getAwayTeamExtraHalftimeScore()
+                    : $awayTeamExtraHalftimeScore
+            );
 
-            $awayTeamExtraFulltimeScore = $input->getOption('away-team-extra-fulltime-score');
-            if ($awayTeamExtraFulltimeScore === false) {
-                $awayTeamExtraFulltimeScore = $match->getAwayTeamExtraFulltimeScore();
-            }
-            if ($awayTeamExtraFulltimeScore !== null) {
-                if (!is_numeric($awayTeamExtraFulltimeScore)) {
-                    $io->error('The away-team-extra-fulltime-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $awayTeamExtraFulltimeScore = intval($awayTeamExtraFulltimeScore);
-            }
-            $match->setAwayTeamExtraFulltimeScore($awayTeamExtraFulltimeScore);
+            $homeTeamExtraFulltimeScore = $this->parseIntOption($input, 'home-team-extra-fulltime-score');
+            $match->setHomeTeamExtraFulltimeScore(
+                $homeTeamExtraFulltimeScore === false
+                    ? $match->getHomeTeamExtraFulltimeScore()
+                    : $homeTeamExtraFulltimeScore
+            );
 
-            $homeTeamShootoutScore = $input->getOption('home-team-shootout-score');
-            if ($homeTeamShootoutScore === false) {
-                $homeTeamShootoutScore = $match->getHomeTeamShootoutScore();
-            }
-            if ($homeTeamShootoutScore !== null) {
-                if (!is_numeric($homeTeamShootoutScore)) {
-                    $io->error('The home-team-shootout-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $homeTeamShootoutScore = intval($homeTeamShootoutScore);
-            }
-            $match->setHomeTeamShootoutScore($homeTeamShootoutScore);
+            $awayTeamExtraFulltimeScore = $this->parseIntOption($input, 'away-team-extra-fulltime-score');
+            $match->setAwayTeamExtraFulltimeScore(
+                $awayTeamExtraFulltimeScore === false
+                    ? $match->getAwayTeamExtraFulltimeScore()
+                    : $awayTeamExtraFulltimeScore
+            );
 
-            $awayTeamShootoutScore = $input->getOption('away-team-shootout-score');
-            if ($awayTeamShootoutScore === false) {
-                $awayTeamShootoutScore = $match->getAwayTeamShootoutScore();
-            }
-            if ($awayTeamShootoutScore !== null) {
-                if (!is_numeric($awayTeamShootoutScore)) {
-                    $io->error('The away-team-shootout-score option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $awayTeamShootoutScore = intval($awayTeamShootoutScore);
-            }
-            $match->setAwayTeamShootoutScore($awayTeamShootoutScore);
+            $homeTeamShootoutScore = $this->parseIntOption($input, 'home-team-shootout-score');
+            $match->setHomeTeamShootoutScore(
+                $homeTeamShootoutScore === false ? $match->getHomeTeamShootoutScore() : $homeTeamShootoutScore
+            );
 
-            $errors = $this->validator->validate($match);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $awayTeamShootoutScore = $this->parseIntOption($input, 'away-team-shootout-score');
+            $match->setAwayTeamShootoutScore(
+                $awayTeamShootoutScore === false ? $match->getAwayTeamShootoutScore() : $awayTeamShootoutScore
+            );
+
+            $this->validate($match);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -429,21 +312,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($match);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football match %s with id %d has been updated.',
-                    sprintf(
-                        '%s vs %s (%s) [%s, Round %s]',
-                        $match->getHomeTeam()?->getName() ?? 'Unknown',
-                        $match->getAwayTeam()?->getName() ?? 'Unknown',
-                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                        $match->getCompetition()?->getShortName() ?? 'UNK',
-                        $match->getRound() ?? 'N/A'
-                    ),
-                    $match->getId()
-                )
-            );
+
+            $io->success(sprintf('Football match with id %d has been updated.', $match->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

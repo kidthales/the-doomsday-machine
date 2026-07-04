@@ -87,6 +87,7 @@ final class ListCommand extends Command
             }
             $io->info(sprintf('Found %d football matches.', count($matches)));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

@@ -90,11 +90,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Match');
 
         try {
-            $match = $this->entityManager->find(FootballMatch::class, $input->getArgument('id'));
-            if ($match === null) {
-                $io->error('Football match not found.');
-                return Command::FAILURE;
-            }
+            $match = $this->parseFootballMatchArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -108,34 +104,20 @@ final class DeleteCommand extends Command
                         ]
                     ]
                 ));
+
                 if (!$io->confirm('Delete football match?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $match->getId();
-            $homeTeam = $match->getHomeTeam();
-            $awayTeam = $match->getAwayTeam();
-            $timestamp = $match->getTimestamp();
-            $cmp = $match->getCompetition();
-            $round = $match->getRound();
+
             $this->entityManager->remove($match);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football match %s with id %d has been deleted.',
-                    sprintf(
-                        '%s vs %s (%s) [%s, Round %s]',
-                        $homeTeam?->getName() ?? 'Unknown',
-                        $awayTeam?->getName() ?? 'Unknown',
-                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                        $cmp?->getShortName() ?? 'UNK',
-                        $round ?? 'N/A'
-                    ),
-                    $id
-                )
-            );
+
+            $io->success(sprintf('Football match with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
