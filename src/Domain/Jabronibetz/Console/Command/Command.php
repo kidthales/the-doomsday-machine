@@ -295,6 +295,27 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param string $argument
+     * @return FootballCompetition|null
+     */
+    protected function parseFootballCompetitionArgument(InputInterface $input, string $argument): ?FootballCompetition
+    {
+        $competitionId = $input->getArgument($argument);
+        if ($competitionId === null) {
+            return null;
+        }
+        if (!is_numeric($competitionId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $competition = $this->entityManager->getRepository(FootballCompetition::class)->find($competitionId);
+        if ($competition === null) {
+            throw new RuntimeException('Football competition not found.');
+        }
+        return $competition;
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $option
      * @return FootballCompetition|false|null
      * @throws ORMException

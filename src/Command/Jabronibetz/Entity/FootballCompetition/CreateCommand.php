@@ -23,7 +23,6 @@ namespace App\Command\Jabronibetz\Entity\FootballCompetition;
 
 use App\Domain\Jabronibetz\Console\Command\Command;
 use App\Domain\Jabronibetz\Entity\FootballCompetition;
-use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -65,17 +64,17 @@ final class CreateCommand extends Command
             )
             ->addOption(
                 name: 'rounds',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The total football match rounds for the competition'
             )
             ->addOption(
                 name: 'group-rounds',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The total football match rounds for the competition\'s group phase'
             )
             ->addOption(
                 name: 'separate-match-xg-home-away',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'Flag if separate football match xg calculations are used for home and away teams'
             )
             ->setHelp(
@@ -85,8 +84,8 @@ final class CreateCommand extends Command
 
                 Usage:
                   <info>%command.full_name% <name> <short-name> <organization-id>
-                    [--rounds [<rounds>]] [--group-rounds [<group-rounds>]]
-                    [--separate-match-xg-home-away [<separate-match-xg-home-away>]]</info>
+                    [--rounds <rounds>] [--group-rounds <group-rounds>]
+                    [--separate-match-xg-home-away <separate-match-xg-home-away>]</info>
 
                 Examples:
                   <info>%command.full_name% "2026 FIFA World Cup" FWC26 1 --rounds 9 --group-rounds 3 --separate-match-xg-home-away false</info>
@@ -119,76 +118,36 @@ final class CreateCommand extends Command
         $io->title('Jabronibetz: Create Football Competition');
 
         try {
-            $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('organization-id'));
-            if ($org === null) {
-                $io->error('Football organization not found.');
-                return Command::FAILURE;
-            }
+            $competition = (new FootballCompetition())
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setShortName($this->parseStringArgument($input, 'short-name', true))
+                ->setManagingOrganization($this->parseFootballOrganizationArgument($input, 'organization-id'))
+                ->setRounds($this->parseIntOption($input, 'rounds'))
+                ->setGroupRounds($this->parseIntOption($input, 'group-rounds'))
+                ->setSeparateMatchXgHomeAway($this->parseBoolOption($input, 'separate-match-xg-home-away'));
 
-            $rounds = $input->getOption('rounds');
-            if ($rounds !== null) {
-                if (!is_numeric($rounds)) {
-                    $io->error('The rounds option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $rounds = intval($rounds);
-            }
-
-            $groupRounds = $input->getOption('group-rounds');
-            if ($groupRounds !== null) {
-                if (!is_numeric($groupRounds)) {
-                    $io->error('The group-rounds option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $groupRounds = intval($groupRounds);
-            }
-
-            $separateMatchXGHomeAway = $input->getOption('separate-match-xg-home-away');
-            if ($separateMatchXGHomeAway !== null) {
-                $separateMatchXGHomeAway = filter_var($separateMatchXGHomeAway, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                if ($separateMatchXGHomeAway === null) {
-                    $io->error('The separate-match-xg-home-away option must be a boolean value.');
-                    return Command::FAILURE;
-                }
-            }
-
-            $cmp = (new FootballCompetition())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')))
-                ->setManagingOrganization($org)
-                ->setRounds($rounds)
-                ->setGroupRounds($groupRounds)
-                ->setSeparateMatchXgHomeAway($separateMatchXGHomeAway);
-
-            $errors = $this->validator->validate($cmp);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($competition);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $cmp,
+                    $competition,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Create football competition?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($cmp);
+            $this->entityManager->persist($competition);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition %s has been created with id %d.',
-                    sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
-                    $cmp->getId()
-                )
-            );
+
+            $io->success(sprintf('Football competition has been created with id %d.', $competition->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
