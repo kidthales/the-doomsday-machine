@@ -238,7 +238,7 @@ abstract class Command extends BaseCommand
     /**
      * @param InputInterface $input
      * @param string $argument
-     * @return RulesSource|null
+     * @return RulesItem|null
      */
     protected function parseRulesItemArgument(InputInterface $input, string $argument): ?RulesItem
     {
@@ -254,5 +254,26 @@ abstract class Command extends BaseCommand
             throw new RuntimeException('Rules item not found.');
         }
         return $item;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponCategory|null
+     */
+    protected function parseRulesWeaponCategoryArgument(InputInterface $input, string $argument): ?RulesWeaponCategory
+    {
+        $weaponCategoryId = $input->getArgument($argument);
+        if ($weaponCategoryId === null) {
+            return null;
+        }
+        if (!is_numeric($weaponCategoryId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $weaponCategory = $this->entityManager->getRepository(RulesWeaponCategory::class)->find($weaponCategoryId);
+        if ($weaponCategory === null) {
+            throw new RuntimeException('Rules weapon category not found.');
+        }
+        return $weaponCategory;
     }
 }

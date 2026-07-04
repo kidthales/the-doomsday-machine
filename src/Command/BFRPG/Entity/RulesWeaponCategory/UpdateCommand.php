@@ -100,20 +100,12 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Weapon Category');
 
         try {
-            $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
-            if ($weaponCategory === null) {
-                $io->error('Rules weapon category not found.');
-                return Command::FAILURE;
-            }
+            $weaponCategory = $this->parseRulesWeaponCategoryArgument($input, 'id');
 
-            $weaponCategory->setName(trim($input->getOption('name') ?? $weaponCategory->getName()));
+            $weaponCategory->setName($this->parseStringOption($input, 'name') ?? $weaponCategory->getName());
             $weaponCategory->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $weaponCategory->getSource());
 
-            $errors = $this->validator->validate($weaponCategory);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($weaponCategory);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -123,6 +115,7 @@ final class UpdateCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Update rules weapon category?')) {
                     return Command::SUCCESS;
                 }
@@ -130,14 +123,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($weaponCategory);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Rules weapon category %s with id %d has been updated.',
-                    $weaponCategory->getName(),
-                    $weaponCategory->getId()
-                )
-            );
+
+            $io->success(sprintf('Rules weapon category with id %d has been updated.', $weaponCategory->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

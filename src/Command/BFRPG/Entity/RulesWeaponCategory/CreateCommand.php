@@ -95,21 +95,11 @@ final class CreateCommand extends Command
         $io->title('BFRPG: Create Rules Weapon Category');
 
         try {
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
-            if ($source === null) {
-                $io->error('Rules source not found.');
-                return Command::FAILURE;
-            }
-
             $weaponCategory = (new RulesWeaponCategory())
-                ->setName(trim($input->getArgument('name')))
-                ->setSource($source);
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setSource($this->parseRulesSourceArgument($input, 'source-id'));
 
-            $errors = $this->validator->validate($weaponCategory);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($weaponCategory);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -119,6 +109,7 @@ final class CreateCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Create rules weapon category?')) {
                     return Command::SUCCESS;
                 }
@@ -126,14 +117,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($weaponCategory);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Rules weapon category %s has been created with id %d.',
-                    $weaponCategory->getName(),
-                    $weaponCategory->getId()
-                )
-            );
+
+            $io->success(sprintf('Rules weapon category has been created with id %d.', $weaponCategory->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
