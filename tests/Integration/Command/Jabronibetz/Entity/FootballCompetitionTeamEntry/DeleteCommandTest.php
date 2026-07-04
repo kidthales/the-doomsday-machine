@@ -36,8 +36,8 @@ final class DeleteCommandTest extends KernelTestCase
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString(
-            'App\Domain\Jabronibetz\Entity\FootballCompetitionTeamEntry not found for id -1',
+        $this->assertMatchesRegularExpression(
+            '/.*App\\\\Domain\\\\Jabronibetz\\\\Entity\\\\FootballCompetitionTeamEntry.+not.+found.+for.+id.+-1/s',
             $appTester->getDisplay()
         );
     }
