@@ -360,6 +360,29 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param string $option
+     * @return FootballTeam|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballTeamOption(InputInterface $input, string $option): FootballTeam|false|null
+    {
+        $teamId = $input->getOption($option);
+        if ($teamId === null || $teamId === false) {
+            return $teamId;
+        }
+        if (!is_numeric($teamId)) {
+            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
+        }
+        $team = $this->entityManager->find(FootballTeam::class, $teamId);
+        if ($team === null) {
+            throw new RuntimeException('Football teams not found.');
+        }
+        return $team;
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return FootballCompetitionTeamEntry|null
      */

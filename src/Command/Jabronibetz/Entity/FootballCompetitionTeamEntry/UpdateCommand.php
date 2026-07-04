@@ -123,7 +123,7 @@ final class UpdateCommand extends Command
             $entry = $this->parseFootballCompetitionTeamEntryArgument($input, 'id');
 
             $entry->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $entry->getCompetition());
-            $entry->setTeam($this->parseFootballTeamArgument($input, 'team-id') ?? $entry->getTeam());
+            $entry->setTeam($this->parseFootballTeamOption($input, 'team-id') ?? $entry->getTeam());
 
             $group = $this->parseStringOption($input, 'group', true);
             $entry->setGroup($group === false ? $entry->getGroup() : $group);
