@@ -89,18 +89,14 @@ final class ReadCommand extends Command
         $io->title('BFRPG: Read Rules Item');
 
         try {
-            $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
-            if ($item === null) {
-                $io->error('Rules item not found.');
-                return Command::FAILURE;
-            }
             $io->definitionList(...$this->definitionListConverter->convert(
-                $item,
+                $this->parseRulesItemArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

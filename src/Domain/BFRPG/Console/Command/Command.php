@@ -234,4 +234,25 @@ abstract class Command extends BaseCommand
         }
         return $source;
     }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesSource|null
+     */
+    protected function parseRulesItemArgument(InputInterface $input, string $argument): ?RulesItem
+    {
+        $itemId = $input->getArgument($argument);
+        if ($itemId === null) {
+            return null;
+        }
+        if (!is_numeric($itemId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $item = $this->entityManager->getRepository(RulesItem::class)->find($itemId);
+        if ($item === null) {
+            throw new RuntimeException('Rules item not found.');
+        }
+        return $item;
+    }
 }

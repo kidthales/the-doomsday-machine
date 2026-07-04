@@ -24,6 +24,7 @@ namespace App\Domain\Shared\Console\Command;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use App\Domain\Shared\Validator\ValidatorAwareTrait;
+use InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
@@ -191,6 +192,23 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface
             throw new ValueError(sprintf('The %s option must be a boolean value.', $option));
         }
         return $value;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return float|null
+     */
+    protected function parseFloatArgument(InputInterface $input, string $argument): ?float
+    {
+        $value = $input->getArgument($argument);
+        if ($value === null) {
+            return null;
+        }
+        if (!is_numeric($value)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        return floatval($value);
     }
 
     /**
