@@ -28,6 +28,7 @@
         "symfony/http-client": "7.4.*",
         "symfony/mercure-bundle": "^0.4.2",
         "symfony/mime": "^7.4.13",
+        "symfony/monolog-bundle": "^4.0",
         "symfony/property-access": "7.4.*",
         "symfony/property-info": "7.4.*",
         "symfony/rate-limiter": "7.4.*",
