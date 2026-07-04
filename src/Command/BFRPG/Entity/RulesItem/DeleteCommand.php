@@ -89,11 +89,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Item');
 
         try {
-            $item = $this->entityManager->find(RulesItem::class, $input->getArgument('id'));
-            if ($item === null) {
-                $io->error('Rules item not found.');
-                return Command::FAILURE;
-            }
+            $item = $this->parseRulesItemIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -103,16 +99,20 @@ final class DeleteCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Delete rules item?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $item->getId();
+
             $this->entityManager->remove($item);
             $this->entityManager->flush();
-            $io->success(sprintf('Rules item %s with id %d has been deleted.', $item->getName(), $id));
+
+            $io->success(sprintf('Rules item with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

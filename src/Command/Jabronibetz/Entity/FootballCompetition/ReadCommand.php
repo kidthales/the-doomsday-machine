@@ -89,18 +89,14 @@ final class ReadCommand extends Command
         $io->title('Jabronibetz: Read Football Competition');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('id'));
-            if ($cmp === null) {
-                $io->error('Football competition not found');
-                return Command::FAILURE;
-            }
             $io->definitionList(...$this->definitionListConverter->convert(
-                $cmp,
+                $this->parseFootballCompetitionIdArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [FootballCompetition::GROUP_DETAIL, FootballOrganization::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

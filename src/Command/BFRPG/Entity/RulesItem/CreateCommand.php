@@ -113,41 +113,14 @@ final class CreateCommand extends Command
         $io->title('BFRPG: Create Rules Item');
 
         try {
-            $price = $input->getArgument('price');
-            if (!is_numeric($price)) {
-                $io->error('The price argument must be a numeric value.');
-                return Command::FAILURE;
-            }
-
-            $weight = $input->getArgument('weight');
-            if (!is_numeric($weight)) {
-                $io->error('The weight argument must be a numeric value.');
-                return Command::FAILURE;
-            }
-
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
-            if ($source === null) {
-                $io->error('Rules source not found.');
-                return Command::FAILURE;
-            }
-
-            $description = $input->getOption('description');
-            if ($description !== null) {
-                $description = trim($description);
-            }
-
             $item = (new RulesItem())
-                ->setName(trim($input->getArgument('name')))
-                ->setPrice(floatval($price))
-                ->setWeight(floatval($weight))
-                ->setDescription($description)
-                ->setSource($source);
+                ->setName($this->parseStringArgument($input, 'name'))
+                ->setPrice($this->parseFloatArgument($input, 'price'))
+                ->setWeight($this->parseFloatArgument($input, 'weight'))
+                ->setDescription($this->parseStringOption($input, 'description', true))
+                ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
-            $errors = $this->validator->validate($item);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($item);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -157,6 +130,7 @@ final class CreateCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Create rules item?')) {
                     return Command::SUCCESS;
                 }
@@ -164,8 +138,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($item);
             $this->entityManager->flush();
-            $io->success(sprintf('Rules item %s has been created with id %d.', $item->getName(), $item->getId()));
+
+            $io->success(sprintf('Rules item has been created with id %d.', $item->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

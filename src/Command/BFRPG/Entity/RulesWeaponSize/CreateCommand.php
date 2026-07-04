@@ -101,22 +101,12 @@ final class CreateCommand extends Command
         $io->title('BFRPG: Create Rules Weapon Size');
 
         try {
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('source-id'));
-            if ($source === null) {
-                $io->error('Rules source not found.');
-                return Command::FAILURE;
-            }
-
             $weaponSize = (new RulesWeaponSize())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')))
-                ->setSource($source);
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setShortName($this->parseStringArgument($input, 'short-name', true))
+                ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
-            $errors = $this->validator->validate($weaponSize);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($weaponSize);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -126,6 +116,7 @@ final class CreateCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Create rules weapon size?')) {
                     return Command::SUCCESS;
                 }
@@ -133,14 +124,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($weaponSize);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Rules weapon size %s has been created with id %d.',
-                    $weaponSize->getName(),
-                    $weaponSize->getId()
-                )
-            );
+
+            $io->success(sprintf('Rules weapon size has been created with id %d.', $weaponSize->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

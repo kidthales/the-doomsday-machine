@@ -84,7 +84,7 @@ final class UpdateCommand extends Command
                 name: 'separate-match-xg-home-away',
                 mode: InputOption::VALUE_OPTIONAL,
                 description: 'Flag if separate football match xg calculations are used for home and away teams',
-                default: '_'
+                default: '~'
             )
             ->setHelp(
                 <<<'HELP'
@@ -126,86 +126,49 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Competition');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('id'));
-            if ($cmp === null) {
-                $io->error('Football competition not found.');
-                return Command::FAILURE;
-            }
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'id');
 
-            $cmp->setName(trim($input->getOption('name') ?? $cmp->getName()));
-            $cmp->setShortName(trim($input->getOption('short-name') ?? $cmp->getShortName()));
-            $cmp->setManagingOrganization(
-                $this->parseFootballOrganizationOption($input, 'organization-id') ?? $cmp->getManagingOrganization()
+            $competition->setName($this->parseStringOption($input, 'name', true) ?? $competition->getName());
+            $competition->setShortName(
+                $this->parseStringOption($input, 'short-name', true) ?? $competition->getShortName()
+            );
+            $competition->setManagingOrganization(
+                $this->parseFootballOrganizationIdOption($input, 'organization-id') ?? $competition->getManagingOrganization()
             );
 
-            $rounds = $input->getOption('rounds');
-            if ($rounds === false) {
-                $rounds = $cmp->getRounds();
-            }
-            if ($rounds !== null) {
-                if (!is_numeric($rounds)) {
-                    $io->error('The rounds option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $rounds = intval($rounds);
-            }
-            $cmp->setRounds($rounds);
+            $rounds = $this->parseIntOption($input, 'rounds');
+            $competition->setRounds($rounds === false ? $competition->getRounds() : $rounds);
 
-            $groupRounds = $input->getOption('group-rounds');
-            if ($groupRounds === false) {
-                $groupRounds = $cmp->getGroupRounds();
-            }
-            if ($groupRounds !== null) {
-                if (!is_numeric($groupRounds)) {
-                    $io->error('The group-rounds option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $groupRounds = intval($groupRounds);
-            }
-            $cmp->setGroupRounds($groupRounds);
+            $groupRounds = $this->parseIntOption($input, 'group-rounds');
+            $competition->setGroupRounds($groupRounds === false ? $competition->getGroupRounds() : $groupRounds);
 
-            $separateMatchXGHomeAway = $input->getOption('separate-match-xg-home-away');
-            if ($separateMatchXGHomeAway === '_') {
-                $separateMatchXGHomeAway = $cmp->getSeparateMatchXgHomeAway();
-            }
-            if ($separateMatchXGHomeAway !== null) {
-                $separateMatchXGHomeAway = filter_var($separateMatchXGHomeAway, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                if ($separateMatchXGHomeAway === null) {
-                    $io->error('The separate-match-xg-home-away option must be a boolean value.');
-                    return Command::FAILURE;
-                }
-            }
-            $cmp->setSeparateMatchXgHomeAway($separateMatchXGHomeAway);
+            $separateMatchXGHomeAway = $this->parseBoolOption($input, 'separate-match-xg-home-away');
+            $competition->setSeparateMatchXgHomeAway(
+                $separateMatchXGHomeAway === '~' ? $competition->getSeparateMatchXgHomeAway() : $separateMatchXGHomeAway
+            );
 
-            $errors = $this->validator->validate($cmp);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($competition);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $cmp,
+                    $competition,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Update football competition?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($cmp);
+            $this->entityManager->persist($competition);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition %s with id %d has been updated.',
-                    sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
-                    $cmp->getId()
-                )
-            );
+
+            $io->success(sprintf('Football competition with id %d has been updated.', $competition->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

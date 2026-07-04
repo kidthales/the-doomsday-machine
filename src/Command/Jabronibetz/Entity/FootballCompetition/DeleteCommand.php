@@ -88,44 +88,40 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Competition');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('id'));
-            if ($cmp === null) {
-                $io->error('Football competition not found.');
-                return Command::FAILURE;
-            }
+            $competition = $this->parseFootballCompetitionIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $cmp,
+                    $competition,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_DETAIL
                     ]
                 ));
-                $numEntries = $cmp->getTeamEntries()->count();
+
+                $numEntries = $competition->getTeamEntries()->count();
                 if ($numEntries > 0) {
                     $io->warning(sprintf('%d football competition team entries will also be deleted!', $numEntries));
                 }
-                $numMatches = $cmp->getMatches()->count();
+
+                $numMatches = $competition->getMatches()->count();
                 if ($numMatches > 0) {
                     $io->warning(sprintf('%d football matches will also be deleted!', $numMatches));
                 }
+
                 if (!$io->confirm('Delete football competition?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $id = $cmp->getId();
-            $this->entityManager->remove($cmp);
+            $id = $competition->getId();
+
+            $this->entityManager->remove($competition);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition %s with id %d has been deleted.',
-                    sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
-                    $id
-                )
-            );
+
+            $io->success(sprintf('Football competition with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

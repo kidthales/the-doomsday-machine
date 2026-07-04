@@ -61,17 +61,17 @@ final class CreateCommand extends Command
             )
             ->addOption(
                 name: 'group',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The group in which the football team begins the competition'
             )
             ->addOption(
                 name: 'result',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The result of the football team in the competition'
             )
             ->addOption(
                 name: 'seed',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The seed of the football team in the competition'
             )
             ->setHelp(
@@ -80,7 +80,7 @@ final class CreateCommand extends Command
                 <comment>football competition team entry</comment> in the <comment>Jabronibetz</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <competition-id> <team-id> [--group [<group>]] [--result [<result>]] [--seed [<seed>]]</info>
+                  <info>%command.full_name% <competition-id> <team-id> [--group <group>] [--result <result>] [--seed <seed>]</info>
 
                 Examples:
                   <info>%command.full_name% 1 1 --group A --seed 14</info>
@@ -112,49 +112,14 @@ final class CreateCommand extends Command
         $io->title('Jabronibetz: Create Football Competition Team Entry');
 
         try {
-            $cmp = $this->entityManager->find(FootballCompetition::class, $input->getArgument('competition-id'));
-            if ($cmp === null) {
-                $io->error('Football competition not found.');
-                return Command::FAILURE;
-            }
-
-            $team = $this->entityManager->find(FootballTeam::class, $input->getArgument('team-id'));
-            if ($team === null) {
-                $io->error('Football team not found.');
-                return Command::FAILURE;
-            }
-
-            $group = $input->getOption('group');
-            if ($group !== null) {
-                $group = trim($group);
-            }
-
-            $result = $input->getOption('result');
-            if ($result !== null) {
-                $result = trim($result);
-            }
-
-            $seed = $input->getOption('seed');
-            if ($seed !== null) {
-                if (!is_numeric($seed)) {
-                    $io->error('The seed option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $seed = intval($seed);
-            }
-
             $entry = (new FootballCompetitionTeamEntry())
-                ->setCompetition($cmp)
-                ->setTeam($team)
-                ->setGroup($group)
-                ->setResult($result)
-                ->setSeed($seed);
+                ->setCompetition($this->parseFootballCompetitionIdArgument($input, 'competition-id'))
+                ->setTeam($this->parseFootballTeamIdArgument($input, 'team-id'))
+                ->setGroup($this->parseStringOption($input, 'group', true))
+                ->setResult($this->parseStringOption($input, 'result', true))
+                ->setSeed($this->parseIntOption($input, 'seed'));
 
-            $errors = $this->validator->validate($entry);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($entry);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -168,6 +133,7 @@ final class CreateCommand extends Command
                         ]
                     ]
                 ));
+
                 if (!$io->confirm('Create football competition team entry?')) {
                     return Command::SUCCESS;
                 }
@@ -175,18 +141,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($entry);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition team entry %s has been created with id %d.',
-                    sprintf(
-                        '%s - %s',
-                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
-                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
-                    ),
-                    $entry->getId()
-                )
-            );
+
+            $io->success(sprintf('Football competition team entry has been created with id %d.', $entry->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

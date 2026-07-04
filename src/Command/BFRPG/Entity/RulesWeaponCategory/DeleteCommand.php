@@ -89,11 +89,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Weapon Category');
 
         try {
-            $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
-            if ($weaponCategory === null) {
-                $io->error('Rules weapon category not found.');
-                return Command::FAILURE;
-            }
+            $weaponCategory = $this->parseRulesWeaponCategoryIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -103,18 +99,20 @@ final class DeleteCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Delete rules weapon category?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $weaponCategory->getId();
+
             $this->entityManager->remove($weaponCategory);
             $this->entityManager->flush();
-            $io->success(
-                sprintf('Rules weapon category %s with id %d has been deleted.', $weaponCategory->getName(), $id)
-            );
+
+            $io->success(sprintf('Rules weapon category with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

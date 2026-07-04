@@ -66,7 +66,7 @@ final class UpdateCommand extends Command
                   <info>%command.full_name% <id> [--name <name>]</info>
 
                 Examples:
-                  <info>%command.full_name% 1 --name "Core Rules 5th Edition"</info>
+                  <info>%command.full_name% 1 --name "Core Rules 4th Edition"</info>
 
                 If no id is specified, you'll be prompted interactively.
                 HELP
@@ -94,19 +94,11 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Source');
 
         try {
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('id'));
-            if ($source === null) {
-                $io->error('Rules source not found.');
-                return Command::FAILURE;
-            }
+            $source = $this->parseRulesSourceIdArgument($input, 'id');
 
-            $source->setName(trim($input->getOption('name') ?? $source->getName()));
+            $source->setName($this->parseStringOption($input, 'name', true) ?? $source->getName());
 
-            $errors = $this->validator->validate($source);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($source);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -116,6 +108,7 @@ final class UpdateCommand extends Command
                         AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Update rules source?')) {
                     return Command::SUCCESS;
                 }
@@ -123,8 +116,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($source);
             $this->entityManager->flush();
-            $io->success(sprintf('Rules source %s with id %d has been updated.', $source->getName(), $source->getId()));
+
+            $io->success(sprintf('Rules source with id %d has been updated.', $source->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

@@ -88,11 +88,7 @@ final class DeleteCommand extends Command
         $io->title('BFRPG: Delete Rules Source');
 
         try {
-            $source = $this->entityManager->find(RulesSource::class, $input->getArgument('id'));
-            if ($source === null) {
-                $io->error('Rules source not found.');
-                return Command::FAILURE;
-            }
+            $source = $this->parseRulesSourceIdArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -102,20 +98,25 @@ final class DeleteCommand extends Command
                         AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
+
                 $numItems = $source->getItems()->count();
                 if ($numItems > 0) {
                     $io->warning(sprintf('%d rules items will also be deleted!', $numItems));
                 }
+
                 if (!$io->confirm('Delete rules source?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $source->getId();
+
             $this->entityManager->remove($source);
             $this->entityManager->flush();
-            $io->success(sprintf('Rules source %s with id %d has been deleted.', $source->getName(), $id));
+
+            $io->success(sprintf('Rules source with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

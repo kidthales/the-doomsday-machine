@@ -89,18 +89,14 @@ final class ReadCommand extends Command
         $io->title('BFRPG: Read Rules Weapon Category');
 
         try {
-            $weaponCategory = $this->entityManager->find(RulesWeaponCategory::class, $input->getArgument('id'));
-            if ($weaponCategory === null) {
-                $io->error('Rules weapon category not found.');
-                return Command::FAILURE;
-            }
             $io->definitionList(...$this->definitionListConverter->convert(
-                $weaponCategory,
+                $this->parseRulesWeaponCategoryIdArgument($input, 'id'),
                 [
                     AbstractNormalizer::GROUPS => [RulesWeaponCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

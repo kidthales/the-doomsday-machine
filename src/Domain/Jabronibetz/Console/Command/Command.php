@@ -28,11 +28,11 @@ use App\Domain\Jabronibetz\Entity\FootballOrganization;
 use App\Domain\Jabronibetz\Entity\FootballTeam;
 use App\Domain\Jabronibetz\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
+use App\Domain\Shared\Console\Command\ParseEntityIdTrait;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
-use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -42,10 +42,31 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class Command extends BaseCommand
 {
     use EntityManagerAwareTrait;
+    use ParseEntityIdTrait {
+        parseEntityIdArgument as private;
+        parseEntityIdOption as private;
+    }
 
     const int SUCCESS = BaseCommand::SUCCESS;
     const int FAILURE = BaseCommand::FAILURE;
     const int INVALID = BaseCommand::INVALID;
+
+    /**
+     * @param FootballMatch $match
+     * @return string
+     */
+    protected static function getFootballMatchTitle(FootballMatch $match): string
+    {
+        $timestamp = $match->getTimestamp();
+        return sprintf(
+            '%s vs %s (%s) [%s, Round %s]',
+            $match->getHomeTeam()?->getName() ?? 'Unknown',
+            $match->getAwayTeam()?->getName() ?? 'Unknown',
+            $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
+            $match->getCompetition()?->getShortName() ?? 'UNK',
+            $match->getRound() ?? 'N/A'
+        );
+    }
 
     /**
      * @param InputInterface $input
@@ -62,23 +83,23 @@ abstract class Command extends BaseCommand
     ): void
     {
         if ($input->getArgument($argument) === null) {
-            $orgIdByName = array_reduce(
+            $organizationIdByName = array_reduce(
                 $this->entityManager->getRepository(FootballOrganization::class)->findAll(),
-                function (array $carry, FootballOrganization $org) {
-                    $name = sprintf('%s (%s)', $org->getName(), $org->getShortName());
-                    $carry[$name] = $org->getId();
+                function (array $carry, FootballOrganization $organization) {
+                    $name = sprintf('%s (%s)', $organization->getName(), $organization->getShortName());
+                    $carry[$name] = $organization->getId();
                     return $carry;
                 },
                 []
             );
-            if (!empty($orgIdByName)) {
-                ksort($orgIdByName);
+            if (!empty($organizationIdByName)) {
+                ksort($organizationIdByName);
                 $this->interactChoiceQuestionWithChoicesResolver(
                     $input,
                     $output,
                     $argument,
                     $question,
-                    new ChoicesResolver($orgIdByName),
+                    new ChoicesResolver($organizationIdByName),
                 );
             }
         }
@@ -99,23 +120,23 @@ abstract class Command extends BaseCommand
     ): void
     {
         if ($input->getArgument($argument) === null) {
-            $cmpIdByName = array_reduce(
+            $competitionIdByName = array_reduce(
                 $this->entityManager->getRepository(FootballCompetition::class)->findAll(),
-                function (array $carry, FootballCompetition $cmp) {
-                    $name = sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName());
-                    $carry[$name] = $cmp->getId();
+                function (array $carry, FootballCompetition $competition) {
+                    $name = sprintf('%s (%s)', $competition->getName(), $competition->getShortName());
+                    $carry[$name] = $competition->getId();
                     return $carry;
                 },
                 []
             );
-            if (!empty($cmpIdByName)) {
-                ksort($cmpIdByName);
+            if (!empty($competitionIdByName)) {
+                ksort($competitionIdByName);
                 $this->interactChoiceQuestionWithChoicesResolver(
                     $input,
                     $output,
                     $argument,
                     $question,
-                    new ChoicesResolver($cmpIdByName),
+                    new ChoicesResolver($competitionIdByName),
                 );
             }
         }
@@ -176,11 +197,11 @@ abstract class Command extends BaseCommand
             $entryIdByName = array_reduce(
                 $this->entityManager->getRepository(FootballCompetitionTeamEntry::class)->findAll(),
                 function (array $carry, FootballCompetitionTeamEntry $entry) {
-                    $cmp = $entry->getCompetition();
+                    $competition = $entry->getCompetition();
                     $team = $entry->getTeam();
                     $name = sprintf(
                         '%s - %s',
-                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
+                        sprintf('%s (%s)', $competition->getName(), $competition->getShortName()),
                         sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
                     );
                     $carry[$name] = $entry->getId();
@@ -221,16 +242,7 @@ abstract class Command extends BaseCommand
                     ->getRepository(FootballMatch::class)
                     ->findBy([], ['timestamp' => Order::Ascending->value]),
                 function (array $carry, FootballMatch $match) {
-                    $timestamp = $match->getTimestamp();
-                    $name = sprintf(
-                        '%s vs %s (%s) [%s, Round %s]',
-                        $match->getHomeTeam()?->getName() ?? 'Unknown',
-                        $match->getAwayTeam()?->getName() ?? 'Unknown',
-                        $timestamp !== null ? date('Y-m-d H:i:s T', $timestamp) : 'TBD',
-                        $match->getCompetition()?->getShortName() ?? 'UNK',
-                        $match->getRound() ?? 'N/A'
-                    );
-                    $carry[$name] = $match->getId();
+                    $carry[static::getFootballMatchTitle($match)] = $match->getId();
                     return $carry;
                 },
                 []
@@ -249,41 +261,99 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
-     * @param string $option
+     * @param string $argument
      * @return FootballOrganization|null
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
-    protected function parseFootballOrganizationOption(InputInterface $input, string $option): ?FootballOrganization
+    protected function parseFootballOrganizationIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?FootballOrganization
     {
-        $organization = null;
-        $organizationId = $input->getOption($option);
-        if ($organizationId !== null) {
-            $organization = $this->entityManager->find(FootballOrganization::class, $organizationId);
-            if ($organization === null) {
-                throw new RuntimeException('Football organization not found.');
-            }
-        }
-        return $organization;
+        return $this->parseEntityIdArgument($input, $argument, FootballOrganization::class);
     }
 
     /**
      * @param InputInterface $input
      * @param string $option
-     * @return FootballCompetition|null
+     * @return FootballOrganization|false|null
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    protected function parseFootballCompetitionOption(InputInterface $input, string $option): ?FootballCompetition
+    protected function parseFootballOrganizationIdOption(
+        InputInterface $input,
+        string         $option
+    ): FootballOrganization|false|null
     {
-        $competition = null;
-        $competitionId = $input->getOption($option);
-        if ($competitionId !== null) {
-            $competition = $this->entityManager->find(FootballCompetition::class, $competitionId);
-            if ($competition === null) {
-                throw new RuntimeException('Football competition not found.');
-            }
-        }
-        return $competition;
+        return $this->parseEntityIdOption($input, $option, FootballOrganization::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return FootballCompetition|null
+     */
+    protected function parseFootballCompetitionIdArgument(InputInterface $input, string $argument): ?FootballCompetition
+    {
+        return $this->parseEntityIdArgument($input, $argument, FootballCompetition::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return FootballCompetition|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballCompetitionIdOption(
+        InputInterface $input,
+        string         $option
+    ): FootballCompetition|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, FootballCompetition::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return FootballTeam|null
+     */
+    protected function parseFootballTeamIdArgument(InputInterface $input, string $argument): ?FootballTeam
+    {
+        return $this->parseEntityIdArgument($input, $argument, FootballTeam::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return FootballTeam|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballTeamIdOption(InputInterface $input, string $option): FootballTeam|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, FootballTeam::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return FootballCompetitionTeamEntry|null
+     */
+    protected function parseFootballCompetitionTeamEntryIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?FootballCompetitionTeamEntry
+    {
+        return $this->parseEntityIdArgument($input, $argument, FootballCompetitionTeamEntry::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return FootballMatch|null
+     */
+    protected function parseFootballMatchIdArgument(InputInterface $input, string $argument): ?FootballMatch
+    {
+        return $this->parseEntityIdArgument($input, $argument, FootballMatch::class);
     }
 }

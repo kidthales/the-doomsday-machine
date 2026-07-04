@@ -105,21 +105,13 @@ final class UpdateCommand extends Command
         $io->title('BFRPG: Update Rules Weapon Size');
 
         try {
-            $weaponSize = $this->entityManager->find(RulesWeaponSize::class, $input->getArgument('id'));
-            if ($weaponSize === null) {
-                $io->error('Rules weapon size not found.');
-                return Command::FAILURE;
-            }
+            $weaponSize = $this->parseRulesWeaponSizeIdArgument($input, 'id');
 
-            $weaponSize->setName(trim($input->getOption('name') ?? $weaponSize->getName()));
-            $weaponSize->setShortName(trim($input->getOption('short-name') ?? $weaponSize->getShortName()));
-            $weaponSize->setSource($this->parseRulesSourceOption($input, 'source-id') ?? $weaponSize->getSource());
+            $weaponSize->setName($this->parseStringOption($input, 'name', true) ?? $weaponSize->getName());
+            $weaponSize->setShortName($this->parseStringOption($input, 'short-name', true) ?? $weaponSize->getShortName());
+            $weaponSize->setSource($this->parseRulesSourceIdOption($input, 'source-id') ?? $weaponSize->getSource());
 
-            $errors = $this->validator->validate($weaponSize);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($weaponSize);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -129,6 +121,7 @@ final class UpdateCommand extends Command
                         AbstractNormalizer::GROUPS => [RulesWeaponSize::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
+
                 if (!$io->confirm('Update rules weapon size?')) {
                     return Command::SUCCESS;
                 }
@@ -136,14 +129,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($weaponSize);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Rules weapon size %s with id %d has been updated.',
-                    $weaponSize->getName(),
-                    $weaponSize->getId()
-                )
-            );
+
+            $io->success(sprintf('Rules weapon size with id %d has been updated.', $weaponSize->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

@@ -36,6 +36,9 @@ final class ReadCommandTest extends KernelTestCase
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Football match not found', $appTester->getDisplay());
+        $this->assertStringContainsString(
+            'App\Domain\Jabronibetz\Entity\FootballMatch not found for id -1',
+            $appTester->getDisplay()
+        );
     }
 }

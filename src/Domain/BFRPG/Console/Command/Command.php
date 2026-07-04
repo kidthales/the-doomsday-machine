@@ -27,10 +27,10 @@ use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
+use App\Domain\Shared\Console\Command\ParseEntityIdTrait;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
-use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -40,6 +40,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class Command extends BaseCommand
 {
     use EntityManagerAwareTrait;
+    use ParseEntityIdTrait {
+        parseEntityIdArgument as private;
+        parseEntityIdOption as private;
+    }
 
     const int SUCCESS = BaseCommand::SUCCESS;
     const int FAILURE = BaseCommand::FAILURE;
@@ -191,21 +195,53 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
-     * @param string $option
+     * @param string $argument
      * @return RulesSource|null
+     */
+    protected function parseRulesSourceIdArgument(InputInterface $input, string $argument): ?RulesSource
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesSource::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesSource|false|null
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    protected function parseRulesSourceOption(InputInterface $input, string $option): ?RulesSource
+    protected function parseRulesSourceIdOption(InputInterface $input, string $option): RulesSource|false|null
     {
-        $source = null;
-        $sourceId = $input->getOption($option);
-        if ($sourceId !== null) {
-            $source = $this->entityManager->find(RulesSource::class, $sourceId);
-            if ($source === null) {
-                throw new RuntimeException('Rules source not found.');
-            }
-        }
-        return $source;
+        return $this->parseEntityIdOption($input, $option, RulesSource::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesItem|null
+     */
+    protected function parseRulesItemIdArgument(InputInterface $input, string $argument): ?RulesItem
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesItem::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponCategory|null
+     */
+    protected function parseRulesWeaponCategoryIdArgument(InputInterface $input, string $argument): ?RulesWeaponCategory
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponSize|null
+     */
+    protected function parseRulesWeaponSizeIdArgument(InputInterface $input, string $argument): ?RulesWeaponSize
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponSize::class);
     }
 }

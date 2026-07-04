@@ -70,17 +70,18 @@ final class ListCommand extends Command
         $io->title('Jabronibetz: List Football Competitions');
 
         try {
-            $cmps = $this->entityManager->getRepository(FootballCompetition::class)->findAll();
-            foreach ($cmps as $cmp) {
+            $competitions = $this->entityManager->getRepository(FootballCompetition::class)->findAll();
+            foreach ($competitions as $competition) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $cmp,
+                    $competition,
                     [
                         AbstractNormalizer::GROUPS => FootballCompetition::GROUP_LIST
                     ]
                 ));
             }
-            $io->info(sprintf('Found %d football competitions.', count($cmps)));
+            $io->info(sprintf('Found %d football competitions.', count($competitions)));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

@@ -81,6 +81,7 @@ final class ListCommand extends Command
             }
             $io->info(sprintf('Found %d rules items.', count($items)));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
