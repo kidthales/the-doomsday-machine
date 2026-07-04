@@ -88,44 +88,40 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Organization');
 
         try {
-            $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('id'));
-            if ($org === null) {
-                $io->error('Football organization not found.');
-                return Command::FAILURE;
-            }
+            $organization = $this->parseFootballOrganizationArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $organization,
                     [
                         AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
-                $numCmps = $org->getManagedCompetitions()->count();
+
+                $numCmps = $organization->getManagedCompetitions()->count();
                 if ($numCmps > 0) {
                     $io->warning(sprintf('%d football competitions will also be deleted!', $numCmps));
                 }
-                $numTeams = $org->getManagedTeams()->count();
+
+                $numTeams = $organization->getManagedTeams()->count();
                 if ($numTeams > 0) {
                     $io->warning(sprintf('%d football teams will also be deleted!', $numTeams));
                 }
+
                 if (!$io->confirm('Delete football organization?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $id = $org->getId();
-            $this->entityManager->remove($org);
+            $id = $organization->getId();
+
+            $this->entityManager->remove($organization);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football organization %s with id %d has been deleted.',
-                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
-                    $id
-                )
-            );
+
+            $io->success(sprintf('Football organization with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

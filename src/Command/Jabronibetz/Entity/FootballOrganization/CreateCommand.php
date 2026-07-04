@@ -94,39 +94,32 @@ final class CreateCommand extends Command
         $io->title('Jabronibetz: Create Football Organization');
 
         try {
-            $org = (new FootballOrganization())
-                ->setName(trim($input->getArgument('name')))
-                ->setShortName(trim($input->getArgument('short-name')));
+            $organization = (new FootballOrganization())
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setShortName($this->parseStringArgument($input, 'short-name', true));
 
-            $errors = $this->validator->validate($org);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($organization);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $organization,
                     [
                         AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Create football organization?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($org);
+            $this->entityManager->persist($organization);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football organization %s has been created with id %d.',
-                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
-                    $org->getId()
-                )
-            );
+
+            $io->success(sprintf('Football organization has been created with id %d.', $organization->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

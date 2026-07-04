@@ -99,44 +99,33 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Organization');
 
         try {
-            $org = $this->entityManager->find(FootballOrganization::class, $input->getArgument('id'));
-            if ($org === null) {
-                $io->error('Football organization not found.');
-                return Command::FAILURE;
-            }
+            $organization = $this->parseFootballOrganizationArgument($input, 'id');
 
-            $org->setName(trim($input->getOption('name') ?? $org->getName()));
-            $org->setShortName(trim($input->getOption('short-name') ?? $org->getShortName()));
+            $organization->setName($this->parseStringOption($input, 'name', true) ?? $organization->getName());
+            $organization->setShortName($this->parseStringOption($input, 'short-name', true) ?? $organization->getShortName());
 
-            $errors = $this->validator->validate($org);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($organization);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $org,
+                    $organization,
                     [
                         AbstractNormalizer::GROUPS => FootballOrganization::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Update football organization?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($org);
+            $this->entityManager->persist($organization);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football organization %s with id %d has been updated.',
-                    sprintf('%s (%s)', $org->getName(), $org->getShortName()),
-                    $org->getId()
-                )
-            );
+
+            $io->success(sprintf('Football organization with id %d has been updated.', $organization->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

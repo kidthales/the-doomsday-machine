@@ -32,9 +32,11 @@ use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
@@ -249,20 +251,21 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
-     * @param string $option
+     * @param string $argument
      * @return FootballOrganization|null
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
-    protected function parseFootballOrganizationOption(InputInterface $input, string $option): ?FootballOrganization
+    protected function parseFootballOrganizationArgument(InputInterface $input, string $argument): ?FootballOrganization
     {
-        $organization = null;
-        $organizationId = $input->getOption($option);
-        if ($organizationId !== null) {
-            $organization = $this->entityManager->find(FootballOrganization::class, $organizationId);
-            if ($organization === null) {
-                throw new RuntimeException('Football organization not found.');
-            }
+        $organizationId = $input->getArgument($argument);
+        if ($organizationId === null) {
+            return null;
+        }
+        if (!is_numeric($organizationId)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        $organization = $this->entityManager->getRepository(FootballOrganization::class)->find($organizationId);
+        if ($organization === null) {
+            throw new RuntimeException('Football organization not found.');
         }
         return $organization;
     }
@@ -270,19 +273,45 @@ abstract class Command extends BaseCommand
     /**
      * @param InputInterface $input
      * @param string $option
-     * @return FootballCompetition|null
+     * @return FootballOrganization|false|null
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    protected function parseFootballCompetitionOption(InputInterface $input, string $option): ?FootballCompetition
+    protected function parseFootballOrganizationOption(InputInterface $input, string $option): FootballOrganization|false|null
     {
-        $competition = null;
+        $organizationId = $input->getOption($option);
+        if ($organizationId === null || $organizationId === false) {
+            return $organizationId;
+        }
+        if (!is_numeric($organizationId)) {
+            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
+        }
+        $organization = $this->entityManager->find(FootballOrganization::class, $organizationId);
+        if ($organization === null) {
+            throw new RuntimeException('Football organization not found.');
+        }
+        return $organization;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return FootballCompetition|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseFootballCompetitionOption(InputInterface $input, string $option): FootballCompetition|false|null
+    {
         $competitionId = $input->getOption($option);
-        if ($competitionId !== null) {
-            $competition = $this->entityManager->find(FootballCompetition::class, $competitionId);
-            if ($competition === null) {
-                throw new RuntimeException('Football competition not found.');
-            }
+        if ($competitionId === null || $competitionId === false) {
+            return $competitionId;
+        }
+        if (!is_numeric($competitionId)) {
+            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
+        }
+        $competition = $this->entityManager->find(FootballCompetition::class, $competitionId);
+        if ($competition === null) {
+            throw new RuntimeException('Football competition not found.');
         }
         return $competition;
     }
