@@ -37,7 +37,7 @@ final class UpdateCommandTest extends KernelTestCase
 
         $this->assertSame(1, $appTester->getStatusCode());
         $this->assertMatchesRegularExpression(
-            '/.*App\\\\Domain\\\\Jabronibetz\\\\Entity\\\\FootballCompetitionTeamEntry.+not.+found.+for.+id.+-1/',
+            '/.*App\\\\Domain\\\\Jabronibetz\\\\Entity\\\\FootballCompetitionTeamEntry.+not.+found.+for.+id.+-1/s',
             $appTester->getDisplay()
         );
     }
