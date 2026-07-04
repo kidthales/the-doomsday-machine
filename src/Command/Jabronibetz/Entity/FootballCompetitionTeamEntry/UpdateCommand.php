@@ -120,62 +120,21 @@ final class UpdateCommand extends Command
         $io->title('Jabronibetz: Update Football Competition Team Entry');
 
         try {
-            $entry = $this->entityManager->find(FootballCompetitionTeamEntry::class, $input->getArgument('id'));
-            if ($entry === null) {
-                $io->error('Football competition team entry not found.');
-                return Command::FAILURE;
-            }
+            $entry = $this->parseFootballCompetitionTeamEntryArgument($input, 'id');
 
             $entry->setCompetition($this->parseFootballCompetitionOption($input, 'competition-id') ?? $entry->getCompetition());
+            $entry->setTeam($this->parseFootballTeamArgument($input, 'team-id') ?? $entry->getTeam());
 
-            $teamId = $input->getOption('team-id');
-            if ($teamId !== null) {
-                $team = $this->entityManager->find(FootballTeam::class, $teamId);
-                if ($team === null) {
-                    $io->error('Football team not found.');
-                    return Command::FAILURE;
-                }
-            } else {
-                $team = $entry->getTeam();
-            }
-            $entry->setTeam($team);
+            $group = $this->parseStringOption($input, 'group', true);
+            $entry->setGroup($group === false ? $entry->getGroup() : $group);
 
-            $group = $input->getOption('group');
-            if ($group === false) {
-                $group = $entry->getGroup();
-            }
-            if ($group !== null) {
-                $group = trim($group);
-            }
-            $entry->setGroup($group);
+            $result = $this->parseStringOption($input, 'result', true);
+            $entry->setResult($result === false ? $entry->getResult() : $result);
 
-            $result = $input->getOption('result');
-            if ($result === false) {
-                $result = $entry->getResult();
-            }
-            if ($result !== null) {
-                $result = trim($result);
-            }
-            $entry->setResult($result);
+            $seed = $this->parseIntOption($input, 'seed');
+            $entry->setSeed($seed === false ? $entry->getSeed() : $seed);
 
-            $seed = $input->getOption('seed');
-            if ($seed === false) {
-                $seed = $entry->getSeed();
-            }
-            if ($seed !== null) {
-                if (!is_numeric($seed)) {
-                    $io->error('The seed option must be a numeric value.');
-                    return Command::FAILURE;
-                }
-                $seed = intval($seed);
-            }
-            $entry->setSeed($seed);
-
-            $errors = $this->validator->validate($entry);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($entry);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -189,6 +148,7 @@ final class UpdateCommand extends Command
                         ]
                     ]
                 ));
+
                 if (!$io->confirm('Update football competition team entry?')) {
                     return Command::SUCCESS;
                 }
@@ -196,17 +156,10 @@ final class UpdateCommand extends Command
 
             $this->entityManager->persist($entry);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition team entry %s with id %d has been updated.',
-                    sprintf(
-                        '%s - %s',
-                        sprintf('%s (%s)', $entry->getCompetition()->getName(), $entry->getCompetition()->getShortName()),
-                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
-                    ),
-                    $entry->getId()
-                ));
+
+            $io->success(sprintf('Football competition team entry with id %d has been updated.', $entry->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }

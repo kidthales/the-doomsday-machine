@@ -90,11 +90,7 @@ final class DeleteCommand extends Command
         $io->title('Jabronibetz: Delete Football Competition Team Entry');
 
         try {
-            $entry = $this->entityManager->find(FootballCompetitionTeamEntry::class, $input->getArgument('id'));
-            if ($entry === null) {
-                $io->error('Football competition team entry not found.');
-                return Command::FAILURE;
-            }
+            $entry = $this->parseFootballCompetitionTeamEntryArgument($input, 'id');
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -108,28 +104,20 @@ final class DeleteCommand extends Command
                         ]
                     ]
                 ));
+
                 if (!$io->confirm('Delete football competition team entry?')) {
                     return Command::SUCCESS;
                 }
             }
 
             $id = $entry->getId();
-            $cmp = $entry->getFootballCompetition();
-            $team = $entry->getFootballTeam();
+
             $this->entityManager->remove($entry);
             $this->entityManager->flush();
-            $io->success(
-                sprintf(
-                    'Football competition team entry %s with id %d has been deleted.',
-                    sprintf(
-                        '%s - %s',
-                        sprintf('%s (%s)', $cmp->getName(), $cmp->getShortName()),
-                        sprintf('%s (%s) [%s]', $team->getName(), $team->getShortName(), $team->getGender()->value)
-                    ),
-                    $id
-                )
-            );
+
+            $io->success(sprintf('Football competition team entry with id %d has been deleted.', $id));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
