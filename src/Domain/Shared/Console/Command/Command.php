@@ -24,19 +24,27 @@ namespace App\Domain\Shared\Console\Command;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use App\Domain\Shared\Validator\ValidatorAwareTrait;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\ErrorHandler\Exception\FlattenException;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Constraints\GroupSequence;
+use Throwable;
+use ValueError;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-abstract class Command extends BaseCommand
+abstract class Command extends BaseCommand implements LoggerAwareInterface
 {
-    use DefinitionListConverterAwareTrait, ValidatorAwareTrait;
+    use DefinitionListConverterAwareTrait, LoggerAwareTrait, ValidatorAwareTrait;
 
     const int SUCCESS = BaseCommand::SUCCESS;
     const int FAILURE = BaseCommand::FAILURE;
@@ -134,7 +142,8 @@ abstract class Command extends BaseCommand
         OutputInterface $output,
         string          $question,
         ChoicesResolver $choicesResolver
-    ): mixed {
+    ): mixed
+    {
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
         $choice = $helper->ask($input, $output, new ChoiceQuestion($question, $choicesResolver->getChoices()));
@@ -155,12 +164,128 @@ abstract class Command extends BaseCommand
         string          $argument,
         string          $question,
         ChoicesResolver $choicesResolver
-    ): void {
+    ): void
+    {
         if ($input->getArgument($argument) === null) {
             $input->setArgument(
                 $argument,
                 $this->askChoiceQuestionWithChoicesResolver($input, $output, $question, $choicesResolver)
             );
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @param string $sentinel
+     * @return bool|string|null
+     */
+    protected function parseBoolOption(InputInterface $input, string $option, string $sentinel = '~'): bool|string|null
+    {
+        $value = $input->getOption($option);
+        if ($value === null || $value === $sentinel) {
+            return $value;
+        }
+        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($value === null) {
+            throw new ValueError(sprintf('The %s option must be a boolean value.', $option));
+        }
+        return $value;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return float|false|null
+     */
+    protected function parseFloatOption(InputInterface $input, string $option): float|false|null
+    {
+        $value = $input->getOption($option);
+        if ($value === null || $value === false) {
+            return $value;
+        }
+        if (!is_numeric($value)) {
+            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
+        }
+        return floatval($value);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return int|false|null
+     */
+    protected function parseIntOption(InputInterface $input, string $option): int|false|null
+    {
+        $value = $input->getOption($option);
+        if ($value === null || $value === false) {
+            return $value;
+        }
+        if (!is_numeric($value)) {
+            throw new ValueError(sprintf('The %s option must be a numeric value.', $option));
+        }
+        return intval($value);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @param bool $trim
+     * @return string|null
+     */
+    protected function parseStringArgument(InputInterface $input, string $argument, bool $trim = false): ?string
+    {
+        $value = $input->getArgument($argument);
+        if ($value === null) {
+            return null;
+        }
+        $value = strval($value);
+        return $trim ? trim($value) : $value;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @param bool $trim
+     * @return int|false|null
+     */
+    protected function parseStringOption(InputInterface $input, string $option, bool $trim = false): string|false|null
+    {
+        $value = $input->getOption($option);
+        if ($value === null || $value === false) {
+            return $value;
+        }
+        $value = strval($value);
+        return $trim ? trim($value) : $value;
+    }
+
+    /**
+     * @param mixed $value
+     * @param array|Constraint|null $constrains
+     * @param array|string|GroupSequence|null $groups
+     * @return void
+     */
+    protected function validate(
+        mixed                           $value,
+        array|null|Constraint           $constrains = null,
+        array|null|string|GroupSequence $groups = null
+    ): void
+    {
+        $errors = $this->validator->validate($value, $constrains, $groups);
+        if (count($errors) > 0) {
+            throw new RuntimeException((string)$errors);
+        }
+    }
+
+    /**
+     * @param Throwable $throwable
+     * @return void
+     */
+    protected function logThrowable(Throwable $throwable): void
+    {
+        $f = $throwable instanceof FlattenException ? $throwable : FlattenException::createFromThrowable($throwable);
+        foreach ($f->toArray() as $context) {
+            $this->logger->error('{message}', $context);
         }
     }
 }

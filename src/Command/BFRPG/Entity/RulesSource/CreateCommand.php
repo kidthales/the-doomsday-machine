@@ -89,13 +89,9 @@ final class CreateCommand extends Command
 
         try {
             $source = (new RulesSource())
-                ->setName(trim($input->getArgument('name')));
+                ->setName($this->parseStringArgument($input, 'name', true));
 
-            $errors = $this->validator->validate($source);
-            if (count($errors) > 0) {
-                $io->error((string)$errors);
-                return Command::FAILURE;
-            }
+            $this->validate($source);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
@@ -105,6 +101,7 @@ final class CreateCommand extends Command
                         AbstractNormalizer::GROUPS => RulesSource::GROUP_DETAIL
                     ]
                 ));
+
                 if (!$io->confirm('Create rules source?')) {
                     return Command::SUCCESS;
                 }
@@ -112,8 +109,10 @@ final class CreateCommand extends Command
 
             $this->entityManager->persist($source);
             $this->entityManager->flush();
-            $io->success(sprintf('Rules source %s has been created with id %d.', $source->getName(), $source->getId()));
+
+            $io->success(sprintf('Rules source created with id %d.', $source->getId()));
         } catch (Throwable $e) {
+            $this->logThrowable($e);
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
