@@ -63,7 +63,7 @@ trait ParseEntityIdTrait
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    private function parseEntityIdOption(InputInterface $input, string $option, string $type): object|false|null
+    protected function parseEntityIdOption(InputInterface $input, string $option, string $type): object|false|null
     {
         $id = $input->getOption($option);
         if ($id === null || $id === false) {

@@ -38,6 +38,9 @@ final class CreateCommandTest extends KernelTestCase
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Football organization not found', $appTester->getDisplay());
+        $this->assertStringContainsString(
+            'App\Domain\Jabronibetz\Entity\FootballOrganization not found for id -1',
+            $appTester->getDisplay()
+        );
     }
 }

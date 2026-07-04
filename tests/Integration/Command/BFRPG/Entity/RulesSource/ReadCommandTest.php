@@ -36,6 +36,9 @@ final class ReadCommandTest extends KernelTestCase
         );
 
         $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertStringContainsString('Rules source not found', $appTester->getDisplay());
+        $this->assertStringContainsString(
+            'App\Domain\BFRPG\Entity\RulesSource not found for id -1',
+            $appTester->getDisplay()
+        );
     }
 }
