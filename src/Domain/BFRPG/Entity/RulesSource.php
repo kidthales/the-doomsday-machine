@@ -76,6 +76,12 @@ class RulesSource
     private Collection $weaponCategories;
 
     /**
+     * @var Collection<int, RulesWeapon>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeapon::class, mappedBy: 'source')]
+    private Collection $weapons;
+
+    /**
      *
      */
     public function __construct()
@@ -83,6 +89,7 @@ class RulesSource
         $this->items = new ArrayCollection();
         $this->weaponSizes = new ArrayCollection();
         $this->weaponCategories = new ArrayCollection();
+        $this->weapons = new ArrayCollection();
     }
 
     /**
@@ -133,5 +140,13 @@ class RulesSource
     public function getWeaponCategories(): Collection
     {
         return $this->weaponCategories;
+    }
+
+    /**
+     * @return Collection<int, RulesWeapon>
+     */
+    public function getWeapons(): Collection
+    {
+        return $this->weapons;
     }
 }
