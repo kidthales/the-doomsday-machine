@@ -23,6 +23,7 @@ namespace App\Domain\BFRPG\Console\Command;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
@@ -195,6 +196,42 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesWeapon(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $weaponIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeapon::class)->findAll(),
+                function (array $carry, RulesWeapon $weapon) {
+                    $carry[$weapon->getName()] = $weapon->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponIdByName)) {
+                ksort($weaponIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($weaponIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -237,11 +274,48 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param string $option
+     * @return RulesWeaponCategory|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesWeaponCategoryIdOption(
+        InputInterface $input,
+        string         $option
+    ): RulesWeaponCategory|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesWeaponCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesWeaponSize|null
      */
     protected function parseRulesWeaponSizeIdArgument(InputInterface $input, string $argument): ?RulesWeaponSize
     {
         return $this->parseEntityIdArgument($input, $argument, RulesWeaponSize::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesWeaponSize|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesWeaponSizeIdOption(InputInterface $input, string $option): RulesWeaponSize|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesWeaponSize::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeapon|null
+     */
+    protected function parseRulesWeaponIdArgument(InputInterface $input, string $argument): ?RulesWeapon
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesWeapon::class);
     }
 }
