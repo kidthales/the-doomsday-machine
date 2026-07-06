@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesWeaponRepository;
+use App\Domain\Shared\Validator\DiceRollFormat;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -93,42 +94,42 @@ class RulesWeapon
     private ?RulesWeaponSize $weaponSize = null;
 
     /**
-     * TODO: Assert dice roll string...
      * @var string|null
      */
     #[ORM\Column(name: 'damage_roll', length: 16, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 3, max: 16)]
+    #[DiceRollFormat]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
     private ?string $damageRoll = null;
 
     /**
-     * TODO: Assert dice roll string...
      * @var string|null
      */
     #[ORM\Column(name: 'missile_damage_roll', length: 16, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 3, max: 16)]
+    #[DiceRollFormat]
     #[Groups([self::GROUP_DETAIL])]
     private ?string $missileDamageRoll = null;
 
     /**
-     * TODO: Assert dice roll string...
      * @var string|null
      */
     #[ORM\Column(name: 'one_handed_damage_roll', length: 16, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 3, max: 16)]
+    #[DiceRollFormat]
     #[Groups([self::GROUP_DETAIL])]
     private ?string $oneHandedDamageRoll = null;
 
     /**
-     * TODO: Assert dice roll string...
      * @var string|null
      */
     #[ORM\Column(name: 'two_handed_damage_roll', length: 16, nullable: true)]
     #[Assert\NotBlank(allowNull: true, normalizer: 'trim')]
     #[Assert\Length(min: 3, max: 16)]
+    #[DiceRollFormat]
     #[Groups([self::GROUP_DETAIL])]
     private ?string $twoHandedDamageRoll = null;
 
