@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Console\Command;
 
 use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
@@ -232,6 +233,42 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesRangeCategory(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $rangeCategoryIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesRangeCategory::class)->findAll(),
+                function (array $carry, RulesRangeCategory $rangeCategory) {
+                    $carry[$rangeCategory->getName()] = $rangeCategory->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($rangeCategoryIdByName)) {
+                ksort($rangeCategoryIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($rangeCategoryIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -317,5 +354,15 @@ abstract class Command extends BaseCommand
     protected function parseRulesWeaponIdArgument(InputInterface $input, string $argument): ?RulesWeapon
     {
         return $this->parseEntityIdArgument($input, $argument, RulesWeapon::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesRangeCategory|null
+     */
+    protected function parseRulesRangeCategoryIdArgument(InputInterface $input, string $argument): ?RulesRangeCategory
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesRangeCategory::class);
     }
 }
