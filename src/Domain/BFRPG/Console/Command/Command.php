@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Console\Command;
 
 use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
 use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeapon;
@@ -269,6 +270,47 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesItemRangeCategoryDistance(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $itemRangeCategoryDistanceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItemRangeCategoryDistance::class)->findAll(),
+                function (array $carry, RulesItemRangeCategoryDistance $itemRangeCategoryDistance) {
+                    $name = sprintf(
+                        '%s - %s',
+                        $itemRangeCategoryDistance->getItemName(),
+                        $itemRangeCategoryDistance->getRangeCategoryName()
+                    );
+                    $carry[$name] = $itemRangeCategoryDistance->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemRangeCategoryDistanceIdByName)) {
+                ksort($itemRangeCategoryDistanceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($itemRangeCategoryDistanceIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -297,6 +339,18 @@ abstract class Command extends BaseCommand
     protected function parseRulesItemIdArgument(InputInterface $input, string $argument): ?RulesItem
     {
         return $this->parseEntityIdArgument($input, $argument, RulesItem::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesItem|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesItemIdOption(InputInterface $input, string $option): RulesItem|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesItem::class);
     }
 
     /**
@@ -364,5 +418,33 @@ abstract class Command extends BaseCommand
     protected function parseRulesRangeCategoryIdArgument(InputInterface $input, string $argument): ?RulesRangeCategory
     {
         return $this->parseEntityIdArgument($input, $argument, RulesRangeCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesRangeCategory|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesRangeCategoryIdOption(
+        InputInterface $input,
+        string         $option
+    ): RulesRangeCategory|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesRangeCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesItemRangeCategoryDistance|null
+     */
+    protected function parseRulesItemRangeCategoryDistanceIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?RulesItemRangeCategoryDistance
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesItemRangeCategoryDistance::class);
     }
 }

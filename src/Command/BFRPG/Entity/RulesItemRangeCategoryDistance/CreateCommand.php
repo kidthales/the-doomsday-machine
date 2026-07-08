@@ -19,9 +19,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesRangeCategory;
+namespace App\Command\BFRPG\Entity\RulesItemRangeCategoryDistance;
 
 use App\Domain\BFRPG\Console\Command\Command;
+use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
 use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,8 +38,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-range-category:create',
-    description: 'Create a rules range category'
+    name: 'app:bfrpg:entity:rules-item-range-category-distance:create',
+    description: 'Create a rules item range category distance'
 )]
 final class CreateCommand extends Command
 {
@@ -48,32 +50,37 @@ final class CreateCommand extends Command
     {
         $this
             ->addArgument(
-                name: 'name',
+                name: 'item-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the rules range category'
+                description: 'The rules item id for the item range category distance'
             )
             ->addArgument(
-                name: 'modifier',
+                name: 'range-category-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The modifier for the rules range category'
+                description: 'The rules range category id for the item range category distance'
+            )
+            ->addArgument(
+                name: 'distance',
+                mode: InputArgument::REQUIRED,
+                description: 'The distance for the rules item range category distance'
             )
             ->addArgument(
                 name: 'source-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The rules source id for the range category'
+                description: 'The rules source id for the item range category distance'
             )
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to create a
-                <comment>rules range category</comment> in the <comment>BFRPG</comment> db.
+                <comment>rules item range category distance</comment> in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <modifier> <source-id></info>
+                  <info>%command.full_name% <item-id> <range-category-id> <distance> <source-id></info>
 
                 Examples:
-                  <info>%command.full_name% Short 1 1 </info>
+                  <info>%command.full_name% 12 1 10 1</info>
 
-                If no name, modifier, or source id is specified, you'll be prompted interactively.
+                If no item id, range category id, distance, or source id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -85,9 +92,10 @@ final class CreateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactQuestion($input, $output, 'name', 'Rules range category name: ');
-        $this->interactQuestion($input, $output, 'modifier', 'Rules range category modifier: ');
-        $this->interactRulesSource($input, $output, 'source-id', 'Rules range category sourced from: ');
+        $this->interactRulesItem($input, $output, 'item-id', 'Rules item range category distance item: ');
+        $this->interactRulesRangeCategory($input, $output, 'range-category-id', 'Rules item range category distance category: ');
+        $this->interactQuestion($input, $output, 'distance', 'Rules item range category distance distance: ');
+        $this->interactRulesSource($input, $output, 'source-id', 'Rules item range category distance sourced from: ');
     }
 
     /**
@@ -98,34 +106,45 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Create Rules Range Category');
+        $io->title('BFRPG: Create Rules Item Range Category Distance');
 
         try {
-            $rangeCategory = (new RulesRangeCategory())
-                ->setName($this->parseStringArgument($input, 'name', true))
-                ->setModifier($this->parseIntArgument($input, 'modifier'))
+            $itemRangeCategoryDistance = (new RulesItemRangeCategoryDistance())
+                ->setItem($this->parseRulesItemIdArgument($input, 'item-id'))
+                ->setRangeCategory($this->parseRulesRangeCategoryIdArgument($input, 'range-category-id'))
+                ->setDistance($this->parseIntArgument($input, 'distance'))
                 ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
-            $this->validate($rangeCategory);
+            $this->validate($itemRangeCategoryDistance);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $rangeCategory,
+                    $itemRangeCategoryDistance,
                     [
-                        AbstractNormalizer::GROUPS => [RulesRangeCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                        AbstractNormalizer::GROUPS => [
+                            RulesItemRangeCategoryDistance::GROUP_DETAIL,
+                            RulesItem::GROUP_LIST,
+                            RulesRangeCategory::GROUP_LIST,
+                            RulesSource::GROUP_LIST
+                        ]
                     ]
                 ));
 
-                if (!$io->confirm('Create rules range category?')) {
+                if (!$io->confirm('Create rules item range category distance?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($rangeCategory);
+            $this->entityManager->persist($itemRangeCategoryDistance);
             $this->entityManager->flush();
 
-            $io->success(sprintf('Rules range category has been created with id %d.', $rangeCategory->getId()));
+            $io->success(
+                sprintf(
+                    'Rules item range category distance has been created with id %d.',
+                    $itemRangeCategoryDistance->getId()
+                )
+            );
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

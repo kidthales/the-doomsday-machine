@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesRangeCategory;
+namespace App\Command\BFRPG\Entity\RulesItemRangeCategoryDistance;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesRangeCategory;
+use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,8 +34,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-range-category:list',
-    description: 'List rules range categories'
+    name: 'app:bfrpg:entity:rules-item-range-category-distance:list',
+    description: 'List rules item range category distances'
 )]
 final class ListCommand extends Command
 {
@@ -48,7 +48,7 @@ final class ListCommand extends Command
             ->setHelp(
                 <<<'HELP'
                 The <info>%command.name%</info> command allows you to list
-                <comment>rules range categories</comment> in the <comment>BFRPG</comment> db.
+                <comment>rules item range category distance</comment>s in the <comment>BFRPG</comment> db.
 
                 Usage:
                   <info>%command.full_name%</info>
@@ -67,19 +67,19 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: List Rules Range Categories');
+        $io->title('BFRPG: List Rules Item Range Category Distances');
 
         try {
-            $rangeCategories = $this->entityManager->getRepository(RulesRangeCategory::class)->findAll();
-            foreach ($rangeCategories as $rangeCategory) {
+            $itemRangeCategoryDistances = $this->entityManager->getRepository(RulesItemRangeCategoryDistance::class)->findAll();
+            foreach ($itemRangeCategoryDistances as $itemRangeCategoryDistance) {
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $rangeCategory,
+                    $itemRangeCategoryDistance,
                     [
-                        AbstractNormalizer::GROUPS => RulesRangeCategory::GROUP_LIST
+                        AbstractNormalizer::GROUPS => RulesItemRangeCategoryDistance::GROUP_LIST
                     ]
                 ));
             }
-            $io->info(sprintf('Found %d rules range categories.', count($rangeCategories)));
+            $io->info(sprintf('Found %d rules item range category distances.', count($itemRangeCategoryDistances)));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());
