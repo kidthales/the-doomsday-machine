@@ -27,6 +27,7 @@ use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
+use App\Domain\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
@@ -311,6 +312,47 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesWeaponRangeCategoryDistance(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $weaponRangeCategoryDistanceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeaponRangeCategoryDistance::class)->findAll(),
+                function (array $carry, RulesWeaponRangeCategoryDistance $weaponRangeCategoryDistance) {
+                    $name = sprintf(
+                        '%s - %s',
+                        $weaponRangeCategoryDistance->getWeaponName(),
+                        $weaponRangeCategoryDistance->getRangeCategoryName()
+                    );
+                    $carry[$name] = $weaponRangeCategoryDistance->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponRangeCategoryDistanceIdByName)) {
+                ksort($weaponRangeCategoryDistanceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($weaponRangeCategoryDistanceIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -412,6 +454,18 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param string $option
+     * @return RulesWeapon|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesWeaponIdOption(InputInterface $input, string $option): RulesWeapon|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesWeapon::class);
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesRangeCategory|null
      */
@@ -446,5 +500,18 @@ abstract class Command extends BaseCommand
     ): ?RulesItemRangeCategoryDistance
     {
         return $this->parseEntityIdArgument($input, $argument, RulesItemRangeCategoryDistance::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponRangeCategoryDistance|null
+     */
+    protected function parseRulesWeaponRangeCategoryDistanceIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?RulesWeaponRangeCategoryDistance
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponRangeCategoryDistance::class);
     }
 }

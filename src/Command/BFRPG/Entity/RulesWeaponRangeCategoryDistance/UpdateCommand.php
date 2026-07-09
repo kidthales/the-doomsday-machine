@@ -19,13 +19,13 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesItemRangeCategoryDistance;
+namespace App\Command\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
+use App\Domain\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,8 +39,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-item-range-category-distance:update',
-    description: 'Update a rules item range category distance'
+    name: 'app:bfrpg:entity:rules-weapon-range-category-distance:update',
+    description: 'Update a rules weapon range category distance'
 )]
 final class UpdateCommand extends Command
 {
@@ -53,27 +53,27 @@ final class UpdateCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules item range category distance'
+                description: 'The id of the rules weapon range category distance'
             )
             ->addOption(
-                name: 'item-id',
+                name: 'weapon-id',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The rules item id for the item range category distance'
+                description: 'The rules weapon id for the weapon range category distance'
             )
             ->addOption(
                 name: 'range-category-id',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The rules range category id for the item range category distance'
+                description: 'The rules range category id for the weapon range category distance'
             )
             ->addOption(
                 name: 'distance',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The distance of the rules item range category distance'
+                description: 'The distance of the rules weapon range category distance'
             )
             ->addOption(
                 name: 'source-id',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The rules source id for the item range category distance'
+                description: 'The rules source id for the weapon range category distance'
             )
             ->setHelp(
                 <<<'HELP'
@@ -82,7 +82,7 @@ final class UpdateCommand extends Command
 
                 Usage:
                   <info>%command.full_name% <id>
-                    [--item-id <item-id>] [--range-category-id <range-category-id>]
+                    [--weapon-id <weapon-id>] [--range-category-id <range-category-id>]
                     [--distance <distance>] [--source-id <source-id>]</info>
 
                 Examples:
@@ -100,7 +100,7 @@ final class UpdateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactRulesItemRangeCategoryDistance($input, $output, 'id', 'Rules item range category distance: ');
+        $this->interactRulesWeaponRangeCategoryDistance($input, $output, 'id', 'Rules weapon range category distance: ');
     }
 
     /**
@@ -111,52 +111,52 @@ final class UpdateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Update Rules Item Range Category Distance');
+        $io->title('BFRPG: Update Rules Weapon Range Category Distance');
 
         try {
-            $itemRangeCategoryDistance = $this->parseRulesItemRangeCategoryDistanceIdArgument($input, 'id');
+            $weaponRangeCategoryDistance = $this->parseRulesWeaponRangeCategoryDistanceIdArgument($input, 'id');
 
-            $itemRangeCategoryDistance->setItem(
-                $this->parseRulesItemIdOption($input, 'item-id') ?? $itemRangeCategoryDistance->getItem()
+            $weaponRangeCategoryDistance->setWeapon(
+                $this->parseRulesWeaponIdOption($input, 'weapon-id') ?? $weaponRangeCategoryDistance->getWeapon()
             );
-            $itemRangeCategoryDistance->setRangeCategory(
-                $this->parseRulesRangeCategoryIdOption($input, 'range-category-id') ?? $itemRangeCategoryDistance->getRangeCategory()
+            $weaponRangeCategoryDistance->setRangeCategory(
+                $this->parseRulesRangeCategoryIdOption($input, 'range-category-id') ?? $weaponRangeCategoryDistance->getRangeCategory()
             );
-            $itemRangeCategoryDistance->setDistance(
-                $this->parseIntOption($input, 'distance') ?? $itemRangeCategoryDistance->getDistance()
+            $weaponRangeCategoryDistance->setDistance(
+                $this->parseIntOption($input, 'distance') ?? $weaponRangeCategoryDistance->getDistance()
             );
-            $itemRangeCategoryDistance->setSource(
-                $this->parseRulesSourceIdOption($input, 'source-id') ?? $itemRangeCategoryDistance->getSource()
+            $weaponRangeCategoryDistance->setSource(
+                $this->parseRulesSourceIdOption($input, 'source-id') ?? $weaponRangeCategoryDistance->getSource()
             );
 
-            $this->validate($itemRangeCategoryDistance);
+            $this->validate($weaponRangeCategoryDistance);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $itemRangeCategoryDistance,
+                    $weaponRangeCategoryDistance,
                     [
                         AbstractNormalizer::GROUPS => [
-                            RulesItemRangeCategoryDistance::GROUP_DETAIL,
-                            RulesItem::GROUP_LIST,
+                            RulesWeaponRangeCategoryDistance::GROUP_DETAIL,
+                            RulesWeapon::GROUP_LIST,
                             RulesRangeCategory::GROUP_LIST,
                             RulesSource::GROUP_LIST
                         ]
                     ]
                 ));
 
-                if (!$io->confirm('Update rules item range category distance?')) {
+                if (!$io->confirm('Update rules weapon range category distance?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($itemRangeCategoryDistance);
+            $this->entityManager->persist($weaponRangeCategoryDistance);
             $this->entityManager->flush();
 
             $io->success(
                 sprintf(
-                    'Rules item range category distance with id %d has been updated.',
-                    $itemRangeCategoryDistance->getId()
+                    'Rules weapon range category distance with id %d has been updated.',
+                    $weaponRangeCategoryDistance->getId()
                 )
             );
         } catch (Throwable $e) {
