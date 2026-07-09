@@ -33,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: RulesWeaponRangeCategoryDistanceRepository::class)]
 #[ORM\Table(name: 'rules_weapon_range_category_distance')]
 #[ORM\UniqueConstraint(
-    name: 'UNIQ_IDENTIFIER_RULES_ITEM_RANGE_CATEGORY_DISTANCE_ITEM_ID_RANGE_CATEGORY_ID',
+    name: 'UNIQ_IDENTIFIER_RULES_WEAPON_RANGE_CATEGORY_DISTANCE_WEAPON_ID_RANGE_CATEGORY_ID',
     columns: ['rules_weapon_id', 'rules_range_category_id']
 )]
 class RulesWeaponRangeCategoryDistance
