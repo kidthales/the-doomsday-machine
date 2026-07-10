@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Console\Command;
 
+use App\Domain\BFRPG\Entity\RulesArmor;
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
 use App\Domain\BFRPG\Entity\RulesRangeCategory;
@@ -353,6 +354,42 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesArmor(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $armorIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesArmor::class)->findAll(),
+                function (array $carry, RulesArmor $armor) {
+                    $carry[$armor->getName()] = $armor->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($armorIdByName)) {
+                ksort($armorIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($armorIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -513,5 +550,15 @@ abstract class Command extends BaseCommand
     ): ?RulesWeaponRangeCategoryDistance
     {
         return $this->parseEntityIdArgument($input, $argument, RulesWeaponRangeCategoryDistance::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesArmor|null
+     */
+    protected function parseRulesArmorIdArgument(InputInterface $input, string $argument): ?RulesArmor
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesArmor::class);
     }
 }
