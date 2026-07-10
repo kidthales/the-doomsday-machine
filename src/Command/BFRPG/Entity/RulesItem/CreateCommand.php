@@ -70,7 +70,7 @@ final class CreateCommand extends Command
             )
             ->addOption(
                 name: 'description',
-                mode: InputOption::VALUE_OPTIONAL,
+                mode: InputOption::VALUE_REQUIRED,
                 description: 'The description of the rules item'
             )
             ->setHelp(
