@@ -82,6 +82,30 @@ class RulesSource
     private Collection $weapons;
 
     /**
+     * @var Collection<int, RulesRangeCategory>
+     */
+    #[ORM\OneToMany(targetEntity: RulesRangeCategory::class, mappedBy: 'source')]
+    private Collection $rangeCategories;
+
+    /**
+     * @var Collection<int, RulesItemRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'source')]
+    private Collection $itemRangeCategoryDistances;
+
+    /**
+     * @var Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'source')]
+    private Collection $weaponRangeCategoryDistances;
+
+    /**
+     * @var Collection<int, RulesWeapon>
+     */
+    #[ORM\OneToMany(targetEntity: RulesArmor::class, mappedBy: 'source')]
+    private Collection $armors;
+
+    /**
      *
      */
     public function __construct()
@@ -90,6 +114,10 @@ class RulesSource
         $this->weaponSizes = new ArrayCollection();
         $this->weaponCategories = new ArrayCollection();
         $this->weapons = new ArrayCollection();
+        $this->rangeCategories = new ArrayCollection();
+        $this->itemRangeCategoryDistances = new ArrayCollection();
+        $this->weaponRangeCategoryDistances = new ArrayCollection();
+        $this->armors = new ArrayCollection();
     }
 
     /**
@@ -148,5 +176,37 @@ class RulesSource
     public function getWeapons(): Collection
     {
         return $this->weapons;
+    }
+
+    /**
+     * @return Collection<int, RulesRangeCategory>
+     */
+    public function getRangeCategories(): Collection
+    {
+        return $this->rangeCategories;
+    }
+
+    /**
+     * @return Collection<int, RulesItemRangeCategoryDistance>
+     */
+    public function getItemRangeCategoryDistances(): Collection
+    {
+        return $this->itemRangeCategoryDistances;
+    }
+
+    /**
+     * @return Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    public function getWeaponRangeCategoryDistances(): Collection
+    {
+        return $this->weaponRangeCategoryDistances;
+    }
+
+    /**
+     * @return Collection<int, RulesArmor>
+     */
+    public function getArmors(): Collection
+    {
+        return $this->armors;
     }
 }

@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesRangeCategoryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -71,6 +73,27 @@ class RulesRangeCategory
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
+
+    /**
+     * @var Collection<int, RulesItemRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'rangeCategory')]
+    private Collection $itemRangeCategoryDistances;
+
+    /**
+     * @var Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'rangeCategory')]
+    private Collection $weaponRangeCategoryDistances;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->itemRangeCategoryDistances = new ArrayCollection();
+        $this->weaponRangeCategoryDistances = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -132,5 +155,21 @@ class RulesRangeCategory
     {
         $this->source = $source;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, RulesItemRangeCategoryDistance>
+     */
+    public function getItemRangeCategoryDistances(): Collection
+    {
+        return $this->itemRangeCategoryDistances;
+    }
+
+    /**
+     * @return Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    public function getWeaponRangeCategoryDistances(): Collection
+    {
+        return $this->weaponRangeCategoryDistances;
     }
 }

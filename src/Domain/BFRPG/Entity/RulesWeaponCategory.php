@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesWeaponCategoryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -65,6 +67,20 @@ class RulesWeaponCategory
     private ?RulesSource $source = null;
 
     /**
+     * @var Collection<int, RulesWeapon>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeapon::class, mappedBy: 'weaponCategory')]
+    private Collection $weapons;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->weapons = new ArrayCollection();
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
@@ -106,5 +122,13 @@ class RulesWeaponCategory
     {
         $this->source = $source;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, RulesWeapon>
+     */
+    public function getWeapons(): Collection
+    {
+        return $this->weapons;
     }
 }

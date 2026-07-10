@@ -23,6 +23,8 @@ namespace App\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Repository\RulesWeaponRepository;
 use App\Domain\Shared\Validator\DiceRollFormat;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -88,7 +90,7 @@ class RulesWeapon
     /**
      * @var RulesWeaponSize|null
      */
-    #[ORM\ManyToOne(targetEntity: RulesWeaponSize::class, inversedBy: 'rules_weapon_size')]
+    #[ORM\ManyToOne(targetEntity: RulesWeaponSize::class, inversedBy: 'rules_weapon')]
     #[ORM\JoinColumn(name: 'rules_weapon_size_id', nullable: true, onDelete: 'CASCADE')]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesWeaponSize $weaponSize = null;
@@ -136,7 +138,7 @@ class RulesWeapon
     /**
      * @var RulesWeaponCategory|null
      */
-    #[ORM\ManyToOne(targetEntity: RulesWeaponCategory::class, inversedBy: 'rules_weapon_category')]
+    #[ORM\ManyToOne(targetEntity: RulesWeaponCategory::class, inversedBy: 'rules_weapon')]
     #[ORM\JoinColumn(name: 'rules_weapon_category_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
@@ -145,11 +147,25 @@ class RulesWeapon
     /**
      * @var RulesSource|null
      */
-    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_item')]
+    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_weapon')]
     #[ORM\JoinColumn(name: 'rules_source_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
+
+    /**
+     * @var Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'weapon')]
+    private Collection $weaponRangeCategoryDistances;
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->weaponRangeCategoryDistances = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -355,5 +371,13 @@ class RulesWeapon
     {
         $this->source = $source;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    public function getWeaponRangeCategoryDistances(): Collection
+    {
+        return $this->weaponRangeCategoryDistances;
     }
 }
