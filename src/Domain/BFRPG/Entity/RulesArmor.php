@@ -21,9 +21,7 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Entity;
 
-use App\Domain\BFRPG\Repository\RulesItemRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Domain\BFRPG\Repository\RulesArmorRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -32,13 +30,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: RulesItemRepository::class)]
-#[ORM\Table(name: 'rules_item')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_ITEM_NAME', fields: ['name'])]
-class RulesItem
+#[ORM\Entity(repositoryClass: RulesArmorRepository::class)]
+#[ORM\Table(name: 'rules_armor')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_ARMOR_NAME', fields: ['name'])]
+class RulesArmor
 {
-    public const string GROUP_LIST = 'rules_item_list';
-    public const string GROUP_DETAIL = 'rules_item_detail';
+    public const string GROUP_LIST = 'rules_armor_list';
+    public const string GROUP_DETAIL = 'rules_armor_detail';
 
     /**
      * @var int|null
@@ -87,27 +85,29 @@ class RulesItem
     private ?string $description = null;
 
     /**
+     * @var int|null
+     */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
+    private ?int $ac = null;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(name: 'ac_bonus', type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive]
+    #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
+    private ?int $acBonus = null;
+
+    /**
      * @var RulesSource|null
      */
-    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_item')]
+    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_armor')]
     #[ORM\JoinColumn(name: 'rules_source_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
-
-    /**
-     * @var Collection<int, RulesItemRangeCategoryDistance>
-     */
-    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'item')]
-    private Collection $itemRangeCategoryDistances;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        $this->itemRangeCategoryDistances = new ArrayCollection();
-    }
 
     /**
      * @return int|null
@@ -190,6 +190,42 @@ class RulesItem
     }
 
     /**
+     * @return int|null
+     */
+    public function getAC(): ?int
+    {
+        return $this->ac;
+    }
+
+    /**
+     * @param int|null $ac
+     * @return $this
+     */
+    public function setAC(?int $ac): static
+    {
+        $this->ac = $ac;
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getACBonus(): ?int
+    {
+        return $this->acBonus;
+    }
+
+    /**
+     * @param int|null $acBonus
+     * @return $this
+     */
+    public function setACBonus(?int $acBonus): static
+    {
+        $this->acBonus = $acBonus;
+        return $this;
+    }
+
+    /**
      * @return RulesSource|null
      */
     public function getSource(): ?RulesSource
@@ -205,13 +241,5 @@ class RulesItem
     {
         $this->source = $source;
         return $this;
-    }
-
-    /**
-     * @return Collection<int, RulesItemRangeCategoryDistance>
-     */
-    public function getItemRangeCategoryDistances(): Collection
-    {
-        return $this->itemRangeCategoryDistances;
     }
 }

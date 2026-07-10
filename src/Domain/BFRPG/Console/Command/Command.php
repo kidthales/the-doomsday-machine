@@ -21,10 +21,14 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Console\Command;
 
+use App\Domain\BFRPG\Entity\RulesArmor;
 use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
+use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesWeaponCategory;
+use App\Domain\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use App\Domain\BFRPG\ORM\EntityManagerAwareTrait;
 use App\Domain\Shared\Console\Command\Command as BaseCommand;
@@ -232,6 +236,160 @@ abstract class Command extends BaseCommand
 
     /**
      * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesRangeCategory(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $rangeCategoryIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesRangeCategory::class)->findAll(),
+                function (array $carry, RulesRangeCategory $rangeCategory) {
+                    $carry[$rangeCategory->getName()] = $rangeCategory->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($rangeCategoryIdByName)) {
+                ksort($rangeCategoryIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($rangeCategoryIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesItemRangeCategoryDistance(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $itemRangeCategoryDistanceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesItemRangeCategoryDistance::class)->findAll(),
+                function (array $carry, RulesItemRangeCategoryDistance $itemRangeCategoryDistance) {
+                    $name = sprintf(
+                        '%s - %s',
+                        $itemRangeCategoryDistance->getItemName(),
+                        $itemRangeCategoryDistance->getRangeCategoryName()
+                    );
+                    $carry[$name] = $itemRangeCategoryDistance->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($itemRangeCategoryDistanceIdByName)) {
+                ksort($itemRangeCategoryDistanceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($itemRangeCategoryDistanceIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesWeaponRangeCategoryDistance(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $weaponRangeCategoryDistanceIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesWeaponRangeCategoryDistance::class)->findAll(),
+                function (array $carry, RulesWeaponRangeCategoryDistance $weaponRangeCategoryDistance) {
+                    $name = sprintf(
+                        '%s - %s',
+                        $weaponRangeCategoryDistance->getWeaponName(),
+                        $weaponRangeCategoryDistance->getRangeCategoryName()
+                    );
+                    $carry[$name] = $weaponRangeCategoryDistance->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($weaponRangeCategoryDistanceIdByName)) {
+                ksort($weaponRangeCategoryDistanceIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($weaponRangeCategoryDistanceIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $argument
+     * @param string $question
+     * @return void
+     */
+    protected function interactRulesArmor(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $argument,
+        string          $question
+    ): void
+    {
+        if ($input->getArgument($argument) === null) {
+            $armorIdByName = array_reduce(
+                $this->entityManager->getRepository(RulesArmor::class)->findAll(),
+                function (array $carry, RulesArmor $armor) {
+                    $carry[$armor->getName()] = $armor->getId();
+                    return $carry;
+                },
+                []
+            );
+            if (!empty($armorIdByName)) {
+                ksort($armorIdByName);
+                $this->interactChoiceQuestionWithChoicesResolver(
+                    $input,
+                    $output,
+                    $argument,
+                    $question,
+                    new ChoicesResolver($armorIdByName),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $argument
      * @return RulesSource|null
      */
@@ -260,6 +418,18 @@ abstract class Command extends BaseCommand
     protected function parseRulesItemIdArgument(InputInterface $input, string $argument): ?RulesItem
     {
         return $this->parseEntityIdArgument($input, $argument, RulesItem::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesItem|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesItemIdOption(InputInterface $input, string $option): RulesItem|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesItem::class);
     }
 
     /**
@@ -317,5 +487,78 @@ abstract class Command extends BaseCommand
     protected function parseRulesWeaponIdArgument(InputInterface $input, string $argument): ?RulesWeapon
     {
         return $this->parseEntityIdArgument($input, $argument, RulesWeapon::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesWeapon|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesWeaponIdOption(InputInterface $input, string $option): RulesWeapon|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesWeapon::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesRangeCategory|null
+     */
+    protected function parseRulesRangeCategoryIdArgument(InputInterface $input, string $argument): ?RulesRangeCategory
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesRangeCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $option
+     * @return RulesRangeCategory|false|null
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    protected function parseRulesRangeCategoryIdOption(
+        InputInterface $input,
+        string         $option
+    ): RulesRangeCategory|false|null
+    {
+        return $this->parseEntityIdOption($input, $option, RulesRangeCategory::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesItemRangeCategoryDistance|null
+     */
+    protected function parseRulesItemRangeCategoryDistanceIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?RulesItemRangeCategoryDistance
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesItemRangeCategoryDistance::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesWeaponRangeCategoryDistance|null
+     */
+    protected function parseRulesWeaponRangeCategoryDistanceIdArgument(
+        InputInterface $input,
+        string         $argument
+    ): ?RulesWeaponRangeCategoryDistance
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesWeaponRangeCategoryDistance::class);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param string $argument
+     * @return RulesArmor|null
+     */
+    protected function parseRulesArmorIdArgument(InputInterface $input, string $argument): ?RulesArmor
+    {
+        return $this->parseEntityIdArgument($input, $argument, RulesArmor::class);
     }
 }

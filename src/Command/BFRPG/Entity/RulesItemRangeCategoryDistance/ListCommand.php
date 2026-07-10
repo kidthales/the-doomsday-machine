@@ -19,15 +19,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesWeapon;
+namespace App\Command\BFRPG\Entity\RulesItemRangeCategoryDistance;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesWeapon;
-use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Entity\RulesWeaponCategory;
-use App\Domain\BFRPG\Entity\RulesWeaponSize;
+use App\Domain\BFRPG\Entity\RulesItemRangeCategoryDistance;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -38,10 +34,10 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-weapon:read',
-    description: 'Read a rules weapon'
+    name: 'app:bfrpg:entity:rules-item-range-category-distance:list',
+    description: 'List rules item range category distances'
 )]
-final class ReadCommand extends Command
+final class ListCommand extends Command
 {
     /**
      * @return void
@@ -49,35 +45,18 @@ final class ReadCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument(
-                name: 'id',
-                mode: InputArgument::REQUIRED,
-                description: 'The id of the rules weapon'
-            )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules weapon</comment>
-                in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to list
+                <comment>rules item range category distance</comment>s in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <id></info>
+                  <info>%command.full_name%</info>
 
                 Examples:
-                  <info>%command.full_name% 1</info>
-
-                If no id is specified, you'll be prompted interactively.
+                  <info>%command.full_name%</info>
                 HELP
             );
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return void
-     */
-    protected function interact(InputInterface $input, OutputInterface $output): void
-    {
-        $this->interactRulesWeapon($input, $output, 'id', 'Rules weapon: ');
     }
 
     /**
@@ -88,20 +67,19 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Read Rules Weapon');
+        $io->title('BFRPG: List Rules Item Range Category Distances');
 
         try {
-            $io->definitionList(...$this->definitionListConverter->convert(
-                $this->parseRulesWeaponIdArgument($input, 'id'),
-                [
-                    AbstractNormalizer::GROUPS => [
-                        RulesWeapon::GROUP_DETAIL,
-                        RulesSource::GROUP_LIST,
-                        RulesWeaponSize::GROUP_LIST,
-                        RulesWeaponCategory::GROUP_LIST
+            $itemRangeCategoryDistances = $this->entityManager->getRepository(RulesItemRangeCategoryDistance::class)->findAll();
+            foreach ($itemRangeCategoryDistances as $itemRangeCategoryDistance) {
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $itemRangeCategoryDistance,
+                    [
+                        AbstractNormalizer::GROUPS => RulesItemRangeCategoryDistance::GROUP_LIST
                     ]
-                ]
-            ));
+                ));
+            }
+            $io->info(sprintf('Found %d rules item range category distances.', count($itemRangeCategoryDistances)));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

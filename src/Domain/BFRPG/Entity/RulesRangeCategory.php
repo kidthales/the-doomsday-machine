@@ -21,9 +21,10 @@ declare(strict_types=1);
 
 namespace App\Domain\BFRPG\Entity;
 
-use App\Domain\BFRPG\Repository\RulesWeaponSizeRepository;
+use App\Domain\BFRPG\Repository\RulesRangeCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,14 +32,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-#[ORM\Entity(repositoryClass: RulesWeaponSizeRepository::class)]
-#[ORM\Table(name: 'rules_weapon_size')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_WEAPON_SIZE_NAME', fields: ['name'])]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_WEAPON_SIZE_SHORT_NAME', fields: ['shortName'])]
-class RulesWeaponSize
+#[ORM\Entity(repositoryClass: RulesRangeCategoryRepository::class)]
+#[ORM\Table(name: 'rules_range_category')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_RULES_RANGE_CATEGORY_NAME', fields: ['name'])]
+class RulesRangeCategory
 {
-    public const string GROUP_LIST = 'rules_weapon_size_list';
-    public const string GROUP_DETAIL = 'rules_weapon_size_detail';
+    public const string GROUP_LIST = 'rules_range_category_list';
+    public const string GROUP_DETAIL = 'rules_range_category_detail';
 
     /**
      * @var int|null
@@ -59,35 +59,40 @@ class RulesWeaponSize
     private ?string $name = null;
 
     /**
-     * @var string|null
+     * @var int|null
      */
-    #[ORM\Column(name: 'short_name', length: 1)]
-    #[Assert\NotBlank(normalizer: 'trim')]
-    #[Assert\Length(min: 1, max: 1)]
+    #[ORM\Column(type: Types::SMALLINT)]
     #[Groups([self::GROUP_LIST, self::GROUP_DETAIL])]
-    private ?string $shortName = null;
+    private ?int $modifier = null;
 
     /**
      * @var RulesSource|null
      */
-    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_weapon_size')]
+    #[ORM\ManyToOne(targetEntity: RulesSource::class, inversedBy: 'rules_range_category')]
     #[ORM\JoinColumn(name: 'rules_source_id', onDelete: 'CASCADE')]
     #[Assert\NotNull]
     #[Groups([self::GROUP_DETAIL])]
     private ?RulesSource $source = null;
 
     /**
-     * @var Collection<int, RulesWeapon>
+     * @var Collection<int, RulesItemRangeCategoryDistance>
      */
-    #[ORM\OneToMany(targetEntity: RulesWeapon::class, mappedBy: 'weaponSize')]
-    private Collection $weapons;
+    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'rangeCategory')]
+    private Collection $itemRangeCategoryDistances;
+
+    /**
+     * @var Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'rangeCategory')]
+    private Collection $weaponRangeCategoryDistances;
 
     /**
      *
      */
     public function __construct()
     {
-        $this->weapons = new ArrayCollection();
+        $this->itemRangeCategoryDistances = new ArrayCollection();
+        $this->weaponRangeCategoryDistances = new ArrayCollection();
     }
 
     /**
@@ -117,20 +122,20 @@ class RulesWeaponSize
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getShortName(): ?string
+    public function getModifier(): ?int
     {
-        return $this->shortName;
+        return $this->modifier;
     }
 
     /**
-     * @param string $shortName
+     * @param int $modifier
      * @return $this
      */
-    public function setShortName(string $shortName): static
+    public function setModifier(int $modifier): static
     {
-        $this->shortName = $shortName;
+        $this->modifier = $modifier;
         return $this;
     }
 
@@ -153,10 +158,18 @@ class RulesWeaponSize
     }
 
     /**
-     * @return Collection<int, RulesWeapon>
+     * @return Collection<int, RulesItemRangeCategoryDistance>
      */
-    public function getWeapons(): Collection
+    public function getItemRangeCategoryDistances(): Collection
     {
-        return $this->weapons;
+        return $this->itemRangeCategoryDistances;
+    }
+
+    /**
+     * @return Collection<int, RulesWeaponRangeCategoryDistance>
+     */
+    public function getWeaponRangeCategoryDistances(): Collection
+    {
+        return $this->weaponRangeCategoryDistances;
     }
 }

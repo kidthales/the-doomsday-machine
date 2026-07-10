@@ -19,15 +19,14 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesItem;
+namespace App\Command\BFRPG\Entity\RulesRangeCategory;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -37,8 +36,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-item:create',
-    description: 'Create a rules item'
+    name: 'app:bfrpg:entity:rules-range-category:create',
+    description: 'Create a rules range category'
 )]
 final class CreateCommand extends Command
 {
@@ -51,40 +50,30 @@ final class CreateCommand extends Command
             ->addArgument(
                 name: 'name',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the rules item'
+                description: 'The name of the rules range category'
             )
             ->addArgument(
-                name: 'price',
+                name: 'modifier',
                 mode: InputArgument::REQUIRED,
-                description: 'The price of the rules item'
-            )
-            ->addArgument(
-                name: 'weight',
-                mode: InputArgument::REQUIRED,
-                description: 'The weight of the rules item'
+                description: 'The modifier for the rules range category'
             )
             ->addArgument(
                 name: 'source-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The rules source id for the item'
-            )
-            ->addOption(
-                name: 'description',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The description of the rules item'
+                description: 'The rules source id for the range category'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>rules item</comment>
-                in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to create a
+                <comment>rules range category</comment> in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <price> <weight> <source-id> [--description [<description>]]</info>
+                  <info>%command.full_name% <name> <modifier> <source-id></info>
 
                 Examples:
-                  <info>%command.full_name% "Iron Spike" 0.08 0.08 1 --description "An Iron Spike is useful for spiking doors closed (or spiking them open) and may be used as crude pitons in appropriate situations."</info>
+                  <info>%command.full_name% Short 1 1 </info>
 
-                If no name, price, weight, or source id is specified, you'll be prompted interactively.
+                If no name, modifier, or source id is specified, you'll be prompted interactively.
                 HELP
             );
     }
@@ -96,10 +85,9 @@ final class CreateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactQuestion($input, $output, 'name', 'Rules item name: ');
-        $this->interactQuestion($input, $output, 'price', 'Rules item price: ');
-        $this->interactQuestion($input, $output, 'weight', 'Rules item weight: ');
-        $this->interactRulesSource($input, $output, 'source-id', 'Rules item sourced from: ');
+        $this->interactQuestion($input, $output, 'name', 'Rules range category name: ');
+        $this->interactQuestion($input, $output, 'modifier', 'Rules range category modifier: ');
+        $this->interactRulesSource($input, $output, 'source-id', 'Rules range category sourced from: ');
     }
 
     /**
@@ -110,36 +98,34 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Create Rules Item');
+        $io->title('BFRPG: Create Rules Range Category');
 
         try {
-            $item = (new RulesItem())
-                ->setName($this->parseStringArgument($input, 'name'))
-                ->setPrice($this->parseFloatArgument($input, 'price'))
-                ->setWeight($this->parseFloatArgument($input, 'weight'))
-                ->setDescription($this->parseStringOption($input, 'description', true))
+            $rangeCategory = (new RulesRangeCategory())
+                ->setName($this->parseStringArgument($input, 'name', true))
+                ->setModifier($this->parseIntArgument($input, 'modifier'))
                 ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
-            $this->validate($item);
+            $this->validate($rangeCategory);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $item,
+                    $rangeCategory,
                     [
-                        AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                        AbstractNormalizer::GROUPS => [RulesRangeCategory::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
 
-                if (!$io->confirm('Create rules item?')) {
+                if (!$io->confirm('Create rules range category?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($item);
+            $this->entityManager->persist($rangeCategory);
             $this->entityManager->flush();
 
-            $io->success(sprintf('Rules item has been created with id %d.', $item->getId()));
+            $io->success(sprintf('Rules range category has been created with id %d.', $rangeCategory->getId()));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesItem;
+namespace App\Command\BFRPG\Entity\RulesArmor;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesItem;
+use App\Domain\BFRPG\Entity\RulesArmor;
 use App\Domain\BFRPG\Entity\RulesSource;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -37,8 +37,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-item:create',
-    description: 'Create a rules item'
+    name: 'app:bfrpg:entity:rules-armor:create',
+    description: 'Create a rules armor'
 )]
 final class CreateCommand extends Command
 {
@@ -51,38 +51,49 @@ final class CreateCommand extends Command
             ->addArgument(
                 name: 'name',
                 mode: InputArgument::REQUIRED,
-                description: 'The name of the rules item'
+                description: 'The name of the rules armor'
             )
             ->addArgument(
                 name: 'price',
                 mode: InputArgument::REQUIRED,
-                description: 'The price of the rules item'
+                description: 'The price of the rules armor'
             )
             ->addArgument(
                 name: 'weight',
                 mode: InputArgument::REQUIRED,
-                description: 'The weight of the rules item'
+                description: 'The weight of the rules armor'
             )
             ->addArgument(
                 name: 'source-id',
                 mode: InputArgument::REQUIRED,
-                description: 'The rules source id for the item'
+                description: 'The rules source id for the armor'
+            )
+            ->addOption(
+                name: 'ac',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The armor class (ac) of the rules armor'
+            )
+            ->addOption(
+                name: 'ac-bonus',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The armor class (ac) bonus of the rules armor'
             )
             ->addOption(
                 name: 'description',
                 mode: InputOption::VALUE_REQUIRED,
-                description: 'The description of the rules item'
+                description: 'The description of the rules armor'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to create a <comment>rules item</comment>
+                The <info>%command.name%</info> command allows you to create a <comment>rules armor</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
-                  <info>%command.full_name% <name> <price> <weight> <source-id> [--description [<description>]]</info>
+                  <info>%command.full_name% <name> <price> <weight> <source-id>
+                    [--ac <ac>] [--ac-bonus <ac-bonus>] [--description <description>]</info>
 
                 Examples:
-                  <info>%command.full_name% "Iron Spike" 0.08 0.08 1 --description "An Iron Spike is useful for spiking doors closed (or spiking them open) and may be used as crude pitons in appropriate situations."</info>
+                  <info>%command.full_name% "Leather Armor" 20 15 1 --ac 13</info>
 
                 If no name, price, weight, or source id is specified, you'll be prompted interactively.
                 HELP
@@ -96,10 +107,10 @@ final class CreateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactQuestion($input, $output, 'name', 'Rules item name: ');
-        $this->interactQuestion($input, $output, 'price', 'Rules item price: ');
-        $this->interactQuestion($input, $output, 'weight', 'Rules item weight: ');
-        $this->interactRulesSource($input, $output, 'source-id', 'Rules item sourced from: ');
+        $this->interactQuestion($input, $output, 'name', 'Rules armor name: ');
+        $this->interactQuestion($input, $output, 'price', 'Rules armor price: ');
+        $this->interactQuestion($input, $output, 'weight', 'Rules armor weight: ');
+        $this->interactRulesSource($input, $output, 'source-id', 'Rules armor sourced from: ');
     }
 
     /**
@@ -110,36 +121,38 @@ final class CreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Create Rules Item');
+        $io->title('BFRPG: Create Rules Armor');
 
         try {
-            $item = (new RulesItem())
+            $armor = (new RulesArmor())
                 ->setName($this->parseStringArgument($input, 'name'))
                 ->setPrice($this->parseFloatArgument($input, 'price'))
                 ->setWeight($this->parseFloatArgument($input, 'weight'))
                 ->setDescription($this->parseStringOption($input, 'description', true))
+                ->setAC($this->parseIntOption($input, 'ac'))
+                ->setACBonus($this->parseIntOption($input, 'ac-bonus'))
                 ->setSource($this->parseRulesSourceIdArgument($input, 'source-id'));
 
-            $this->validate($item);
+            $this->validate($armor);
 
             if ($input->isInteractive()) {
                 $io->section('Confirmation');
                 $io->definitionList(...$this->definitionListConverter->convert(
-                    $item,
+                    $armor,
                     [
-                        AbstractNormalizer::GROUPS => [RulesItem::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                        AbstractNormalizer::GROUPS => [RulesArmor::GROUP_DETAIL, RulesSource::GROUP_LIST]
                     ]
                 ));
 
-                if (!$io->confirm('Create rules item?')) {
+                if (!$io->confirm('Create rules armor?')) {
                     return Command::SUCCESS;
                 }
             }
 
-            $this->entityManager->persist($item);
+            $this->entityManager->persist($armor);
             $this->entityManager->flush();
 
-            $io->success(sprintf('Rules item has been created with id %d.', $item->getId()));
+            $io->success(sprintf('Rules armor has been created with id %d.', $armor->getId()));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

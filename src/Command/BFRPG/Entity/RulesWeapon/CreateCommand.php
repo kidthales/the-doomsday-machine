@@ -24,6 +24,8 @@ namespace App\Command\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesWeapon;
 use App\Domain\BFRPG\Entity\RulesSource;
+use App\Domain\BFRPG\Entity\RulesWeaponCategory;
+use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -168,7 +170,12 @@ final class CreateCommand extends Command
                 $io->definitionList(...$this->definitionListConverter->convert(
                     $weapon,
                     [
-                        AbstractNormalizer::GROUPS => [RulesWeapon::GROUP_DETAIL, RulesSource::GROUP_LIST]
+                        AbstractNormalizer::GROUPS => [
+                            RulesWeapon::GROUP_DETAIL,
+                            RulesSource::GROUP_LIST,
+                            RulesWeaponSize::GROUP_LIST,
+                            RulesWeaponCategory::GROUP_LIST
+                        ]
                     ]
                 ));
 

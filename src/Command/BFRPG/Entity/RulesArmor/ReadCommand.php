@@ -19,13 +19,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesWeapon;
+namespace App\Command\BFRPG\Entity\RulesArmor;
 
 use App\Domain\BFRPG\Console\Command\Command;
-use App\Domain\BFRPG\Entity\RulesWeapon;
+use App\Domain\BFRPG\Entity\RulesArmor;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Entity\RulesWeaponCategory;
-use App\Domain\BFRPG\Entity\RulesWeaponSize;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -38,8 +36,8 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-weapon:read',
-    description: 'Read a rules weapon'
+    name: 'app:bfrpg:entity:rules-armor:read',
+    description: 'Read a rules armor'
 )]
 final class ReadCommand extends Command
 {
@@ -52,11 +50,11 @@ final class ReadCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules weapon'
+                description: 'The id of the rules armor'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules weapon</comment>
+                The <info>%command.name%</info> command allows you to read a <comment>rules armor</comment>
                 in the <comment>BFRPG</comment> db.
 
                 Usage:
@@ -77,7 +75,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactRulesWeapon($input, $output, 'id', 'Rules weapon: ');
+        $this->interactRulesArmor($input, $output, 'id', 'Rules armor: ');
     }
 
     /**
@@ -88,18 +86,13 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Read Rules Weapon');
+        $io->title('BFRPG: Read Rules Armor');
 
         try {
             $io->definitionList(...$this->definitionListConverter->convert(
-                $this->parseRulesWeaponIdArgument($input, 'id'),
+                $this->parseRulesArmorIdArgument($input, 'id'),
                 [
-                    AbstractNormalizer::GROUPS => [
-                        RulesWeapon::GROUP_DETAIL,
-                        RulesSource::GROUP_LIST,
-                        RulesWeaponSize::GROUP_LIST,
-                        RulesWeaponCategory::GROUP_LIST
-                    ]
+                    AbstractNormalizer::GROUPS => [RulesArmor::GROUP_DETAIL, RulesSource::GROUP_LIST]
                 ]
             ));
         } catch (Throwable $e) {

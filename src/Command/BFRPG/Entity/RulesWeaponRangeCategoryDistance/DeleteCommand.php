@@ -19,13 +19,13 @@
 
 declare(strict_types=1);
 
-namespace App\Command\BFRPG\Entity\RulesWeapon;
+namespace App\Command\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 
 use App\Domain\BFRPG\Console\Command\Command;
 use App\Domain\BFRPG\Entity\RulesWeapon;
+use App\Domain\BFRPG\Entity\RulesRangeCategory;
 use App\Domain\BFRPG\Entity\RulesSource;
-use App\Domain\BFRPG\Entity\RulesWeaponCategory;
-use App\Domain\BFRPG\Entity\RulesWeaponSize;
+use App\Domain\BFRPG\Entity\RulesWeaponRangeCategoryDistance;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -38,10 +38,10 @@ use Throwable;
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
 #[AsCommand(
-    name: 'app:bfrpg:entity:rules-weapon:read',
-    description: 'Read a rules weapon'
+    name: 'app:bfrpg:entity:rules-weapon-range-category-distance:delete',
+    description: 'Delete a rules weapon range category distance'
 )]
-final class ReadCommand extends Command
+final class DeleteCommand extends Command
 {
     /**
      * @return void
@@ -52,12 +52,12 @@ final class ReadCommand extends Command
             ->addArgument(
                 name: 'id',
                 mode: InputArgument::REQUIRED,
-                description: 'The id of the rules weapon'
+                description: 'The id of the rules weapon range category distance'
             )
             ->setHelp(
                 <<<'HELP'
-                The <info>%command.name%</info> command allows you to read a <comment>rules weapon</comment>
-                in the <comment>BFRPG</comment> db.
+                The <info>%command.name%</info> command allows you to delete a
+                <comment>rules weapon range category distance</comment> in the <comment>BFRPG</comment> db.
 
                 Usage:
                   <info>%command.full_name% <id></info>
@@ -77,7 +77,7 @@ final class ReadCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $this->interactRulesWeapon($input, $output, 'id', 'Rules weapon: ');
+        $this->interactRulesWeaponRangeCategoryDistance($input, $output, 'id', 'Rules weapon range category distance: ');
     }
 
     /**
@@ -88,20 +88,36 @@ final class ReadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('BFRPG: Read Rules Weapon');
+        $io->title('BFRPG: Delete Rules Weapon Range Category Distance');
 
         try {
-            $io->definitionList(...$this->definitionListConverter->convert(
-                $this->parseRulesWeaponIdArgument($input, 'id'),
-                [
-                    AbstractNormalizer::GROUPS => [
-                        RulesWeapon::GROUP_DETAIL,
-                        RulesSource::GROUP_LIST,
-                        RulesWeaponSize::GROUP_LIST,
-                        RulesWeaponCategory::GROUP_LIST
+            $weaponRangeCategoryDistance = $this->parseRulesWeaponRangeCategoryDistanceIdArgument($input, 'id');
+
+            if ($input->isInteractive()) {
+                $io->section('Confirmation');
+                $io->definitionList(...$this->definitionListConverter->convert(
+                    $weaponRangeCategoryDistance,
+                    [
+                        AbstractNormalizer::GROUPS => [
+                            RulesWeaponRangeCategoryDistance::GROUP_DETAIL,
+                            RulesWeapon::GROUP_LIST,
+                            RulesRangeCategory::GROUP_LIST,
+                            RulesSource::GROUP_LIST
+                        ]
                     ]
-                ]
-            ));
+                ));
+
+                if (!$io->confirm('Delete rules weapon range category distance?')) {
+                    return Command::SUCCESS;
+                }
+            }
+
+            $id = $weaponRangeCategoryDistance->getId();
+
+            $this->entityManager->remove($weaponRangeCategoryDistance);
+            $this->entityManager->flush();
+
+            $io->success(sprintf('Rules weapon range category distance with id %d has been deleted.', $id));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

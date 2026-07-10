@@ -230,6 +230,23 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface
 
     /**
      * @param InputInterface $input
+     * @param string $argument
+     * @return int|null
+     */
+    protected function parseIntArgument(InputInterface $input, string $argument): ?int
+    {
+        $value = $input->getArgument($argument);
+        if ($value === null) {
+            return null;
+        }
+        if (!is_numeric($value)) {
+            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+        }
+        return intval($value);
+    }
+
+    /**
+     * @param InputInterface $input
      * @param string $option
      * @return int|false|null
      */
