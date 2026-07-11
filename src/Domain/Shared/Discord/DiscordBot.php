@@ -24,7 +24,7 @@ namespace App\Domain\Shared\Discord;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use Godruoyi\Snowflake\Snowflake;
 use Godruoyi\Snowflake\SnowflakeException;
-use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -202,7 +202,7 @@ abstract class DiscordBot
                 []
             );
         }
-        return $this->currentUserGuildByGuildId[$guildId] ?? throw new InvalidArgumentException('Guild id not found in current user guilds');
+        return $this->currentUserGuildByGuildId[$guildId] ?? throw new RuntimeException('Guild id not found in current user guilds');
     }
 
     /**
@@ -218,7 +218,7 @@ abstract class DiscordBot
     public function getGuildChannels(string $guildId, bool $refresh = false): array
     {
         if (!in_array($guildId, array_map(fn(array $guild) => $guild['id'], $this->getCurrentUserGuilds($refresh)))) {
-            throw new InvalidArgumentException('Guild id not found in current user guilds');
+            throw new RuntimeException('Guild id not found in current user guilds');
         }
         if ($refresh || !isset($this->guildChannels[$guildId])) {
             $this->guildChannels[$guildId] = $this->discordApi->getGuildChannels($guildId)->toArray();
@@ -276,7 +276,7 @@ abstract class DiscordBot
                 $this->guildChannelByChannelId[$channel['id']] = $channel;
             }
         }
-        return $this->guildChannelByChannelId[$channelId] ?? throw new InvalidArgumentException('Channel id not found in current user guilds');
+        return $this->guildChannelByChannelId[$channelId] ?? throw new RuntimeException('Channel id not found in current user guilds');
     }
 
     /**
@@ -292,7 +292,7 @@ abstract class DiscordBot
     public function listActiveGuildThreads(string $guildId, bool $refresh = false): array
     {
         if (!in_array($guildId, array_map(fn(array $guild) => $guild['id'], $this->getCurrentUserGuilds($refresh)))) {
-            throw new InvalidArgumentException('Guild id not found in current user guilds');
+            throw new RuntimeException('Guild id not found in current user guilds');
         }
         if ($refresh || !isset($this->activeGuildThreads[$guildId])) {
             $this->activeGuildThreads[$guildId] = $this->discordApi->listActiveGuildThreads($guildId)->toArray();

@@ -54,7 +54,7 @@ use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
 use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
 use App\Domain\AI\Console\AgentCall\UserInputProcessor;
-use InvalidArgumentException;
+use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -72,6 +72,7 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use ValueError;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
@@ -157,14 +158,10 @@ final class AgentCallCommand extends Command
 
         $availableAgents = $this->getAvailableAgentNames();
         if (0 === count($availableAgents)) {
-            throw new InvalidArgumentException('No agents are configured.');
+            throw new RuntimeException('No agents are configured.');
         }
 
-        $question = new ChoiceQuestion(
-            'Please select an agent to chat with:',
-            $availableAgents,
-            0
-        );
+        $question = new ChoiceQuestion('Please select an agent to chat with:', $availableAgents, 0);
         $question->setErrorMessage('Agent %s is invalid.');
 
         /** @var QuestionHelper $helper */
@@ -260,27 +257,25 @@ final class AgentCallCommand extends Command
      */
     private function resolveAgentInput(InputInterface $input): AgentInterface
     {
-        $availableAgents = array_keys($this->agents->getProvidedServices());
+        $availableAgents = $this->getAvailableAgentNames();
 
         if (0 === count($availableAgents)) {
-            throw new InvalidArgumentException('No agents are configured.');
+            throw new RuntimeException('No agents are configured.');
         }
 
         $agentArg = $input->getArgument('agent');
         $agentName = is_string($agentArg) ? $agentArg : '';
 
-        if ($agentName && !$this->agents->has($agentName)) {
-            throw new InvalidArgumentException(sprintf(
-                'Agent "%s" not found. Available agents: "%s"',
-                $agentName, implode(', ', $availableAgents)
-            ));
+        if (!$agentName) {
+            throw new ValueError(
+                sprintf('Agent name is required. Available agents: %s', implode(', ', $availableAgents))
+            );
         }
 
-        if (!$agentName) {
-            throw new InvalidArgumentException(sprintf(
-                'Agent name is required. Available agents: "%s"',
-                implode(', ', $availableAgents)
-            ));
+        if (!$this->agents->has($agentName)) {
+            throw new RuntimeException(
+                sprintf('Agent "%s" not found. Available agents: %s', $agentName, implode(', ', $availableAgents))
+            );
         }
 
         return $this->agents->get($agentName);

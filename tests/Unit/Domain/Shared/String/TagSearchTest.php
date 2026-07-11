@@ -6,12 +6,12 @@ namespace App\Tests\Unit\Domain\Shared\String;
 
 use App\Domain\Shared\String\TagSearch;
 use App\Domain\Shared\String\TagSearchResult;
-use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
+use ValueError;
 
 /**
  * @author doomsday_coder
@@ -38,7 +38,7 @@ final class TagSearchTest extends TestCase
     public function it_throws_exception_on_invalid_start_char(string $start): void
     {
         $search = new TagSearch();
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(ValueError::class);
         $this->expectExceptionMessage('Tag start string must have exactly 1 non-whitespace character');
         $search->search('test', $start);
     }

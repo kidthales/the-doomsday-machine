@@ -23,7 +23,6 @@ namespace App\Domain\Shared\Console\Command;
 
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
-use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use ValueError;
@@ -46,7 +45,7 @@ trait ParseEntityIdTrait
             return null;
         }
         if (!is_numeric($id)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+            throw new ValueError(sprintf('The %s argument must be a numeric value.', $argument));
         }
         $entity = $this->entityManager->getRepository($type)->find($id);
         if ($entity === null) {

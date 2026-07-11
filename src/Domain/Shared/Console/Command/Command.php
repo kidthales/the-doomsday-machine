@@ -24,7 +24,6 @@ namespace App\Domain\Shared\Console\Command;
 use App\Domain\Shared\Console\Question\ChoicesResolver;
 use App\Domain\Shared\Console\Style\DefinitionListConverterAwareTrait;
 use App\Domain\Shared\Validator\ValidatorAwareTrait;
-use InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
@@ -206,7 +205,7 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface
             return null;
         }
         if (!is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+            throw new ValueError(sprintf('The %s argument must be a numeric value.', $argument));
         }
         return floatval($value);
     }
@@ -240,7 +239,7 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface
             return null;
         }
         if (!is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The %s argument must be a numeric value.', $argument));
+            throw new ValueError(sprintf('The %s argument must be a numeric value.', $argument));
         }
         return intval($value);
     }
