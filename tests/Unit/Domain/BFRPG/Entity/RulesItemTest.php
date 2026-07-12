@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Domain\BFRPG\Entity;
 
 use App\Domain\BFRPG\Entity\RulesItem;
 use App\Domain\BFRPG\Entity\RulesSource;
+use Doctrine\Common\Collections\Collection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -13,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
+ * @author doomsday_coder
  */
 #[Group('bfrpg')]
 #[CoversClass(RulesItem::class)]
@@ -69,5 +71,19 @@ final class RulesItemTest extends TestCase
         $this->assertNull($item->getSource());
         $this->assertSame($item, $item->setSource($source));
         $this->assertSame($source, $item->getSource());
+    }
+
+    #[Test]
+    public function it_initializes_item_range_category_distances_as_empty_collection(): void
+    {
+        $item = new RulesItem();
+        $this->assertCount(0, $item->getItemRangeCategoryDistances());
+    }
+
+    #[Test]
+    public function it_returns_collection_interface_for_item_range_category_distances(): void
+    {
+        $item = new RulesItem();
+        $this->assertInstanceOf(Collection::class, $item->getItemRangeCategoryDistances());
     }
 }
