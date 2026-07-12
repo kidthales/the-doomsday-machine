@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\AI\Console\AgentCall\UserInput;
+namespace App\Tests\Unit\Domain\AI\Console\Command\AgentCall\UserInput;
 
-use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ErrorUserInput;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\AI\Console\AgentCall;
+namespace App\Tests\Unit\Domain\AI\Console\Command\AgentCall;
 
-use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
+use App\Domain\AI\Console\Command\AgentCall\PlatformResultProcessor;
 use App\Domain\Shared\AI\PlatformResultProcessor as InnerPlatformResultProcessor;
 use App\Domain\Shared\AI\PlatformStreamResultProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;

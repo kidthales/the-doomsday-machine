@@ -19,17 +19,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\AI\Console\AgentCall\UserInput;
+namespace App\Domain\AI\Console\Command\AgentCall\UserInput;
 
 /**
  * @author Tristan Bonsor <kidthales@agogpixel.com>
  */
-final readonly class ErrorUserInput extends UserInput
+final readonly class ExitUserInput extends UserInput
 {
-    /**
-     * @param string $message
-     */
-    public function __construct(public string $message)
-    {
-    }
 }

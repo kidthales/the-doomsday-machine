@@ -19,15 +19,15 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\AI\Console\AgentCall;
+namespace App\Domain\AI\Console\Command\AgentCall;
 
-use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\UserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ClearUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ErrorUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\HelpUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\NoopUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\UserInput;
 use App\Domain\Shared\String\TagSearch;
 use Symfony\AI\Platform\Message\Content\Audio;
 use Symfony\AI\Platform\Message\Content\Image;

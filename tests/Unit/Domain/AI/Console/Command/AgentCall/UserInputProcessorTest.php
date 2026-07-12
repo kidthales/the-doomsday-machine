@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\AI\Console\AgentCall;
+namespace App\Tests\Unit\Domain\AI\Console\Command\AgentCall;
 
-use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
-use App\Domain\AI\Console\AgentCall\UserInputProcessor;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ClearUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ErrorUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\HelpUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\NoopUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInputProcessor;
 use App\Domain\Shared\String\TagSearch;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
