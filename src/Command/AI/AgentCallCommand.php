@@ -46,14 +46,14 @@ declare(strict_types=1);
 
 namespace App\Command\AI;
 
-use App\Domain\AI\Console\AgentCall\PlatformResultProcessor;
-use App\Domain\AI\Console\AgentCall\UserInput\ChatUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ClearUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ErrorUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\ExitUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\HelpUserInput;
-use App\Domain\AI\Console\AgentCall\UserInput\NoopUserInput;
-use App\Domain\AI\Console\AgentCall\UserInputProcessor;
+use App\Domain\AI\Console\Command\AgentCall\PlatformResultProcessor;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ChatUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ClearUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ErrorUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\ExitUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\HelpUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInput\NoopUserInput;
+use App\Domain\AI\Console\Command\AgentCall\UserInputProcessor;
 use RuntimeException;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Exception\ExceptionInterface as AgentExceptionInterface;

@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\AI\Console\AgentCall;
+namespace App\Domain\AI\Console\Command\AgentCall;
 
 use App\Domain\Shared\AI\PlatformResultProcessor as InnerPlatformResultProcessor;
 use Symfony\AI\Platform\Message\Message;
