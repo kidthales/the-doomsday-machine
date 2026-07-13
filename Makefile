@@ -22,7 +22,7 @@ BFRPG_MIGRATIONS_CONFIG_PATH       := $(MIGRATIONS_CONFIG_BASE_PATH)/bfrpg.yaml
 .DEFAULT_GOAL = help
 .PHONY        : help \
                 build print up start down logs bash \
-                test cov \
+                test cov coverage-report \
                 composer vendor \
                 sf cc \
                 app-migrations-list app-migrations-status app-migrations-diff app-migrations-migrate \
@@ -66,7 +66,11 @@ test: ## Start tests with phpunit, pass the parameter "c=" to add options to php
 	@$(eval c ?=)
 	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test php bin/phpunit $(c)
 
-cov: ## Start tests with phpunit and generate coverage report for the project
+cov: ## Start tests with phpunit and XDEBUG_MODE=coverage, pass the parameter "c=" to add options to phpunit
+	@$(eval c ?=)
+	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test -e XDEBUG_MODE=coverage php bin/phpunit $(c)
+
+coverage-report: ## Start tests with phpunit and generate coverage report for the project
 	@$(CD_DOCKER_COMP) run --rm -e APP_ENV=test -e XDEBUG_MODE=coverage php bin/phpunit --testdox --display-all-issues --coverage-text --show-uncovered-for-coverage-text --coverage-html coverage
 
 ## —— Composer 🧙  ——————————————————————————————————————————————————————————————

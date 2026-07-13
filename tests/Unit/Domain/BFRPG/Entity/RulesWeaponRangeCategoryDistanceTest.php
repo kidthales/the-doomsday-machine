@@ -65,4 +65,42 @@ final class RulesWeaponRangeCategoryDistanceTest extends TestCase
         $this->assertSame($distance, $distance->setSource($source));
         $this->assertSame($source, $distance->getSource());
     }
+
+    #[Test]
+    public function it_returns_null_for_weapon_name_when_weapon_is_not_set(): void
+    {
+        $distance = new RulesWeaponRangeCategoryDistance();
+        $this->assertNull($distance->getWeaponName());
+    }
+
+    #[Test]
+    public function it_returns_weapon_name_when_weapon_is_set(): void
+    {
+        $weapon = $this->createStub(RulesWeapon::class);
+        $weapon->method('getName')->willReturn('Plasma Rifle');
+
+        $distance = new RulesWeaponRangeCategoryDistance();
+        $distance->setWeapon($weapon);
+
+        $this->assertSame('Plasma Rifle', $distance->getWeaponName());
+    }
+
+    #[Test]
+    public function it_returns_null_for_range_category_name_when_category_is_not_set(): void
+    {
+        $distance = new RulesWeaponRangeCategoryDistance();
+        $this->assertNull($distance->getRangeCategoryName());
+    }
+
+    #[Test]
+    public function it_returns_range_category_name_when_category_is_set(): void
+    {
+        $category = $this->createStub(RulesRangeCategory::class);
+        $category->method('getName')->willReturn('Ranged');
+
+        $distance = new RulesWeaponRangeCategoryDistance();
+        $distance->setRangeCategory($category);
+
+        $this->assertSame('Ranged', $distance->getRangeCategoryName());
+    }
 }

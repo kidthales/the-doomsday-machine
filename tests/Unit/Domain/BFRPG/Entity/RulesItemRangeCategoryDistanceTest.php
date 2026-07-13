@@ -65,4 +65,42 @@ final class RulesItemRangeCategoryDistanceTest extends TestCase
         $this->assertSame($distance, $distance->setSource($source));
         $this->assertSame($source, $distance->getSource());
     }
+
+    #[Test]
+    public function it_returns_null_for_item_name_when_item_is_not_set(): void
+    {
+        $distance = new RulesItemRangeCategoryDistance();
+        $this->assertNull($distance->getItemName());
+    }
+
+    #[Test]
+    public function it_returns_item_name_when_item_is_set(): void
+    {
+        $item = $this->createStub(RulesItem::class);
+        $item->method('getName')->willReturn('Longsword');
+
+        $distance = new RulesItemRangeCategoryDistance();
+        $distance->setItem($item);
+
+        $this->assertSame('Longsword', $distance->getItemName());
+    }
+
+    #[Test]
+    public function it_returns_null_for_range_category_name_when_category_is_not_set(): void
+    {
+        $distance = new RulesItemRangeCategoryDistance();
+        $this->assertNull($distance->getRangeCategoryName());
+    }
+
+    #[Test]
+    public function it_returns_range_category_name_when_category_is_set(): void
+    {
+        $category = $this->createStub(RulesRangeCategory::class);
+        $category->method('getName')->willReturn('Melee');
+
+        $distance = new RulesItemRangeCategoryDistance();
+        $distance->setRangeCategory($category);
+
+        $this->assertSame('Melee', $distance->getRangeCategoryName());
+    }
 }
