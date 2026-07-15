@@ -60,49 +60,49 @@ class RulesSource
     /**
      * @var Collection<int, RulesItem>
      */
-    #[ORM\OneToMany(targetEntity: RulesItem::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesItem::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $items;
 
     /**
      * @var Collection<int, RulesWeaponSize>
      */
-    #[ORM\OneToMany(targetEntity: RulesWeaponSize::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesWeaponSize::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $weaponSizes;
 
     /**
      * @var Collection<int, RulesWeaponCategory>
      */
-    #[ORM\OneToMany(targetEntity: RulesWeaponCategory::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesWeaponCategory::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $weaponCategories;
 
     /**
      * @var Collection<int, RulesWeapon>
      */
-    #[ORM\OneToMany(targetEntity: RulesWeapon::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesWeapon::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $weapons;
 
     /**
      * @var Collection<int, RulesRangeCategory>
      */
-    #[ORM\OneToMany(targetEntity: RulesRangeCategory::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesRangeCategory::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $rangeCategories;
 
     /**
      * @var Collection<int, RulesItemRangeCategoryDistance>
      */
-    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesItemRangeCategoryDistance::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $itemRangeCategoryDistances;
 
     /**
      * @var Collection<int, RulesWeaponRangeCategoryDistance>
      */
-    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesWeaponRangeCategoryDistance::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $weaponRangeCategoryDistances;
 
     /**
      * @var Collection<int, RulesWeapon>
      */
-    #[ORM\OneToMany(targetEntity: RulesArmor::class, mappedBy: 'source')]
+    #[ORM\OneToMany(targetEntity: RulesArmor::class, mappedBy: 'source', cascade: ['remove'])]
     private Collection $armors;
 
     /**
