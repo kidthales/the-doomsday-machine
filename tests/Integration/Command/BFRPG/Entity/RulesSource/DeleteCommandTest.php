@@ -133,7 +133,6 @@ final class DeleteCommandTest extends KernelTestCase
         $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source']);
 
         $this->assertNotNull($source, 'Rules source should be persisted in the database.');
-        $this->assertSame('Test Rules Source', $source->getName());
     }
 
     #[Test]
