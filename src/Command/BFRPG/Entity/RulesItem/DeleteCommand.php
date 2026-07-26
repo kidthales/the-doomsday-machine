@@ -100,6 +100,16 @@ final class DeleteCommand extends Command
                     ]
                 ));
 
+                $numItemRangeCategoryDistances = $item->getItemRangeCategoryDistances()->count();
+                if ($numItemRangeCategoryDistances > 0) {
+                    $io->warning(
+                        sprintf(
+                            '%d rules item range category distances will also be deleted!',
+                            $numItemRangeCategoryDistances
+                        )
+                    );
+                }
+
                 if (!$io->confirm('Delete rules item?')) {
                     return Command::SUCCESS;
                 }

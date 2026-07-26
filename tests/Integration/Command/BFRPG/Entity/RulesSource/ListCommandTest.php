@@ -49,8 +49,8 @@ final class ListCommandTest extends KernelTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
 
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source 1'));
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source 2'));
+        $entityManager->persist((new RulesSource())->setName('Test Source 1'));
+        $entityManager->persist((new RulesSource())->setName('Test Source 2'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -64,8 +64,8 @@ final class ListCommandTest extends KernelTestCase
         );
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertMatchesRegularExpression('/name\s+Test Rules Source 1/', $appTester->getDisplay());
-        $this->assertMatchesRegularExpression('/name\s+Test Rules Source 2/', $appTester->getDisplay());
+        $this->assertMatchesRegularExpression('/name\s+Test Source 1/', $appTester->getDisplay());
+        $this->assertMatchesRegularExpression('/name\s+Test Source 2/', $appTester->getDisplay());
         $this->assertStringContainsString('Found 2 rules sources.', $appTester->getDisplay());
     }
 }

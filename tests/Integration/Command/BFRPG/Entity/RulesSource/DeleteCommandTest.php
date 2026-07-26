@@ -57,8 +57,9 @@ final class DeleteCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -79,8 +80,7 @@ final class DeleteCommandTest extends KernelTestCase
         $this->assertStringContainsString('Rules source with id 1 has been deleted.', $appTester->getDisplay());
 
         // Verify non-persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source']);
         $this->assertNull($source, 'Rules source should not be persisted in the database.');
     }
 
@@ -89,8 +89,9 @@ final class DeleteCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -98,15 +99,14 @@ final class DeleteCommandTest extends KernelTestCase
 
         $appTester = new ApplicationTester($app);
         // Simulate interactive prompts: name (via interact()) + confirmation (via confirm())
-        $appTester->setInputs(['Test Rules Source', 'y']);
+        $appTester->setInputs(['Test Source', 'y']);
         $appTester->run(['command' => 'app:bfrpg:entity:rules-source:delete']);
 
         $appTester->assertCommandIsSuccessful();
         $this->assertStringContainsString('Rules source with id 1 has been deleted.', $appTester->getDisplay());
 
         // Verify non-persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source']);
         $this->assertNull($source, 'Rules source should not be persisted in the database.');
     }
 
@@ -115,8 +115,9 @@ final class DeleteCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -124,14 +125,13 @@ final class DeleteCommandTest extends KernelTestCase
 
         $appTester = new ApplicationTester($app);
         // Simulate interactive prompts: name (via interact()) + confirmation (via confirm())
-        $appTester->setInputs(['Test Rules Source', 'n']);
+        $appTester->setInputs(['Test Source', 'n']);
         $appTester->run(['command' => 'app:bfrpg:entity:rules-source:delete']);
 
         $appTester->assertCommandIsSuccessful();
 
         // Verify persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source']);
         $this->assertNotNull($source, 'Rules source should be persisted in the database.');
     }
 
@@ -143,7 +143,7 @@ final class DeleteCommandTest extends KernelTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
 
-        $source = (new RulesSource())->setName('Test Rules Source');
+        $source = (new RulesSource())->setName('Test Source');
         $entityManager->persist($source);
         $entityManager->flush();
 
@@ -199,7 +199,7 @@ final class DeleteCommandTest extends KernelTestCase
         $app->setAutoExit(false);
 
         $appTester = new ApplicationTester($app);
-        $appTester->setInputs(['Test Rules Source', 'y']);
+        $appTester->setInputs(['Test Source', 'y']);
         $appTester->run(['command' => 'app:bfrpg:entity:rules-source:delete']);
 
         $appTester->assertCommandIsSuccessful();

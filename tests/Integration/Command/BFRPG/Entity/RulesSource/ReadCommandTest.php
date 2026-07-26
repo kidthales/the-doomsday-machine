@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
 use App\Command\BFRPG\Entity\RulesSource\ReadCommand;
 use App\Domain\BFRPG\Entity\RulesSource;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -48,8 +49,9 @@ final class ReadCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = self::$kernel->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -65,6 +67,6 @@ final class ReadCommandTest extends KernelTestCase
 
         $appTester->assertCommandIsSuccessful();
         $this->assertMatchesRegularExpression('/id\s+1/', $appTester->getDisplay());
-        $this->assertMatchesRegularExpression('/name\s+Test Rules Source/', $appTester->getDisplay());
+        $this->assertMatchesRegularExpression('/name\s+Test Source/', $appTester->getDisplay());
     }
 }

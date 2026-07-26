@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
 use App\Command\BFRPG\Entity\RulesSource\UpdateCommand;
 use App\Domain\BFRPG\Entity\RulesSource;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -48,8 +49,9 @@ final class UpdateCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -60,7 +62,7 @@ final class UpdateCommandTest extends KernelTestCase
             [
                 'command' => 'app:bfrpg:entity:rules-source:update',
                 'id' => 1,
-                '--name' => 'Test Rules Source Revised',
+                '--name' => 'Test Source Revised',
             ],
             [
                 'interactive' => false
@@ -71,8 +73,7 @@ final class UpdateCommandTest extends KernelTestCase
         $this->assertStringContainsString('Rules source with id 1 has been updated.', $appTester->getDisplay());
 
         // Verify non-persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source Revised']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source Revised']);
         $this->assertNotNull($source, 'Rules source should be persisted in the database.');
     }
 
@@ -81,8 +82,9 @@ final class UpdateCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -90,15 +92,14 @@ final class UpdateCommandTest extends KernelTestCase
 
         $appTester = new ApplicationTester($app);
         // Simulate interactive prompts: name (via interact()) + confirmation (via confirm())
-        $appTester->setInputs(['Test Rules Source', 'y']);
-        $appTester->run(['command' => 'app:bfrpg:entity:rules-source:update', '--name' => 'Test Rules Source Revised']);
+        $appTester->setInputs(['Test Source', 'y']);
+        $appTester->run(['command' => 'app:bfrpg:entity:rules-source:update', '--name' => 'Test Source Revised']);
 
         $appTester->assertCommandIsSuccessful();
         $this->assertStringContainsString('Rules source with id 1 has been updated.', $appTester->getDisplay());
 
         // Verify non-persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source Revised']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source Revised']);
         $this->assertNotNull($source, 'Rules source should be persisted in the database.');
     }
 
@@ -107,8 +108,9 @@ final class UpdateCommandTest extends KernelTestCase
     {
         $this->bootKernel();
 
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
-        $entityManager->persist((new RulesSource())->setName('Test Rules Source'));
+        $entityManager->persist((new RulesSource())->setName('Test Source'));
         $entityManager->flush();
 
         $app = new Application(self::$kernel);
@@ -116,14 +118,13 @@ final class UpdateCommandTest extends KernelTestCase
 
         $appTester = new ApplicationTester($app);
         // Simulate interactive prompts: name (via interact()) + confirmation (via confirm())
-        $appTester->setInputs(['Test Rules Source', 'n']);
-        $appTester->run(['command' => 'app:bfrpg:entity:rules-source:update', '--name' => 'Test Rules Source Revised']);
+        $appTester->setInputs(['Test Source', 'n']);
+        $appTester->run(['command' => 'app:bfrpg:entity:rules-source:update', '--name' => 'Test Source Revised']);
 
         $appTester->assertCommandIsSuccessful();
 
         // Verify persistence in the database
-        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Rules Source']);
-
+        $source = $entityManager->getRepository(RulesSource::class)->findOneBy(['name' => 'Test Source']);
         $this->assertNotNull($source, 'Rules source should be persisted in the database.');
     }
 }
