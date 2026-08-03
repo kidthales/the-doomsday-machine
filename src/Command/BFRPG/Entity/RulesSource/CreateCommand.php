@@ -110,7 +110,7 @@ final class CreateCommand extends Command
             $this->entityManager->persist($source);
             $this->entityManager->flush();
 
-            $io->success(sprintf('Rules source created with id %d.', $source->getId()));
+            $io->success(sprintf('Rules source has been created with id %d.', $source->getId()));
         } catch (Throwable $e) {
             $this->logThrowable($e);
             $io->error($e->getMessage());

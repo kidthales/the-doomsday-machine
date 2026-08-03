@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Command\BFRPG\Entity\RulesSource;
 
 use App\Command\BFRPG\Entity\RulesSource\ListCommand;
+use App\Domain\BFRPG\Entity\RulesSource;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,7 +22,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
 final class ListCommandTest extends KernelTestCase
 {
     #[Test]
-    public function it_displays_a_count_of_rules_sources_found(): void
+    public function it_displays_a_zero_count_when_rules_sources_not_found(): void
     {
         $this->bootKernel();
 
@@ -37,5 +39,33 @@ final class ListCommandTest extends KernelTestCase
         $appTester->assertCommandIsSuccessful();
 
         $this->assertStringContainsString('Found 0 rules sources.', $appTester->getDisplay());
+    }
+
+    #[Test]
+    public function it_lists_multiple_rules_sources(): void
+    {
+        $this->bootKernel();
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getContainer()->get('doctrine')->getManager('bfrpg');
+
+        $entityManager->persist((new RulesSource())->setName('Test Source 1'));
+        $entityManager->persist((new RulesSource())->setName('Test Source 2'));
+        $entityManager->flush();
+
+        $app = new Application(self::$kernel);
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run(
+            [
+                'command' => 'app:bfrpg:entity:rules-source:list',
+            ]
+        );
+
+        $appTester->assertCommandIsSuccessful();
+        $this->assertMatchesRegularExpression('/name\s+Test Source 1/', $appTester->getDisplay());
+        $this->assertMatchesRegularExpression('/name\s+Test Source 2/', $appTester->getDisplay());
+        $this->assertStringContainsString('Found 2 rules sources.', $appTester->getDisplay());
     }
 }

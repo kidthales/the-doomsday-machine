@@ -104,6 +104,51 @@ final class DeleteCommand extends Command
                     $io->warning(sprintf('%d rules items will also be deleted!', $numItems));
                 }
 
+                $numWeaponSizes = $source->getWeaponSizes()->count();
+                if ($numWeaponSizes > 0) {
+                    $io->warning(sprintf('%d rules weapon sizes will also be deleted!', $numWeaponSizes));
+                }
+
+                $numWeaponCategories = $source->getWeaponCategories()->count();
+                if ($numWeaponCategories > 0) {
+                    $io->warning(sprintf('%d rules weapon categories will also be deleted!', $numWeaponCategories));
+                }
+
+                $numWeapons = $source->getWeapons()->count();
+                if ($numWeapons > 0) {
+                    $io->warning(sprintf('%d rules weapons will also be deleted!', $numWeapons));
+                }
+
+                $numRangeCategories = $source->getRangeCategories()->count();
+                if ($numRangeCategories > 0) {
+                    $io->warning(sprintf('%d rules range categories will also be deleted!', $numRangeCategories));
+                }
+
+                $numItemRangeCategoryDistances = $source->getItemRangeCategoryDistances()->count();
+                if ($numItemRangeCategoryDistances > 0) {
+                    $io->warning(
+                        sprintf(
+                            '%d rules item range category distances will also be deleted!',
+                            $numItemRangeCategoryDistances
+                        )
+                    );
+                }
+
+                $numWeaponRangeCategoryDistances = $source->getWeaponRangeCategoryDistances()->count();
+                if ($numWeaponRangeCategoryDistances > 0) {
+                    $io->warning(
+                        sprintf(
+                            '%d rules weapon range category distances will also be deleted!',
+                            $numWeaponRangeCategoryDistances
+                        )
+                    );
+                }
+
+                $numArmors = $source->getArmors()->count();
+                if ($numArmors > 0) {
+                    $io->warning(sprintf('%d rules armors will also be deleted!', $numArmors));
+                }
+
                 if (!$io->confirm('Delete rules source?')) {
                     return Command::SUCCESS;
                 }
