@@ -26,7 +26,7 @@
         "symfony/flex": "^2.10",
         "symfony/framework-bundle": "7.4.*",
         "symfony/http-client": "7.4.*",
-        "symfony/mercure-bundle": "^0.4.2",
+        "symfony/mercure-bundle": "^0.4.3",
         "symfony/mime": "^7.4.15",
         "symfony/monolog-bundle": "^4.0",
         "symfony/property-access": "7.4.*",
@@ -36,7 +36,7 @@
         "symfony/serializer": "7.4.*",
         "symfony/stopwatch": "7.4.*",
         "symfony/string": "7.4.*",
-        "symfony/validator": "^7.4.15",
+        "symfony/validator": "^7.4.16",
         "symfony/yaml": "7.4.*"
     },
     "config": {
